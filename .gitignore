@@ -1,1 +1,26 @@
-.vscode
+# Build & Dependency Directories
+.gradle/
+**/build/
+**/bin/
+**/out/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+.sts4-cache/
+.apt_generated/
+.factorypath
+.springBeans/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
