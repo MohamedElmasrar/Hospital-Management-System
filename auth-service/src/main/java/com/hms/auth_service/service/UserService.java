@@ -23,14 +23,15 @@ public class UserService {
 
   @Transactional
   public void registerNewUser(RegisterRequestDTO request) {
-    Optional<User> user = userRepository.findByEmail(request.email());
-    if (!user.isEmpty()) {
+    if (userRepository.existsByEmail(request.email())) {
       throw new UserWithTheSameEmailAlreadyExistsException();
     }
+
     User userToSave = new User();
     userToSave.setEmail(request.email());
     String passwordHash = passwordEncoder.encode(request.password());
     userToSave.setPasswordHash(passwordHash);
+
     userRepository.save(userToSave);
   }
 }

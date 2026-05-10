@@ -2,6 +2,7 @@ package com.hms.auth_service.security;
 
 import com.hms.auth_service.exception.InvalidRefreshTokenException;
 import com.hms.auth_service.model.RefreshToken;
+import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.RefreshTokenRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -44,5 +45,22 @@ public class RefreshTokenService {
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("SHA-256 not available", e);
     }
+  }
+
+  public void revokeRefreshToken(String rawToken) {
+    refreshTokenRepository
+        .findByTokenHash(hashToken(rawToken))
+        .ifPresent(
+            token -> {
+              token.setRevoked(true);
+              refreshTokenRepository.save(token);
+            });
+  }
+
+  public void createRefreshToken(User user, String rawRefreshToken) {
+    RefreshToken refreshToken = new RefreshToken();
+    refreshToken.setUser(user);
+    refreshToken.setTokenHash(hashToken(rawRefreshToken));
+    refreshTokenRepository.save(refreshToken);
   }
 }

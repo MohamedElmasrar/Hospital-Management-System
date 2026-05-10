@@ -7,20 +7,22 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class JwtTokenService {
 
-  @Autowired private final JwtEncoder jwtEncoder;
-  @Autowired private final JwtProperties jwtProperties;
+  private final JwtEncoder jwtEncoder;
+  private final JwtDecoder jwtDecoder;
+  private final JwtProperties jwtProperties;
 
   public String generateAccessToken(UUID userId, UserRole userRole) {
     Instant now = Instant.now();
@@ -42,5 +44,14 @@ public class JwtTokenService {
     byte[] bytes = new SecureRandom().generateSeed(32);
 
     return HexFormat.of().formatHex(bytes);
+  }
+
+  public boolean validateToken(String token) {
+    try {
+      jwtDecoder.decode(token);
+      return true;
+    } catch (JwtException e) {
+      return false;
+    }
   }
 }

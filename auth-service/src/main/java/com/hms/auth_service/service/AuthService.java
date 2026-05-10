@@ -1,6 +1,7 @@
 package com.hms.auth_service.service;
 
 import com.hms.auth_service.dto.login.LoginRequestDTO;
+import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.exception.InvalidCredentialsException;
 import com.hms.auth_service.model.RefreshToken;
 import com.hms.auth_service.model.User;
@@ -33,6 +34,8 @@ public class AuthService {
 
     String rawRefreshToken = jwtTokenService.generateRefreshToken();
 
+    refreshTokenService.createRefreshToken(user, rawRefreshToken);
+
     return new LoginResult(accessToken, rawRefreshToken);
   }
 
@@ -43,5 +46,22 @@ public class AuthService {
     User user = refreshToken.getUser();
 
     return jwtTokenService.generateAccessToken(user.getId(), user.getRole());
+  }
+
+  @Transactional
+  public void logout(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      return;
+    }
+
+    refreshTokenService.revokeRefreshToken(rawToken);
+  }
+
+  public void registerNewUser(RegisterRequestDTO request) {
+    userService.registerNewUser(request);
+  }
+
+  public boolean validateToken(String token) {
+    return jwtTokenService.validateToken(token);
   }
 }
