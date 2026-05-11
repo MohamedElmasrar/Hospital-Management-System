@@ -4,5 +4,6 @@ public enum UserRole {
   ADMIN,
   PATIENT,
   DOCTOR,
-  EMPLOYEE
+  EMPLOYEE,
+  HR_HEAD
 }

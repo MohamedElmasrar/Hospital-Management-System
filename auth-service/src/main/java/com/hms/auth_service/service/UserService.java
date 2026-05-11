@@ -2,6 +2,7 @@ package com.hms.auth_service.service;
 
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
+import com.hms.auth_service.mapper.UserMapper;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -16,6 +17,7 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
+  private final UserMapper userMapper;
 
   public Optional<User> findByEmail(String email) {
     return userRepository.findByEmail(email);
@@ -27,10 +29,8 @@ public class UserService {
       throw new UserWithTheSameEmailAlreadyExistsException();
     }
 
-    User userToSave = new User();
-    userToSave.setEmail(request.email());
     String passwordHash = passwordEncoder.encode(request.password());
-    userToSave.setPasswordHash(passwordHash);
+    User userToSave = userMapper.toUser(request, passwordHash);
 
     userRepository.save(userToSave);
   }

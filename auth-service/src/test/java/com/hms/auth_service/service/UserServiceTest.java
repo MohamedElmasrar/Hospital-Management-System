@@ -10,13 +10,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
+import com.hms.auth_service.mapper.UserMapper;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +27,7 @@ class UserServiceTest {
 
   @Mock private UserRepository userRepository;
   @Mock private BCryptPasswordEncoder passwordEncoder;
+  @Mock private UserMapper userMapper;
 
   @InjectMocks private UserService userService;
 
@@ -57,18 +58,17 @@ class UserServiceTest {
   @Test
   void registerNewUser_validRequest_encodesPasswordAndSavesUser() {
     RegisterRequestDTO request = new RegisterRequestDTO("new_user@email.com", "plainPassword123");
+    User expectedUser = new User();
+    expectedUser.setEmail("new_user@email.com");
+    expectedUser.setPasswordHash("$2a$10$encodedPasswordHash");
 
     given(userRepository.existsByEmail("new_user@email.com")).willReturn(false);
     given(passwordEncoder.encode("plainPassword123")).willReturn("$2a$10$encodedPasswordHash");
+    given(userMapper.toUser(request, "$2a$10$encodedPasswordHash")).willReturn(expectedUser);
 
     userService.registerNewUser(request);
 
-    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCaptor.capture());
-
-    User savedUser = userCaptor.getValue();
-    assertThat(savedUser.getEmail()).isEqualTo("new_user@email.com");
-    assertThat(savedUser.getPasswordHash()).isEqualTo("$2a$10$encodedPasswordHash");
+    verify(userRepository).save(expectedUser);
   }
 
   @Test
