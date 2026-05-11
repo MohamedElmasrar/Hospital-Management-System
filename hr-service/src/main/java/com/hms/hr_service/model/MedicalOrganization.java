@@ -10,13 +10,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Data
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "medical_organization",
     indexes = {
       @Index(name = "idx_identifier", columnList = "identifier"),
-      @Index(name = "idx_name", columnList = "name")
+      @Index(name = "idx_name", columnList = "name"),
+      @Index(name = "idx_admin_id", columnList = "admin_id")
     })
-@EntityListeners(AuditingEntityListener.class)
 public class MedicalOrganization {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,11 +32,14 @@ public class MedicalOrganization {
   @Column(name = "identifier", unique = true, nullable = false)
   private String identifier;
 
+  @Column(name = "admin_id", nullable = false)
+  private UUID adminId;
+
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
   @LastModifiedDate
-  @Column(name = "updated_at", nullable = false, updatable = false)
+  @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 }

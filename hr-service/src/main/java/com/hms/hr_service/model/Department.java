@@ -5,9 +5,11 @@ import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "department",
     indexes = {
@@ -31,7 +33,7 @@ public class Department {
 
   private String description;
 
-  @Column(nullable = false)
+  @Column(nullable = false, updatable = false)
   @CreatedDate
   private Date dateCreated;
 }

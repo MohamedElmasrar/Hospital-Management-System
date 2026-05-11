@@ -19,16 +19,25 @@ public interface MedicalOrganizationMapper {
       MedicalOrganization medicalOrganization);
 
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "adminId", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   MedicalOrganization createMedicalOrganizationRequestDTOToMedicalOrganization(
       CreateMedicalOrganizationRequestDTO medicalOrganizationRequestDTO);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "adminId", source = "adminId")
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+  MedicalOrganization createMedicalOrganizationRequestDTOToMedicalOrganization(
+      CreateMedicalOrganizationRequestDTO medicalOrganizationRequestDTO, java.util.UUID adminId);
 
   CreateMedicalOrganizationResponseDTO medicalOrganizationToCreateMedicalOrganizationResponseDTO(
       MedicalOrganization save);
 
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "adminId", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   void updateMedicalOrganizationFromDTO(

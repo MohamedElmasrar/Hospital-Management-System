@@ -8,9 +8,11 @@ import java.util.UUID;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "employee")
 public class Employee {
   @Id
@@ -36,7 +38,7 @@ public class Employee {
 
   private EmploymentStatus employmentStatus;
 
-  @Column(nullable = false)
+  @Column(nullable = false, updatable = false)
   @CreatedDate
   private Date dateCreated;
 

@@ -6,6 +6,7 @@ import com.hms.hr_service.dto.MedicalOrganization.GetMedicalOrganizationRequestD
 import com.hms.hr_service.dto.MedicalOrganization.MedicalOrganizationResponseDTO;
 import com.hms.hr_service.dto.MedicalOrganization.UpdateMedicalOrganizationRequestDTO;
 import com.hms.hr_service.dto.PageResponse;
+import com.hms.hr_service.security.AuthenticatedPrincipal;
 import com.hms.hr_service.service.MedicalOrganizationService;
 import com.hms.hr_service.validation.AllowedSortFields;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,12 +20,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @RestController
@@ -34,6 +31,7 @@ public class MedicalOrganizationController {
   private final MedicalOrganizationService medicalOrganizationService;
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
   @Operation(
       summary =
           "Endpoint to get all the Medical Organizations based on a search term sorted by name")
@@ -46,33 +44,41 @@ public class MedicalOrganizationController {
   }
 
   @PostMapping
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(summary = "Endpoint to create a new Medical Organization")
   public ResponseEntity<CreateMedicalOrganizationResponseDTO> createMedicalOrganization(
-      @Valid @RequestBody CreateMedicalOrganizationRequestDTO medicalOrganizationRequestDTO) {
-    return ResponseEntity.ok(medicalOrganizationService.create(medicalOrganizationRequestDTO));
+      @Valid @RequestBody CreateMedicalOrganizationRequestDTO medicalOrganizationRequestDTO,
+      AuthenticatedPrincipal principal) {
+    return ResponseEntity.ok(
+        medicalOrganizationService.create(medicalOrganizationRequestDTO, principal));
   }
 
   @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(summary = "Endpoint for updating a Medical Organization")
   public ResponseEntity<Void> updateMedicalOrganization(
       @PathVariable @NotBlank @UUID String id,
-      @RequestBody @Valid UpdateMedicalOrganizationRequestDTO updateMedicalOrganizationRequestDTO) {
+      @RequestBody @Valid UpdateMedicalOrganizationRequestDTO updateMedicalOrganizationRequestDTO,
+      AuthenticatedPrincipal principal) {
 
-    medicalOrganizationService.update(id, updateMedicalOrganizationRequestDTO);
-    return ResponseEntity.ok().body(null);
+    medicalOrganizationService.update(id, updateMedicalOrganizationRequestDTO, principal);
+    return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(summary = "Endpoint for delete a Medical Organization by Id")
-  public ResponseEntity<Void> deleteMedicalOrganization(@PathVariable @NotBlank @UUID String id) {
-    medicalOrganizationService.delete(id);
-    return ResponseEntity.ok().body(null);
+  public ResponseEntity<Void> deleteMedicalOrganization(
+      @PathVariable @NotBlank @UUID String id, AuthenticatedPrincipal principal) {
+    medicalOrganizationService.delete(id, principal);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
   @Operation(summary = "Endpoint to get the details of a specific Medical Organization")
   public ResponseEntity<MedicalOrganizationResponseDTO> getDetailsOfMedicalOrganization(
       @PathVariable @NotBlank @UUID String id) {
-    return ResponseEntity.ok().body(medicalOrganizationService.getById(id));
+    return ResponseEntity.ok(medicalOrganizationService.getById(id));
   }
 }
