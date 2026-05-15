@@ -24,6 +24,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     depends_on:
       - hr-db
+  billing-service:
+    container_name: billing-service
+    build: ./billing-service/
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://billing-db:5432/billingDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      - billing-db
   auth-db:
     image: postgres
     container_name: auth-db
@@ -44,6 +53,17 @@ services:
     volumes:
       - hr-db-data:/etc/data
 
+  billing-db:
+    image: postgres
+    container_name: billing-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: billingDB
+    volumes:
+      - billing-db-data:/etc/data
+
 volumes:
   auth-db-data:
   hr-db-data:
+  billing-db-data:
