@@ -25,10 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Value("${front-end.allowed-origins:http://localhost:3000}")
-  private String allowedOrigins;
-
-  @Value("${jwt.secret:oaihfiouehaoifuhieluhafishefiuashiehfoiuksydfiauhefaw+}")
+  @Value("${jwt.secret}")
   private String jwtSecret;
 
   @Bean
@@ -63,7 +60,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+    config.setAllowedOrigins(List.of("*"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setAllowCredentials(true);
