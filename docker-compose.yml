@@ -1,0 +1,49 @@
+services:
+  api-gateway:
+    container_name: api-gateway
+    build: ./api-gateway/
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8001/
+  auth-service:
+    container_name: auth-service
+    build: ./auth-service/
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+     - auth-db
+  hr-service:
+    container_name: hr-service
+    build: ./hr-service/
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://hr-db:5432/hrDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      - hr-db
+  auth-db:
+    image: postgres
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: authDB
+    volumes:
+      - auth-db-data:/etc/data
+
+  hr-db:
+    image: postgres
+    container_name: hr-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hrDB
+    volumes:
+      - hr-db-data:/etc/data
+
+volumes:
+  auth-db-data:
+  hr-db-data:

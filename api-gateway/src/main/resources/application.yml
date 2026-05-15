@@ -1,0 +1,37 @@
+server:
+  port: 8000 # Gateway listens on port 8000
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service-route
+          uri: http://auth-service:8001
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+
+        # Route for /api/hr/** to hr-service
+        - id: hr-service-route
+          uri: http://hr-service:8002
+          predicates:
+            - Path=/api/hr/**
+          filters:
+            - StripPrefix=2
+            - JwtValidation
+
+        # Route for /api/docs/hr to hr-service /v3/api-docs
+        - id: api-docs-hr-route
+          uri: http://hr-service:8002
+          predicates:
+            - Path=/api-docs/hr
+          filters:
+            - RewritePath=/api-docs/hr,/v3/api-docs
+
+        - id: api-docs-auth-route
+          uri: http://auth-service:8001
+          predicates:
+            - Path=/api-docs/auth
+          filters:
+            - RewritePath=/api-docs/auth,/v3/api-docs
