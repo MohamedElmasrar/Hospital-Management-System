@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package com.hms.grpc.hr;
+
+option java_multiple_files = true;
+option java_package = "com.hms.grpc.hr";
+option java_outer_classname = "HrProto";
+
+service HrGrpcService {
+  rpc GetDepartment(GetDepartmentRequest) returns (DepartmentResponse);
+  rpc ValidateDepartment(ValidateDepartmentRequest) returns (ValidateDepartmentResponse);
+  rpc GetEmployee(GetEmployeeRequest) returns (EmployeeResponse);
+  rpc ValidateEmployee(ValidateEmployeeRequest) returns (ValidateEmployeeResponse);
+  rpc ValidatePhysician(ValidatePhysicianRequest) returns (ValidatePhysicianResponse);
+}
+
+message GetDepartmentRequest {
+  string department_id = 1;
+}
+
+message DepartmentResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string medical_organization_id = 4;
+}
+
+message ValidateDepartmentRequest {
+  string department_id = 1;
+}
+
+message ValidateDepartmentResponse {
+  bool exists = 1;
+  string department_id = 2;
+  string name = 3;
+}
+
+message GetEmployeeRequest {
+  string employee_id = 1;
+}
+
+message EmployeeResponse {
+  string id = 1;
+  string identifier = 2;
+  string full_name = 3;
+  string status = 4;
+  repeated string department_ids = 5;
+}
+
+message ValidateEmployeeRequest {
+  string employee_id = 1;
+}
+
+message ValidateEmployeeResponse {
+  bool exists = 1;
+  bool active = 2;
+  string full_name = 3;
+}
+
+message ValidatePhysicianRequest {
+  string physician_id = 1;
+}
+
+message ValidatePhysicianResponse {
+  bool exists = 1;
+  string full_name = 2;
+  string license_number = 3;
+}
+
