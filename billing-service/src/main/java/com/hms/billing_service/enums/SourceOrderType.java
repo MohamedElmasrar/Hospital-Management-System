@@ -4,4 +4,3 @@ public enum SourceOrderType {
   APPOINTMENT,
   DIAGNOSTIC_ORDER
 }
-

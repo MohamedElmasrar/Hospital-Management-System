@@ -21,4 +21,3 @@ public interface ServiceCatalogRepository extends JpaRepository<ServiceCatalog, 
 
   List<ServiceCatalog> findByDepartmentIdAndIsActiveTrue(UUID departmentId);
 }
-

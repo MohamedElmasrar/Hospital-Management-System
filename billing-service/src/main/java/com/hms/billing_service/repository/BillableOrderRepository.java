@@ -20,4 +20,3 @@ public interface BillableOrderRepository extends JpaRepository<BillableOrder, UU
 
   Page<BillableOrder> findByPractitionerId(UUID practitionerId, Pageable pageable);
 }
-

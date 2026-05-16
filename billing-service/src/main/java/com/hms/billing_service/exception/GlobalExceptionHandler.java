@@ -23,7 +23,6 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({
-    DepartmentNotFoundException.class,
     CashDeskNotFoundException.class,
     ServiceCatalogNotFoundException.class,
     TariffVersionNotFoundException.class,
@@ -60,4 +59,3 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access Denied"));
   }
 }
-

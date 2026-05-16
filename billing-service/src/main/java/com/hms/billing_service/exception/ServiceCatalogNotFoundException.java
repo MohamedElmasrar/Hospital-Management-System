@@ -5,4 +5,3 @@ public class ServiceCatalogNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

@@ -15,4 +15,3 @@ public interface InvoiceLineItemRepository extends JpaRepository<InvoiceLineItem
 
   List<InvoiceLineItem> findByInvoiceId(UUID invoiceId);
 }
-

@@ -5,4 +5,3 @@ public class InsuranceProviderNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

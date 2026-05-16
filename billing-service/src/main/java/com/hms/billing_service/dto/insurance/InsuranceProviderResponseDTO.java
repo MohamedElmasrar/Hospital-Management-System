@@ -12,4 +12,3 @@ public record InsuranceProviderResponseDTO(
     Boolean isActive,
     Date dateCreated,
     Date dateModified) {}
-

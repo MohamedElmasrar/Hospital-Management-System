@@ -5,4 +5,3 @@ public class UnauthorizedOperationException extends RuntimeException {
     super(message);
   }
 }
-

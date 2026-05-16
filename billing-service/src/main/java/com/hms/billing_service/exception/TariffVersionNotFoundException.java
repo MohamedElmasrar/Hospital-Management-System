@@ -5,4 +5,3 @@ public class TariffVersionNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

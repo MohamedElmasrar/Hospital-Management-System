@@ -14,4 +14,3 @@ public record ServiceCatalogResponseDTO(
     TariffVersionResponseDTO currentTariff,
     Date dateCreated,
     Date dateModified) {}
-

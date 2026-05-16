@@ -76,4 +76,3 @@ public class CashDeskController {
     return ResponseEntity.noContent().build();
   }
 }
-

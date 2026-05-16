@@ -5,4 +5,3 @@ public class InsuranceClaimNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

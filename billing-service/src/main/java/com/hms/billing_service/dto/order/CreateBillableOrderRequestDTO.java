@@ -15,4 +15,3 @@ public record CreateBillableOrderRequestDTO(
     UUID serviceCatalogId,
     Date performedAt,
     @Valid DiagnosticOrderDetailDTO diagnosticDetails) {}
-

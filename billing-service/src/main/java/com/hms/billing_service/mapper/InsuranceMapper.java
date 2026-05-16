@@ -40,4 +40,3 @@ public interface InsuranceMapper {
 
   List<InsuranceClaimResponseDTO> toClaimResponseDTOList(List<InsuranceClaim> claims);
 }
-

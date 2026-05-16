@@ -35,9 +35,15 @@ public class InvoiceService {
   private final InvoiceMapper invoiceMapper;
   private final PaymentMapper paymentMapper;
   private final InsuranceMapper insuranceMapper;
+  private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
 
   @Transactional
   public InvoiceDetailResponseDTO create(CreateInvoiceRequestDTO request, UUID staffId) {
+    if (staffId != null && !hrGrpcClient.validateEmployee(staffId)) {
+      throw new InvalidOperationException(
+          "Staff member does not exist or is inactive with ID: " + staffId);
+    }
+
     CashDesk cashDesk =
         cashDeskRepository
             .findById(request.cashDeskId())

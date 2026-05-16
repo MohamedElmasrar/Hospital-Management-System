@@ -13,4 +13,3 @@ public record ProcessPaymentRequestDTO(
     @NotNull @DecimalMin("0.01") BigDecimal amount,
     @NotNull PaymentMethod method,
     @Length(max = 255) String gatewayTransactionId) {}
-

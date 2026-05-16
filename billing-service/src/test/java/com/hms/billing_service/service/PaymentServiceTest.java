@@ -11,6 +11,7 @@ import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.enums.PaymentMethod;
 import com.hms.billing_service.enums.PaymentStatus;
 import com.hms.billing_service.exception.InvalidOperationException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.PaymentMapper;
 import com.hms.billing_service.model.CashDesk;
 import com.hms.billing_service.model.Invoice;
@@ -37,6 +38,7 @@ class PaymentServiceTest {
   @Mock private InvoiceRepository invoiceRepository;
   @Mock private CashDeskRepository cashDeskRepository;
   @Mock private InvoiceService invoiceService;
+  @Mock private HrGrpcClient hrGrpcClient;
 
   private PaymentMapper paymentMapper;
   private PaymentService paymentService;
@@ -50,7 +52,8 @@ class PaymentServiceTest {
             invoiceRepository,
             cashDeskRepository,
             invoiceService,
-            paymentMapper);
+            paymentMapper,
+            hrGrpcClient);
   }
 
   @Test
@@ -62,6 +65,7 @@ class PaymentServiceTest {
     invoice.setId(invoiceId);
     invoice.setStatus(InvoiceStatus.ISSUED);
 
+    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
     when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceService.calculate(invoice))
         .thenReturn(
@@ -98,6 +102,7 @@ class PaymentServiceTest {
     desk.setDeskCode("DESK-01");
     desk.setIsActive(true);
 
+    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
     when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceService.calculate(invoice))
         .thenReturn(
@@ -135,4 +140,3 @@ class PaymentServiceTest {
     verify(invoiceRepository).save(invoice);
   }
 }
-

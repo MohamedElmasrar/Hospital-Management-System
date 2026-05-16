@@ -15,4 +15,3 @@ public record InsurancePolicyResponseDTO(
     Boolean isActive,
     Date dateCreated,
     Date dateModified) {}
-

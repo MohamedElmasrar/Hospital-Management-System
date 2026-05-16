@@ -5,4 +5,3 @@ public class BillableOrderNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

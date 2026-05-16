@@ -7,4 +7,3 @@ public record DiagnosticOrderDetailDTO(
     @NotBlank @Length(max = 50) String modality,
     @NotBlank @Length(max = 100) String bodyPart,
     Boolean contrastUsed) {}
-

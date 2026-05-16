@@ -27,9 +27,8 @@ public class ServiceCatalog {
   @Column(name = "service_code", length = 50, unique = true, nullable = false)
   private String serviceCode;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "department_id", nullable = false)
-  private Department department;
+  @Column(name = "department_id", nullable = false)
+  private UUID departmentId;
 
   @Column(name = "name", length = 255, nullable = false)
   private String name;
@@ -48,4 +47,3 @@ public class ServiceCatalog {
   @Column(name = "date_modified", nullable = false)
   private Date dateModified;
 }
-

@@ -218,4 +218,3 @@ public class InsuranceService {
         claimRepository.findByStatus(status, pageable).map(insuranceMapper::claimToResponseDTO));
   }
 }
-

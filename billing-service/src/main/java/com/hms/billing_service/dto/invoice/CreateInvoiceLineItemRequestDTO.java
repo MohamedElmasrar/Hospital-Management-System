@@ -11,4 +11,3 @@ public record CreateInvoiceLineItemRequestDTO(
     @NotNull UUID billableOrderId,
     @Min(1) Integer quantity,
     @DecimalMin("0.0000") @DecimalMax("1.0000") BigDecimal discountRate) {}
-

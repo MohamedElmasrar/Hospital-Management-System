@@ -19,4 +19,3 @@ public record InvoiceLineItemResponseDTO(
     BigDecimal lineTaxAmount,
     BigDecimal lineTotal,
     Date dateCreated) {}
-

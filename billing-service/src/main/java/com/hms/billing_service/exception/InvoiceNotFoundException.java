@@ -5,4 +5,3 @@ public class InvoiceNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

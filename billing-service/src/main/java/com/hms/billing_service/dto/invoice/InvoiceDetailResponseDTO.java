@@ -29,4 +29,3 @@ public record InvoiceDetailResponseDTO(
     InsuranceClaimResponseDTO insuranceClaim,
     Date dateCreated,
     Date dateModified) {}
-

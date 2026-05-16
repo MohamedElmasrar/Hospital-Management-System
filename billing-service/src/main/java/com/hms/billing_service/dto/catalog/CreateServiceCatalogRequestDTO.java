@@ -14,4 +14,3 @@ public record CreateServiceCatalogRequestDTO(
     UUID externalServiceId,
     @NotNull @DecimalMin("0.00") BigDecimal initialUnitPrice,
     @DecimalMin("0.0000") BigDecimal initialTaxRate) {}
-

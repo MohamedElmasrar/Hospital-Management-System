@@ -27,6 +27,7 @@ public class BillableOrderService {
   private final BillableOrderRepository billableOrderRepository;
   private final ServiceTariffVersionRepository tariffVersionRepository;
   private final BillableOrderMapper billableOrderMapper;
+  private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
 
   @Transactional
   public BillableOrderResponseDTO create(CreateBillableOrderRequestDTO request) {
@@ -37,6 +38,12 @@ public class BillableOrderService {
               + request.externalOrderId()
               + " with orderType "
               + request.orderType());
+    }
+
+    if (request.practitionerId() != null
+        && !hrGrpcClient.validatePhysician(request.practitionerId())) {
+      throw new InvalidOperationException(
+          "Practitioner/Physician does not exist with ID: " + request.practitionerId());
     }
 
     ServiceTariffVersion tariffVersion;

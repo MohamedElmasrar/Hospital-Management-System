@@ -6,14 +6,13 @@ import com.hms.billing_service.dto.catalog.CreateTariffVersionRequestDTO;
 import com.hms.billing_service.dto.catalog.ServiceCatalogResponseDTO;
 import com.hms.billing_service.dto.catalog.TariffVersionResponseDTO;
 import com.hms.billing_service.dto.catalog.UpdateServiceCatalogRequestDTO;
-import com.hms.billing_service.exception.DepartmentNotFoundException;
+import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.exception.ResourceAlreadyExistsException;
 import com.hms.billing_service.exception.ServiceCatalogNotFoundException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.ServiceCatalogMapper;
-import com.hms.billing_service.model.Department;
 import com.hms.billing_service.model.ServiceCatalog;
 import com.hms.billing_service.model.ServiceTariffVersion;
-import com.hms.billing_service.repository.DepartmentRepository;
 import com.hms.billing_service.repository.ServiceCatalogRepository;
 import com.hms.billing_service.repository.ServiceTariffVersionRepository;
 import java.math.BigDecimal;
@@ -32,8 +31,8 @@ public class ServiceCatalogService {
 
   private final ServiceCatalogRepository serviceCatalogRepository;
   private final ServiceTariffVersionRepository tariffVersionRepository;
-  private final DepartmentRepository departmentRepository;
   private final ServiceCatalogMapper serviceCatalogMapper;
+  private final HrGrpcClient hrGrpcClient;
 
   @Transactional
   public ServiceCatalogResponseDTO create(CreateServiceCatalogRequestDTO request) {
@@ -42,16 +41,14 @@ public class ServiceCatalogService {
           "Service already exists with code: " + request.serviceCode());
     }
 
-    Department department =
-        departmentRepository
-            .findById(request.departmentId())
-            .orElseThrow(
-                () ->
-                    new DepartmentNotFoundException(
-                        "Department not found with ID: " + request.departmentId()));
+    if (!hrGrpcClient.validateDepartment(request.departmentId())) {
+      throw new InvalidOperationException(
+          "Department does not exist with ID: " + request.departmentId());
+    }
 
     ServiceCatalog catalog =
-        serviceCatalogMapper.createServiceCatalogRequestDTOToServiceCatalog(request, department);
+        serviceCatalogMapper.createServiceCatalogRequestDTOToServiceCatalog(request);
+    catalog.setDepartmentId(request.departmentId());
     ServiceCatalog savedCatalog = serviceCatalogRepository.save(catalog);
 
     ServiceTariffVersion initialTariff = new ServiceTariffVersion();
@@ -65,7 +62,7 @@ public class ServiceCatalogService {
 
     TariffVersionResponseDTO tariffDTO =
         serviceCatalogMapper.tariffVersionToTariffVersionResponseDTO(savedTariff);
-    return serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(savedCatalog, tariffDTO);
+    return toResponseDTO(savedCatalog, tariffDTO);
   }
 
   @Transactional
@@ -120,21 +117,18 @@ public class ServiceCatalogService {
     }
 
     if (request.departmentId() != null
-        && !request.departmentId().equals(catalog.getDepartment().getId())) {
-      Department department =
-          departmentRepository
-              .findById(request.departmentId())
-              .orElseThrow(
-                  () ->
-                      new DepartmentNotFoundException(
-                          "Department not found with ID: " + request.departmentId()));
-      catalog.setDepartment(department);
+        && !request.departmentId().equals(catalog.getDepartmentId())) {
+      if (!hrGrpcClient.validateDepartment(request.departmentId())) {
+        throw new InvalidOperationException(
+            "Department does not exist with ID: " + request.departmentId());
+      }
+      catalog.setDepartmentId(request.departmentId());
     }
 
     serviceCatalogMapper.updateServiceCatalogFromDTO(request, catalog);
     ServiceCatalog updated = serviceCatalogRepository.save(catalog);
     TariffVersionResponseDTO currentTariff = getActiveTariffDTO(updated.getId());
-    return serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(updated, currentTariff);
+    return toResponseDTO(updated, currentTariff);
   }
 
   @Transactional(readOnly = true)
@@ -147,7 +141,7 @@ public class ServiceCatalogService {
                     new ServiceCatalogNotFoundException(
                         "Service catalog not found with ID: " + id));
     TariffVersionResponseDTO currentTariff = getActiveTariffDTO(catalog.getId());
-    return serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(catalog, currentTariff);
+    return toResponseDTO(catalog, currentTariff);
   }
 
   @Transactional(readOnly = true)
@@ -155,10 +149,7 @@ public class ServiceCatalogService {
     return PageResponse.from(
         serviceCatalogRepository
             .findAll(pageable)
-            .map(
-                cat ->
-                    serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(
-                        cat, getActiveTariffDTO(cat.getId()))));
+            .map(cat -> toResponseDTO(cat, getActiveTariffDTO(cat.getId()))));
   }
 
   @Transactional(readOnly = true)
@@ -167,10 +158,7 @@ public class ServiceCatalogService {
     return PageResponse.from(
         serviceCatalogRepository
             .findByDepartmentId(departmentId, pageable)
-            .map(
-                cat ->
-                    serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(
-                        cat, getActiveTariffDTO(cat.getId()))));
+            .map(cat -> toResponseDTO(cat, getActiveTariffDTO(cat.getId()))));
   }
 
   @Transactional(readOnly = true)
@@ -202,5 +190,27 @@ public class ServiceCatalogService {
                         "Service catalog not found with ID: " + id));
     catalog.setIsActive(false);
     serviceCatalogRepository.save(catalog);
+  }
+
+  private ServiceCatalogResponseDTO toResponseDTO(
+      ServiceCatalog catalog, TariffVersionResponseDTO currentTariff) {
+    ServiceCatalogResponseDTO dto =
+        serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(catalog, currentTariff);
+    String deptName =
+        hrGrpcClient
+            .getDepartment(catalog.getDepartmentId())
+            .map(com.hms.grpc.hr.DepartmentResponse::getName)
+            .orElse(null);
+    return new ServiceCatalogResponseDTO(
+        dto.id(),
+        dto.serviceCode(),
+        dto.departmentId(),
+        deptName,
+        dto.name(),
+        dto.externalServiceId(),
+        dto.isActive(),
+        dto.currentTariff(),
+        dto.dateCreated(),
+        dto.dateModified());
   }
 }

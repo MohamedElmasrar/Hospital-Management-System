@@ -6,4 +6,3 @@ public enum ClaimStatus {
   REJECTED,
   SETTLED
 }
-

@@ -4,7 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.hms.billing_service.enums.BillingSectionType;
 import com.hms.billing_service.model.CashDesk;
-import com.hms.billing_service.model.Department;
+import com.hms.billing_service.model.ServiceCatalog;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,46 +15,43 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class JpaAuditingTest {
 
-  @Autowired private DepartmentRepository departmentRepository;
   @Autowired private CashDeskRepository cashDeskRepository;
-
-  @Test
-  void department_auditingFieldsAutomaticallyPopulated() {
-    Department department = new Department();
-    department.setName("Radiology Department");
-    department.setSection(BillingSectionType.MEDICAL_SERVICE);
-
-    Department saved = departmentRepository.saveAndFlush(department);
-
-    assertThat(saved.getDateCreated()).isNotNull();
-    assertThat(saved.getDateModified()).isNotNull();
-
-    var initialCreated = saved.getDateCreated();
-    var initialModified = saved.getDateModified();
-
-    saved.setName("Radiology & Imaging");
-    Department updated = departmentRepository.saveAndFlush(saved);
-
-    assertThat(updated.getDateCreated()).isEqualTo(initialCreated);
-    assertThat(updated.getDateModified()).isAfterOrEqualTo(initialModified);
-  }
+  @Autowired private ServiceCatalogRepository serviceCatalogRepository;
 
   @Test
   void cashDesk_auditingFieldsAutomaticallyPopulated() {
-    Department department = new Department();
-    department.setName("General Reception");
-    department.setSection(BillingSectionType.RECEPTION);
-    Department savedDept = departmentRepository.saveAndFlush(department);
-
     CashDesk desk = new CashDesk();
     desk.setDeskCode("DESK-TEST-01");
-    desk.setDepartment(savedDept);
+    desk.setDepartmentId(UUID.randomUUID());
+    desk.setSection(BillingSectionType.RECEPTION);
     desk.setIsActive(true);
 
     CashDesk savedDesk = cashDeskRepository.saveAndFlush(desk);
 
     assertThat(savedDesk.getDateCreated()).isNotNull();
     assertThat(savedDesk.getDateModified()).isNotNull();
+
+    var initialCreated = savedDesk.getDateCreated();
+    var initialModified = savedDesk.getDateModified();
+
+    savedDesk.setDeskCode("DESK-TEST-02");
+    CashDesk updatedDesk = cashDeskRepository.saveAndFlush(savedDesk);
+
+    assertThat(updatedDesk.getDateCreated()).isEqualTo(initialCreated);
+    assertThat(updatedDesk.getDateModified()).isAfterOrEqualTo(initialModified);
+  }
+
+  @Test
+  void serviceCatalog_auditingFieldsAutomaticallyPopulated() {
+    ServiceCatalog catalog = new ServiceCatalog();
+    catalog.setServiceCode("CONS-CARD-01");
+    catalog.setName("Cardiology Consultation");
+    catalog.setDepartmentId(UUID.randomUUID());
+    catalog.setIsActive(true);
+
+    ServiceCatalog saved = serviceCatalogRepository.saveAndFlush(catalog);
+
+    assertThat(saved.getDateCreated()).isNotNull();
+    assertThat(saved.getDateModified()).isNotNull();
   }
 }
-

@@ -33,4 +33,3 @@ public class DiagnosticOrderDetail {
   @Column(name = "contrast_used", nullable = false)
   private Boolean contrastUsed = false;
 }
-

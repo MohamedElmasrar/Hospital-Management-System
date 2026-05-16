@@ -48,4 +48,3 @@ public class InvoiceLineItem {
   @Column(name = "date_created", nullable = false, updatable = false)
   private Date dateCreated;
 }
-

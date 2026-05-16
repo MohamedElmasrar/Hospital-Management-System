@@ -47,4 +47,3 @@ public class InsuranceProvider {
   @Column(name = "date_modified", nullable = false)
   private Date dateModified;
 }
-

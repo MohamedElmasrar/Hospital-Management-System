@@ -20,11 +20,11 @@ class GlobalExceptionHandlerTest {
 
   @Test
   void handleNotFound_returns404() {
-    DepartmentNotFoundException ex = new DepartmentNotFoundException("Department not found");
+    CashDeskNotFoundException ex = new CashDeskNotFoundException("Cash desk not found");
     ResponseEntity<Map<String, String>> response = handler.handleNotFoundExceptions(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(response.getBody()).containsEntry("error", "Department not found");
+    assertThat(response.getBody()).containsEntry("error", "Cash desk not found");
   }
 
   @Test
@@ -63,4 +63,3 @@ class GlobalExceptionHandlerTest {
     assertThat(response.getBody()).containsEntry("error", "Access Denied");
   }
 }
-

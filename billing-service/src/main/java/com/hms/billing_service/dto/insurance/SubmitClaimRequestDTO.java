@@ -9,4 +9,3 @@ public record SubmitClaimRequestDTO(
     @NotNull UUID invoiceId,
     @NotNull UUID policyId,
     @NotNull @DecimalMin("0.01") BigDecimal claimedAmount) {}
-

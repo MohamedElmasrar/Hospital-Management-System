@@ -9,4 +9,3 @@ public record UpdateServiceCatalogRequestDTO(
     @Length(max = 255) String name,
     UUID externalServiceId,
     Boolean isActive) {}
-

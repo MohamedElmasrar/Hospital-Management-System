@@ -34,6 +34,7 @@ class InvoiceServiceTest {
   @Mock private BillableOrderRepository billableOrderRepository;
   @Mock private PaymentRepository paymentRepository;
   @Mock private InsuranceClaimRepository insuranceClaimRepository;
+  @Mock private com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
 
   private InvoiceMapper invoiceMapper;
   private PaymentMapper paymentMapper;
@@ -55,7 +56,8 @@ class InvoiceServiceTest {
             insuranceClaimRepository,
             invoiceMapper,
             paymentMapper,
-            insuranceMapper);
+            insuranceMapper,
+            hrGrpcClient);
   }
 
   @Test
@@ -135,6 +137,7 @@ class InvoiceServiceTest {
     order.setId(orderId);
     order.setPatientId(patientB);
 
+    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
     when(cashDeskRepository.findById(deskId)).thenReturn(Optional.of(desk));
     when(lineItemRepository.existsByBillableOrderId(orderId)).thenReturn(false);
     when(billableOrderRepository.findById(orderId)).thenReturn(Optional.of(order));

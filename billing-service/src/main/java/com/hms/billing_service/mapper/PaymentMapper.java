@@ -16,4 +16,3 @@ public interface PaymentMapper {
 
   List<PaymentResponseDTO> toPaymentResponseDTOList(List<Payment> payments);
 }
-

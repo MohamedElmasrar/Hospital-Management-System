@@ -56,4 +56,3 @@ public class PatientInsurancePolicy {
   @Column(name = "date_modified", nullable = false)
   private Date dateModified;
 }
-

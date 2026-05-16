@@ -1,5 +1,6 @@
 package com.hms.billing_service.model;
 
+import com.hms.billing_service.enums.BillingSectionType;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.UUID;
@@ -27,9 +28,12 @@ public class CashDesk {
   @Column(name = "desk_code", length = 30, unique = true, nullable = false)
   private String deskCode;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "department_id", nullable = false)
-  private Department department;
+  @Column(name = "department_id", nullable = false)
+  private UUID departmentId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "section", length = 30, nullable = false)
+  private BillingSectionType section;
 
   @Column(name = "is_active", nullable = false)
   private Boolean isActive = true;
@@ -42,4 +46,3 @@ public class CashDesk {
   @Column(name = "date_modified", nullable = false)
   private Date dateModified;
 }
-

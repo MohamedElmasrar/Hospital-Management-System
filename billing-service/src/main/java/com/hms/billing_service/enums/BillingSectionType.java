@@ -4,4 +4,3 @@ public enum BillingSectionType {
   RECEPTION,
   MEDICAL_SERVICE
 }
-

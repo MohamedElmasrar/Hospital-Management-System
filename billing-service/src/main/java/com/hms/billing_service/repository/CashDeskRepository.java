@@ -19,4 +19,3 @@ public interface CashDeskRepository extends JpaRepository<CashDesk, UUID> {
 
   List<CashDesk> findByDepartmentIdAndIsActiveTrue(UUID departmentId);
 }
-

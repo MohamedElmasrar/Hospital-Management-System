@@ -19,4 +19,3 @@ public interface InsuranceProviderRepository extends JpaRepository<InsuranceProv
 
   List<InsuranceProvider> findByIsActiveTrue();
 }
-

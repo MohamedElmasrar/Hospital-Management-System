@@ -19,4 +19,3 @@ public interface PatientInsurancePolicyRepository
 
   List<PatientInsurancePolicy> findByPatientIdAndIsActiveTrue(UUID patientId);
 }
-

@@ -19,4 +19,3 @@ public interface InsuranceClaimRepository extends JpaRepository<InsuranceClaim, 
 
   Page<InsuranceClaim> findByPolicyPatientId(UUID patientId, Pageable pageable);
 }
-

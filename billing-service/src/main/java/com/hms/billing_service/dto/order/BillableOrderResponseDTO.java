@@ -18,4 +18,3 @@ public record BillableOrderResponseDTO(
     DiagnosticOrderDetailDTO diagnosticDetails,
     Date performedAt,
     Date dateCreated) {}
-

@@ -12,4 +12,3 @@ public record TariffVersionResponseDTO(
     Date effectiveFrom,
     Date effectiveTo,
     Date dateCreated) {}
-

@@ -9,15 +9,14 @@ import com.hms.billing_service.dto.catalog.CreateServiceCatalogRequestDTO;
 import com.hms.billing_service.dto.catalog.CreateTariffVersionRequestDTO;
 import com.hms.billing_service.dto.catalog.ServiceCatalogResponseDTO;
 import com.hms.billing_service.dto.catalog.TariffVersionResponseDTO;
-import com.hms.billing_service.enums.BillingSectionType;
 import com.hms.billing_service.exception.ResourceAlreadyExistsException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.ServiceCatalogMapper;
-import com.hms.billing_service.model.Department;
 import com.hms.billing_service.model.ServiceCatalog;
 import com.hms.billing_service.model.ServiceTariffVersion;
-import com.hms.billing_service.repository.DepartmentRepository;
 import com.hms.billing_service.repository.ServiceCatalogRepository;
 import com.hms.billing_service.repository.ServiceTariffVersionRepository;
+import com.hms.grpc.hr.DepartmentResponse;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
@@ -34,7 +33,7 @@ class ServiceCatalogServiceTest {
 
   @Mock private ServiceCatalogRepository serviceCatalogRepository;
   @Mock private ServiceTariffVersionRepository tariffVersionRepository;
-  @Mock private DepartmentRepository departmentRepository;
+  @Mock private HrGrpcClient hrGrpcClient;
 
   private ServiceCatalogMapper serviceCatalogMapper;
   private ServiceCatalogService serviceCatalogService;
@@ -44,10 +43,7 @@ class ServiceCatalogServiceTest {
     serviceCatalogMapper = Mappers.getMapper(ServiceCatalogMapper.class);
     serviceCatalogService =
         new ServiceCatalogService(
-            serviceCatalogRepository,
-            tariffVersionRepository,
-            departmentRepository,
-            serviceCatalogMapper);
+            serviceCatalogRepository, tariffVersionRepository, serviceCatalogMapper, hrGrpcClient);
   }
 
   @Test
@@ -71,9 +67,6 @@ class ServiceCatalogServiceTest {
   @Test
   void create_success_createsCatalogAndInitialTariff() {
     UUID deptId = UUID.randomUUID();
-    Department dept =
-        new Department(
-            deptId, "Cardiology", BillingSectionType.MEDICAL_SERVICE, new Date(), new Date());
 
     CreateServiceCatalogRequestDTO request =
         new CreateServiceCatalogRequestDTO(
@@ -85,13 +78,20 @@ class ServiceCatalogServiceTest {
             new BigDecimal("0.0500"));
 
     when(serviceCatalogRepository.existsByServiceCode("CONS-CARD-01")).thenReturn(false);
-    when(departmentRepository.findById(deptId)).thenReturn(Optional.of(dept));
+    when(hrGrpcClient.validateDepartment(deptId)).thenReturn(true);
+    when(hrGrpcClient.getDepartment(deptId))
+        .thenReturn(
+            Optional.of(
+                DepartmentResponse.newBuilder()
+                    .setId(deptId.toString())
+                    .setName("Cardiology")
+                    .build()));
 
     ServiceCatalog savedCatalog = new ServiceCatalog();
     savedCatalog.setId(UUID.randomUUID());
     savedCatalog.setServiceCode("CONS-CARD-01");
     savedCatalog.setName("Cardiology Consultation");
-    savedCatalog.setDepartment(dept);
+    savedCatalog.setDepartmentId(deptId);
     savedCatalog.setIsActive(true);
 
     when(serviceCatalogRepository.save(any(ServiceCatalog.class))).thenReturn(savedCatalog);
@@ -109,6 +109,7 @@ class ServiceCatalogServiceTest {
 
     assertThat(response).isNotNull();
     assertThat(response.serviceCode()).isEqualTo("CONS-CARD-01");
+    assertThat(response.departmentName()).isEqualTo("Cardiology");
     assertThat(response.currentTariff()).isNotNull();
     assertThat(response.currentTariff().unitPrice()).isEqualByComparingTo(new BigDecimal("100.00"));
     verify(tariffVersionRepository).save(any(ServiceTariffVersion.class));

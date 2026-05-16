@@ -13,4 +13,3 @@ public record CreateInsurancePolicyRequestDTO(
     @NotNull UUID insuranceProviderId,
     @NotNull UUID patientId,
     @NotNull @DecimalMin("0.0000") @DecimalMax("1.0000") BigDecimal coverageRate) {}
-

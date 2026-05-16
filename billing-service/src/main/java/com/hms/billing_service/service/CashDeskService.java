@@ -5,13 +5,12 @@ import com.hms.billing_service.dto.cashdesk.CashDeskResponseDTO;
 import com.hms.billing_service.dto.cashdesk.CreateCashDeskRequestDTO;
 import com.hms.billing_service.dto.cashdesk.UpdateCashDeskRequestDTO;
 import com.hms.billing_service.exception.CashDeskNotFoundException;
-import com.hms.billing_service.exception.DepartmentNotFoundException;
+import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.exception.ResourceAlreadyExistsException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.CashDeskMapper;
 import com.hms.billing_service.model.CashDesk;
-import com.hms.billing_service.model.Department;
 import com.hms.billing_service.repository.CashDeskRepository;
-import com.hms.billing_service.repository.DepartmentRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class CashDeskService {
 
   private final CashDeskRepository cashDeskRepository;
-  private final DepartmentRepository departmentRepository;
   private final CashDeskMapper cashDeskMapper;
+  private final HrGrpcClient hrGrpcClient;
 
   @Transactional
   public CashDeskResponseDTO create(CreateCashDeskRequestDTO request) {
@@ -33,17 +32,16 @@ public class CashDeskService {
           "Cash desk already exists with code: " + request.deskCode());
     }
 
-    Department department =
-        departmentRepository
-            .findById(request.departmentId())
-            .orElseThrow(
-                () ->
-                    new DepartmentNotFoundException(
-                        "Department not found with ID: " + request.departmentId()));
+    if (!hrGrpcClient.validateDepartment(request.departmentId())) {
+      throw new InvalidOperationException(
+          "Department does not exist with ID: " + request.departmentId());
+    }
 
-    CashDesk cashDesk = cashDeskMapper.createCashDeskRequestDTOToCashDesk(request, department);
+    CashDesk cashDesk = cashDeskMapper.createCashDeskRequestDTOToCashDesk(request);
+    cashDesk.setDepartmentId(request.departmentId());
+    cashDesk.setSection(request.section());
     CashDesk saved = cashDeskRepository.save(cashDesk);
-    return cashDeskMapper.cashDeskToCashDeskResponseDTO(saved);
+    return toResponseDTO(saved);
   }
 
   @Transactional
@@ -61,20 +59,21 @@ public class CashDeskService {
     }
 
     if (request.departmentId() != null
-        && !request.departmentId().equals(cashDesk.getDepartment().getId())) {
-      Department department =
-          departmentRepository
-              .findById(request.departmentId())
-              .orElseThrow(
-                  () ->
-                      new DepartmentNotFoundException(
-                          "Department not found with ID: " + request.departmentId()));
-      cashDesk.setDepartment(department);
+        && !request.departmentId().equals(cashDesk.getDepartmentId())) {
+      if (!hrGrpcClient.validateDepartment(request.departmentId())) {
+        throw new InvalidOperationException(
+            "Department does not exist with ID: " + request.departmentId());
+      }
+      cashDesk.setDepartmentId(request.departmentId());
+    }
+
+    if (request.section() != null) {
+      cashDesk.setSection(request.section());
     }
 
     cashDeskMapper.updateCashDeskFromDTO(request, cashDesk);
     CashDesk updated = cashDeskRepository.save(cashDesk);
-    return cashDeskMapper.cashDeskToCashDeskResponseDTO(updated);
+    return toResponseDTO(updated);
   }
 
   @Transactional(readOnly = true)
@@ -83,7 +82,7 @@ public class CashDeskService {
         cashDeskRepository
             .findById(id)
             .orElseThrow(() -> new CashDeskNotFoundException("Cash desk not found with ID: " + id));
-    return cashDeskMapper.cashDeskToCashDeskResponseDTO(cashDesk);
+    return toResponseDTO(cashDesk);
   }
 
   @Transactional(readOnly = true)
@@ -93,21 +92,18 @@ public class CashDeskService {
             .findByDeskCode(deskCode)
             .orElseThrow(
                 () -> new CashDeskNotFoundException("Cash desk not found with code: " + deskCode));
-    return cashDeskMapper.cashDeskToCashDeskResponseDTO(cashDesk);
+    return toResponseDTO(cashDesk);
   }
 
   @Transactional(readOnly = true)
   public PageResponse<CashDeskResponseDTO> getByDepartment(UUID departmentId, Pageable pageable) {
     return PageResponse.from(
-        cashDeskRepository
-            .findByDepartmentId(departmentId, pageable)
-            .map(cashDeskMapper::cashDeskToCashDeskResponseDTO));
+        cashDeskRepository.findByDepartmentId(departmentId, pageable).map(this::toResponseDTO));
   }
 
   @Transactional(readOnly = true)
   public PageResponse<CashDeskResponseDTO> getAll(Pageable pageable) {
-    return PageResponse.from(
-        cashDeskRepository.findAll(pageable).map(cashDeskMapper::cashDeskToCashDeskResponseDTO));
+    return PageResponse.from(cashDeskRepository.findAll(pageable).map(this::toResponseDTO));
   }
 
   @Transactional
@@ -119,5 +115,22 @@ public class CashDeskService {
     cashDesk.setIsActive(false);
     cashDeskRepository.save(cashDesk);
   }
-}
 
+  private CashDeskResponseDTO toResponseDTO(CashDesk cashDesk) {
+    CashDeskResponseDTO dto = cashDeskMapper.cashDeskToCashDeskResponseDTO(cashDesk);
+    String deptName =
+        hrGrpcClient
+            .getDepartment(cashDesk.getDepartmentId())
+            .map(com.hms.grpc.hr.DepartmentResponse::getName)
+            .orElse(null);
+    return new CashDeskResponseDTO(
+        dto.id(),
+        dto.deskCode(),
+        dto.departmentId(),
+        deptName,
+        cashDesk.getSection(),
+        dto.isActive(),
+        dto.dateCreated(),
+        dto.dateModified());
+  }
+}

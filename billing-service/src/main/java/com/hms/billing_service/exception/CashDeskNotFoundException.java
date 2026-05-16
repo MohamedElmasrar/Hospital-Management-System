@@ -5,4 +5,3 @@ public class CashDeskNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

@@ -7,4 +7,3 @@ public enum UserRole {
   EMPLOYEE,
   HR_HEAD
 }
-

@@ -23,4 +23,3 @@ public record InvoiceSummaryResponseDTO(
     Date dueDate,
     Date dateCreated,
     Date dateModified) {}
-

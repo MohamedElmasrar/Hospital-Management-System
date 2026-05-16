@@ -5,4 +5,3 @@ public class InsurancePolicyNotFoundException extends RuntimeException {
     super(message);
   }
 }
-

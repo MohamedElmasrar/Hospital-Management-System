@@ -14,4 +14,3 @@ public class WebMvcConfig implements WebMvcConfigurer {
     resolvers.add(new AuthenticatedPrincipalResolver());
   }
 }
-

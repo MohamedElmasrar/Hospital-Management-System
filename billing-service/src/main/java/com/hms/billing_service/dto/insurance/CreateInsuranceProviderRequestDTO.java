@@ -9,4 +9,3 @@ public record CreateInsuranceProviderRequestDTO(
     @NotBlank @Length(max = 50) String code,
     @Email @Length(max = 100) String contactEmail,
     @Length(max = 50) String contactPhone) {}
-

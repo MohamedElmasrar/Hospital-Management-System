@@ -20,4 +20,3 @@ public record PaymentResponseDTO(
     String gatewayTransactionId,
     Date paidAt,
     Date dateCreated) {}
-

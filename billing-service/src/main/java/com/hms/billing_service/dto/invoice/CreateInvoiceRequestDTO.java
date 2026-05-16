@@ -12,4 +12,3 @@ public record CreateInvoiceRequestDTO(
     @NotNull UUID cashDeskId,
     Date dueDate,
     @NotEmpty List<@Valid CreateInvoiceLineItemRequestDTO> lineItems) {}
-

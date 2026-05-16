@@ -19,4 +19,3 @@ public record InsuranceClaimResponseDTO(
     Date settledAt,
     Date dateCreated,
     Date dateModified) {}
-
