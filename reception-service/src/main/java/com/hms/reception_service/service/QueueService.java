@@ -3,8 +3,17 @@ package com.hms.reception_service.service;
 import com.hms.reception_service.dto.queue.QueueDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
-import com.hms.reception_service.model.*;
-import com.hms.reception_service.repository.*;
+import com.hms.reception_service.mapper.QueueMapper;
+import com.hms.reception_service.model.DailyQueue;
+import com.hms.reception_service.model.ExaminationRoom;
+import com.hms.reception_service.model.QueuePriorityLevel;
+import com.hms.reception_service.model.QueueTicket;
+import com.hms.reception_service.model.Reservation;
+import com.hms.reception_service.repository.DailyQueueRepository;
+import com.hms.reception_service.repository.QueuePriorityLevelRepository;
+import com.hms.reception_service.repository.QueueTicketRepository;
+import com.hms.reception_service.repository.ReservationRepository;
+import com.hms.reception_service.repository.ReservationStatusRepository;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +33,7 @@ public class QueueService {
   private final ReservationRepository reservationRepository;
   private final QueuePriorityLevelRepository priorityRepository;
   private final ReservationStatusRepository statusRepository;
+  private final QueueMapper queueMapper;
 
   @Transactional
   public QueueDTO.DailyQueueResponse getOrCreateDailyQueue(UUID departmentId, UUID roomId) {
@@ -44,7 +54,7 @@ public class QueueService {
                   return queueRepository.save(newQueue);
                 });
 
-    return mapQueueToDTO(queue);
+    return queueMapper.toDailyQueueResponse(queue);
   }
 
   @Transactional
@@ -132,7 +142,7 @@ public class QueueService {
               reservationRepository.save(res);
             });
 
-    return mapTicketToDTO(ticketRepository.save(ticket));
+    return queueMapper.toTicketResponse(ticketRepository.save(ticket));
   }
 
   @Transactional
@@ -163,7 +173,7 @@ public class QueueService {
               reservationRepository.save(nextTicket.getReservation());
             });
 
-    return mapTicketToDTO(ticketRepository.save(nextTicket));
+    return queueMapper.toTicketResponse(ticketRepository.save(nextTicket));
   }
 
   @Transactional
@@ -196,46 +206,11 @@ public class QueueService {
               });
     }
 
-    return mapTicketToDTO(ticketRepository.save(ticket));
+    return queueMapper.toTicketResponse(ticketRepository.save(ticket));
   }
 
   @Transactional(readOnly = true)
   public List<QueueDTO.TicketResponse> getQueueTickets(UUID queueId) {
-    return ticketRepository.findAllQueueTickets(queueId).stream()
-        .map(this::mapTicketToDTO)
-        .toList();
-  }
-
-  private QueueDTO.DailyQueueResponse mapQueueToDTO(DailyQueue q) {
-    return new QueueDTO.DailyQueueResponse(
-        q.getId(),
-        q.getDepartmentId(),
-        q.getRoom().getId(),
-        q.getRoom().getName(),
-        q.getQueueDate(),
-        q.getCurrentTicketNumber(),
-        q.getLastIssuedSequence(),
-        q.getIsOpen());
-  }
-
-  private QueueDTO.TicketResponse mapTicketToDTO(QueueTicket t) {
-    return new QueueDTO.TicketResponse(
-        t.getId(),
-        t.getQueue().getId(),
-        t.getReservation().getId(),
-        t.getTicketCode(),
-        t.getSequenceNumber(),
-        t.getPriority() != null ? t.getPriority().getId() : null,
-        t.getPriority() != null ? t.getPriority().getName() : null,
-        t.getPriority() != null ? t.getPriority().getWeight() : null,
-        t.getStatus(),
-        t.getIssuedAt(),
-        t.getCalledAt(),
-        t.getServiceStartedAt(),
-        t.getCompletedAt(),
-        t.getReservation().getPatient().getFirstName()
-            + " "
-            + t.getReservation().getPatient().getLastName(),
-        t.getReservation().getRoom() != null ? t.getReservation().getRoom().getName() : null);
+    return queueMapper.toTicketResponseList(ticketRepository.findAllQueueTickets(queueId));
   }
 }

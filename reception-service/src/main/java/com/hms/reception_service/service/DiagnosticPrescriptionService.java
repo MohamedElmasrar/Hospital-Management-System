@@ -4,6 +4,7 @@ import com.hms.reception_service.dto.prescription.DiagnosticPrescriptionDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
+import com.hms.reception_service.mapper.DiagnosticPrescriptionMapper;
 import com.hms.reception_service.model.DiagnosticModality;
 import com.hms.reception_service.model.DiagnosticPrescription;
 import com.hms.reception_service.model.Patient;
@@ -29,6 +30,7 @@ public class DiagnosticPrescriptionService {
   private final PatientRepository patientRepository;
   private final DiagnosticModalityRepository modalityRepository;
   private final HrGrpcClient hrGrpcClient;
+  private final DiagnosticPrescriptionMapper prescriptionMapper;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -49,32 +51,26 @@ public class DiagnosticPrescriptionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Modality not found: " + req.modalityId()));
 
-    DiagnosticPrescription rx = new DiagnosticPrescription();
+    DiagnosticPrescription rx = prescriptionMapper.toEntity(req);
     rx.setPrescriptionCode(generateUniquePrescriptionCode());
     rx.setPatient(patient);
     rx.setReferringPractitionerId(doctorId);
-    rx.setOriginatingReservationId(req.originatingReservationId());
     rx.setModality(modality);
-    rx.setBodyPart(req.bodyPart());
-    rx.setContrastRequired(req.contrastRequired() != null ? req.contrastRequired() : Boolean.FALSE);
-    rx.setClinicalNotes(req.clinicalNotes());
-    rx.setIsFulfilled(Boolean.FALSE);
 
-    return mapToDTO(prescriptionRepository.save(rx));
+    return prescriptionMapper.toResponse(prescriptionRepository.save(rx));
   }
 
   @Transactional(readOnly = true)
   public List<DiagnosticPrescriptionDTO.Response> getPendingPrescriptionsByPatient(UUID patientId) {
-    return prescriptionRepository.findByPatientIdAndIsFulfilledFalse(patientId).stream()
-        .map(this::mapToDTO)
-        .toList();
+    return prescriptionMapper.toResponseList(
+        prescriptionRepository.findByPatientIdAndIsFulfilledFalse(patientId));
   }
 
   @Transactional(readOnly = true)
   public DiagnosticPrescriptionDTO.Response getPrescriptionById(UUID id) {
     return prescriptionRepository
         .findById(id)
-        .map(this::mapToDTO)
+        .map(prescriptionMapper::toResponse)
         .orElseThrow(() -> new ResourceNotFoundException("Prescription not found: " + id));
   }
 
@@ -93,23 +89,5 @@ public class DiagnosticPrescriptionService {
     String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
     int rand = 1000 + random.nextInt(9000);
     return "RX-" + datePart + "-" + rand;
-  }
-
-  private DiagnosticPrescriptionDTO.Response mapToDTO(DiagnosticPrescription rx) {
-    return new DiagnosticPrescriptionDTO.Response(
-        rx.getId(),
-        rx.getPrescriptionCode(),
-        rx.getPatient().getId(),
-        rx.getPatient().getFirstName() + " " + rx.getPatient().getLastName(),
-        rx.getReferringPractitionerId(),
-        rx.getOriginatingReservationId(),
-        rx.getModality().getId(),
-        rx.getModality().getName(),
-        rx.getModality().getCode(),
-        rx.getBodyPart(),
-        rx.getContrastRequired(),
-        rx.getClinicalNotes(),
-        rx.getIsFulfilled(),
-        rx.getCreatedAt());
   }
 }

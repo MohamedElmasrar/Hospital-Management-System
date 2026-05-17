@@ -4,6 +4,7 @@ import com.hms.reception_service.dto.schedule.ScheduleDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
+import com.hms.reception_service.mapper.ScheduleMapper;
 import com.hms.reception_service.model.ExaminationRoom;
 import com.hms.reception_service.model.Reservation;
 import com.hms.reception_service.model.ServiceSchedule;
@@ -30,6 +31,7 @@ public class ScheduleService {
   private final ExaminationRoomRepository roomRepository;
   private final ReservationRepository reservationRepository;
   private final HrGrpcClient hrGrpcClient;
+  private final ScheduleMapper scheduleMapper;
 
   @Transactional
   public ScheduleDTO.Response createSchedule(ScheduleDTO.CreateRequest req) {
@@ -48,32 +50,22 @@ public class ScheduleService {
       throw new InvalidOperationException("End time must be after start time");
     }
 
-    ServiceSchedule schedule = new ServiceSchedule();
-    schedule.setDepartmentId(req.departmentId());
-    schedule.setPractitionerId(req.practitionerId());
+    ServiceSchedule schedule = scheduleMapper.toEntity(req);
     schedule.setRoom(room);
-    schedule.setDayOfWeek(req.dayOfWeek());
-    schedule.setStartTime(req.startTime());
-    schedule.setEndTime(req.endTime());
-    schedule.setSlotDurationMinutes(
-        req.slotDurationMinutes() != null ? req.slotDurationMinutes() : 30);
-    schedule.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
 
-    return mapToDTO(scheduleRepository.save(schedule));
+    return scheduleMapper.toResponse(scheduleRepository.save(schedule));
   }
 
   @Transactional(readOnly = true)
   public List<ScheduleDTO.Response> getSchedulesByDepartment(UUID departmentId) {
-    return scheduleRepository.findByDepartmentIdAndIsActiveTrue(departmentId).stream()
-        .map(this::mapToDTO)
-        .toList();
+    return scheduleMapper.toResponseList(
+        scheduleRepository.findByDepartmentIdAndIsActiveTrue(departmentId));
   }
 
   @Transactional(readOnly = true)
   public List<ScheduleDTO.Response> getSchedulesByPractitioner(UUID practitionerId) {
-    return scheduleRepository.findByPractitionerIdAndIsActiveTrue(practitionerId).stream()
-        .map(this::mapToDTO)
-        .toList();
+    return scheduleMapper.toResponseList(
+        scheduleRepository.findByPractitionerIdAndIsActiveTrue(practitionerId));
   }
 
   @Transactional(readOnly = true)
@@ -131,19 +123,5 @@ public class ScheduleService {
     }
 
     return availableSlots;
-  }
-
-  private ScheduleDTO.Response mapToDTO(ServiceSchedule s) {
-    return new ScheduleDTO.Response(
-        s.getId(),
-        s.getDepartmentId(),
-        s.getPractitionerId(),
-        s.getRoom().getId(),
-        s.getRoom().getName(),
-        s.getDayOfWeek(),
-        s.getStartTime(),
-        s.getEndTime(),
-        s.getSlotDurationMinutes(),
-        s.getIsActive());
   }
 }

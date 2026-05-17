@@ -4,6 +4,7 @@ import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.patient.PatientDTO;
 import com.hms.reception_service.exception.ResourceAlreadyExistsException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
+import com.hms.reception_service.mapper.PatientMapper;
 import com.hms.reception_service.model.Patient;
 import com.hms.reception_service.repository.PatientRepository;
 import java.security.SecureRandom;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PatientService {
 
   private final PatientRepository patientRepository;
+  private final PatientMapper patientMapper;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -33,31 +35,17 @@ public class PatientService {
           "Patient with National ID " + req.nationalId() + " already exists");
     }
 
-    Patient patient = new Patient();
+    Patient patient = patientMapper.toEntity(req);
     patient.setMrn(generateUniqueMrn());
-    patient.setUserId(req.userId());
-    patient.setNationalId(
-        req.nationalId() != null && !req.nationalId().isBlank() ? req.nationalId() : null);
-    patient.setFirstName(req.firstName());
-    patient.setLastName(req.lastName());
-    patient.setDateOfBirth(req.dateOfBirth());
-    patient.setGender(req.gender());
-    patient.setBloodGroup(req.bloodGroup() != null ? req.bloodGroup() : "UNKNOWN");
-    patient.setPhone(req.phone());
-    patient.setEmergencyContactPhone(req.emergencyContactPhone());
-    patient.setEmergencyContactName(req.emergencyContactName());
-    patient.setAllergies(req.allergies());
-    patient.setChronicConditions(req.chronicConditions());
-    patient.setIsActive(Boolean.TRUE);
 
-    return mapToDTO(patientRepository.save(patient));
+    return patientMapper.toResponse(patientRepository.save(patient));
   }
 
   @Transactional(readOnly = true)
   public PatientDTO.Response getPatientById(UUID id) {
     return patientRepository
         .findById(id)
-        .map(this::mapToDTO)
+        .map(patientMapper::toResponse)
         .orElseThrow(() -> new ResourceNotFoundException("Patient not found: " + id));
   }
 
@@ -65,7 +53,7 @@ public class PatientService {
   public PatientDTO.Response getPatientByMrn(String mrn) {
     return patientRepository
         .findByMrn(mrn)
-        .map(this::mapToDTO)
+        .map(patientMapper::toResponse)
         .orElseThrow(() -> new ResourceNotFoundException("Patient not found with MRN: " + mrn));
   }
 
@@ -73,14 +61,15 @@ public class PatientService {
   public PatientDTO.Response getPatientByUserId(UUID userId) {
     return patientRepository
         .findByUserId(userId)
-        .map(this::mapToDTO)
+        .map(patientMapper::toResponse)
         .orElseThrow(
             () -> new ResourceNotFoundException("Patient profile not found for user: " + userId));
   }
 
   @Transactional(readOnly = true)
   public PageResponse<PatientDTO.Response> searchPatients(String query, Pageable pageable) {
-    return PageResponse.from(patientRepository.searchPatients(query, pageable).map(this::mapToDTO));
+    return PageResponse.from(
+        patientRepository.searchPatients(query, pageable).map(patientMapper::toResponse));
   }
 
   @Transactional
@@ -90,21 +79,9 @@ public class PatientService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Patient not found: " + id));
 
-    if (req.firstName() != null) patient.setFirstName(req.firstName());
-    if (req.lastName() != null) patient.setLastName(req.lastName());
-    if (req.dateOfBirth() != null) patient.setDateOfBirth(req.dateOfBirth());
-    if (req.gender() != null) patient.setGender(req.gender());
-    if (req.bloodGroup() != null) patient.setBloodGroup(req.bloodGroup());
-    if (req.phone() != null) patient.setPhone(req.phone());
-    if (req.emergencyContactPhone() != null)
-      patient.setEmergencyContactPhone(req.emergencyContactPhone());
-    if (req.emergencyContactName() != null)
-      patient.setEmergencyContactName(req.emergencyContactName());
-    if (req.allergies() != null) patient.setAllergies(req.allergies());
-    if (req.chronicConditions() != null) patient.setChronicConditions(req.chronicConditions());
-    if (req.isActive() != null) patient.setIsActive(req.isActive());
+    patientMapper.updatePatientFromDTO(req, patient);
 
-    return mapToDTO(patientRepository.save(patient));
+    return patientMapper.toResponse(patientRepository.save(patient));
   }
 
   private String generateUniqueMrn() {
@@ -115,26 +92,5 @@ public class PatientService {
       mrn = "MRN-" + datePart + "-" + randomNum;
     } while (patientRepository.existsByMrn(mrn));
     return mrn;
-  }
-
-  public PatientDTO.Response mapToDTO(Patient p) {
-    return new PatientDTO.Response(
-        p.getId(),
-        p.getMrn(),
-        p.getUserId(),
-        p.getNationalId(),
-        p.getFirstName(),
-        p.getLastName(),
-        p.getDateOfBirth(),
-        p.getGender(),
-        p.getBloodGroup(),
-        p.getPhone(),
-        p.getEmergencyContactPhone(),
-        p.getEmergencyContactName(),
-        p.getAllergies(),
-        p.getChronicConditions(),
-        p.getIsActive(),
-        p.getDateCreated(),
-        p.getDateModified());
   }
 }

@@ -1,12 +1,28 @@
 package com.hms.reception_service.service;
 
-import com.hms.reception_service.dto.catalog.*;
+import com.hms.reception_service.dto.catalog.DiagnosticModalityDTO;
+import com.hms.reception_service.dto.catalog.ExaminationRoomDTO;
+import com.hms.reception_service.dto.catalog.QueuePriorityLevelDTO;
+import com.hms.reception_service.dto.catalog.ReceptionStationDTO;
+import com.hms.reception_service.dto.catalog.ReservationCategoryDTO;
+import com.hms.reception_service.dto.catalog.ReservationStatusDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceAlreadyExistsException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
-import com.hms.reception_service.model.*;
-import com.hms.reception_service.repository.*;
+import com.hms.reception_service.mapper.CatalogMapper;
+import com.hms.reception_service.model.DiagnosticModality;
+import com.hms.reception_service.model.ExaminationRoom;
+import com.hms.reception_service.model.QueuePriorityLevel;
+import com.hms.reception_service.model.ReceptionStation;
+import com.hms.reception_service.model.ReservationCategory;
+import com.hms.reception_service.model.ReservationStatus;
+import com.hms.reception_service.repository.DiagnosticModalityRepository;
+import com.hms.reception_service.repository.ExaminationRoomRepository;
+import com.hms.reception_service.repository.QueuePriorityLevelRepository;
+import com.hms.reception_service.repository.ReceptionStationRepository;
+import com.hms.reception_service.repository.ReservationCategoryRepository;
+import com.hms.reception_service.repository.ReservationStatusRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +41,12 @@ public class AdminCatalogService {
   private final ExaminationRoomRepository roomRepository;
   private final ReceptionStationRepository stationRepository;
   private final HrGrpcClient hrGrpcClient;
+  private final CatalogMapper catalogMapper;
 
   // --- Categories ---
   @Transactional(readOnly = true)
   public List<ReservationCategoryDTO.Response> getAllCategories() {
-    return categoryRepository.findAll().stream().map(this::mapCategoryToDTO).toList();
+    return catalogMapper.toCategoryResponseList(categoryRepository.findAll());
   }
 
   @Transactional
@@ -38,22 +55,14 @@ public class AdminCatalogService {
       throw new ResourceAlreadyExistsException(
           "Category with code " + req.code() + " already exists");
     }
-    ReservationCategory cat = new ReservationCategory();
-    cat.setCode(req.code());
-    cat.setName(req.name());
-    cat.setDescription(req.description());
-    cat.setRequiresPhysician(
-        req.requiresPhysician() != null ? req.requiresPhysician() : Boolean.TRUE);
-    cat.setRequiresPrescription(
-        req.requiresPrescription() != null ? req.requiresPrescription() : Boolean.FALSE);
-    cat.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapCategoryToDTO(categoryRepository.save(cat));
+    ReservationCategory cat = catalogMapper.toCategoryEntity(req);
+    return catalogMapper.toCategoryResponse(categoryRepository.save(cat));
   }
 
   // --- Modalities ---
   @Transactional(readOnly = true)
   public List<DiagnosticModalityDTO.Response> getAllModalities() {
-    return modalityRepository.findAll().stream().map(this::mapModalityToDTO).toList();
+    return catalogMapper.toModalityResponseList(modalityRepository.findAll());
   }
 
   @Transactional
@@ -66,24 +75,14 @@ public class AdminCatalogService {
       throw new InvalidOperationException(
           "Department ID " + req.departmentId() + " not found in HR service");
     }
-    DiagnosticModality mod = new DiagnosticModality();
-    mod.setCode(req.code());
-    mod.setName(req.name());
-    mod.setDepartmentId(req.departmentId());
-    mod.setDefaultDurationMinutes(
-        req.defaultDurationMinutes() != null ? req.defaultDurationMinutes() : 30);
-    mod.setRequiresContrastScreening(
-        req.requiresContrastScreening() != null ? req.requiresContrastScreening() : Boolean.FALSE);
-    mod.setRequiresSafetyChecklist(
-        req.requiresSafetyChecklist() != null ? req.requiresSafetyChecklist() : Boolean.FALSE);
-    mod.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapModalityToDTO(modalityRepository.save(mod));
+    DiagnosticModality mod = catalogMapper.toModalityEntity(req);
+    return catalogMapper.toModalityResponse(modalityRepository.save(mod));
   }
 
   // --- Examination Rooms ---
   @Transactional(readOnly = true)
   public List<ExaminationRoomDTO.Response> getAllRooms() {
-    return roomRepository.findAll().stream().map(this::mapRoomToDTO).toList();
+    return catalogMapper.toRoomResponseList(roomRepository.findAll());
   }
 
   @Transactional
@@ -96,10 +95,7 @@ public class AdminCatalogService {
       throw new InvalidOperationException(
           "Department ID " + req.departmentId() + " not found in HR service");
     }
-    ExaminationRoom room = new ExaminationRoom();
-    room.setRoomCode(req.roomCode());
-    room.setName(req.name());
-    room.setDepartmentId(req.departmentId());
+    ExaminationRoom room = catalogMapper.toRoomEntity(req);
     if (req.modalityId() != null) {
       DiagnosticModality mod =
           modalityRepository
@@ -108,14 +104,13 @@ public class AdminCatalogService {
                   () -> new ResourceNotFoundException("Modality not found: " + req.modalityId()));
       room.setModality(mod);
     }
-    room.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapRoomToDTO(roomRepository.save(room));
+    return catalogMapper.toRoomResponse(roomRepository.save(room));
   }
 
   // --- Priority Levels ---
   @Transactional(readOnly = true)
   public List<QueuePriorityLevelDTO.Response> getAllPriorities() {
-    return priorityRepository.findAll().stream().map(this::mapPriorityToDTO).toList();
+    return catalogMapper.toPriorityResponseList(priorityRepository.findAll());
   }
 
   @Transactional
@@ -124,19 +119,14 @@ public class AdminCatalogService {
       throw new ResourceAlreadyExistsException(
           "Priority with code " + req.code() + " already exists");
     }
-    QueuePriorityLevel p = new QueuePriorityLevel();
-    p.setCode(req.code());
-    p.setName(req.name());
-    p.setWeight(req.weight());
-    if (req.badgeColorHex() != null) p.setBadgeColorHex(req.badgeColorHex());
-    p.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapPriorityToDTO(priorityRepository.save(p));
+    QueuePriorityLevel p = catalogMapper.toPriorityEntity(req);
+    return catalogMapper.toPriorityResponse(priorityRepository.save(p));
   }
 
   // --- Statuses ---
   @Transactional(readOnly = true)
   public List<ReservationStatusDTO.Response> getAllStatuses() {
-    return statusRepository.findAll().stream().map(this::mapStatusToDTO).toList();
+    return catalogMapper.toStatusResponseList(statusRepository.findAll());
   }
 
   @Transactional
@@ -145,20 +135,14 @@ public class AdminCatalogService {
       throw new ResourceAlreadyExistsException(
           "Status with code " + req.code() + " already exists");
     }
-    ReservationStatus s = new ReservationStatus();
-    s.setCode(req.code());
-    s.setName(req.name());
-    if (req.badgeColorHex() != null) s.setBadgeColorHex(req.badgeColorHex());
-    s.setAllowsQueueing(req.allowsQueueing() != null ? req.allowsQueueing() : Boolean.FALSE);
-    s.setIsTerminal(req.isTerminal() != null ? req.isTerminal() : Boolean.FALSE);
-    s.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapStatusToDTO(statusRepository.save(s));
+    ReservationStatus s = catalogMapper.toStatusEntity(req);
+    return catalogMapper.toStatusResponse(statusRepository.save(s));
   }
 
   // --- Reception Stations ---
   @Transactional(readOnly = true)
   public List<ReceptionStationDTO.Response> getAllStations() {
-    return stationRepository.findAll().stream().map(this::mapStationToDTO).toList();
+    return catalogMapper.toStationResponseList(stationRepository.findAll());
   }
 
   @Transactional
@@ -177,77 +161,8 @@ public class AdminCatalogService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Category not found: " + req.categoryId()));
 
-    ReceptionStation station = new ReceptionStation();
-    station.setStationCode(req.stationCode());
-    station.setName(req.name());
-    station.setDepartmentId(req.departmentId());
+    ReceptionStation station = catalogMapper.toStationEntity(req);
     station.setCategory(cat);
-    station.setIsActive(req.isActive() != null ? req.isActive() : Boolean.TRUE);
-    return mapStationToDTO(stationRepository.save(station));
-  }
-
-  // --- Mappers ---
-  private ReservationCategoryDTO.Response mapCategoryToDTO(ReservationCategory c) {
-    return new ReservationCategoryDTO.Response(
-        c.getId(),
-        c.getCode(),
-        c.getName(),
-        c.getDescription(),
-        c.getRequiresPhysician(),
-        c.getRequiresPrescription(),
-        c.getIsActive(),
-        c.getDateCreated());
-  }
-
-  private DiagnosticModalityDTO.Response mapModalityToDTO(DiagnosticModality m) {
-    return new DiagnosticModalityDTO.Response(
-        m.getId(),
-        m.getCode(),
-        m.getName(),
-        m.getDepartmentId(),
-        m.getDefaultDurationMinutes(),
-        m.getRequiresContrastScreening(),
-        m.getRequiresSafetyChecklist(),
-        m.getIsActive(),
-        m.getDateCreated());
-  }
-
-  private ExaminationRoomDTO.Response mapRoomToDTO(ExaminationRoom r) {
-    return new ExaminationRoomDTO.Response(
-        r.getId(),
-        r.getRoomCode(),
-        r.getName(),
-        r.getDepartmentId(),
-        r.getModality() != null ? r.getModality().getId() : null,
-        r.getModality() != null ? r.getModality().getName() : null,
-        r.getIsActive(),
-        r.getDateCreated());
-  }
-
-  private QueuePriorityLevelDTO.Response mapPriorityToDTO(QueuePriorityLevel p) {
-    return new QueuePriorityLevelDTO.Response(
-        p.getId(), p.getCode(), p.getName(), p.getWeight(), p.getBadgeColorHex(), p.getIsActive());
-  }
-
-  private ReservationStatusDTO.Response mapStatusToDTO(ReservationStatus s) {
-    return new ReservationStatusDTO.Response(
-        s.getId(),
-        s.getCode(),
-        s.getName(),
-        s.getBadgeColorHex(),
-        s.getAllowsQueueing(),
-        s.getIsTerminal(),
-        s.getIsActive());
-  }
-
-  private ReceptionStationDTO.Response mapStationToDTO(ReceptionStation st) {
-    return new ReceptionStationDTO.Response(
-        st.getId(),
-        st.getStationCode(),
-        st.getName(),
-        st.getDepartmentId(),
-        st.getCategory().getId(),
-        st.getCategory().getName(),
-        st.getIsActive());
+    return catalogMapper.toStationResponse(stationRepository.save(station));
   }
 }

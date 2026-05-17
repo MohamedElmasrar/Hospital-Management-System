@@ -5,8 +5,22 @@ import com.hms.reception_service.dto.reservation.ReservationDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
-import com.hms.reception_service.model.*;
-import com.hms.reception_service.repository.*;
+import com.hms.reception_service.mapper.ReservationMapper;
+import com.hms.reception_service.model.DiagnosticModality;
+import com.hms.reception_service.model.DiagnosticPrescription;
+import com.hms.reception_service.model.DiagnosticReservationDetail;
+import com.hms.reception_service.model.ExaminationRoom;
+import com.hms.reception_service.model.Patient;
+import com.hms.reception_service.model.Reservation;
+import com.hms.reception_service.model.ReservationCategory;
+import com.hms.reception_service.model.ReservationStatus;
+import com.hms.reception_service.repository.DiagnosticModalityRepository;
+import com.hms.reception_service.repository.DiagnosticPrescriptionRepository;
+import com.hms.reception_service.repository.ExaminationRoomRepository;
+import com.hms.reception_service.repository.PatientRepository;
+import com.hms.reception_service.repository.ReservationCategoryRepository;
+import com.hms.reception_service.repository.ReservationRepository;
+import com.hms.reception_service.repository.ReservationStatusRepository;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +45,7 @@ public class ReservationService {
   private final DiagnosticModalityRepository modalityRepository;
   private final DiagnosticPrescriptionRepository prescriptionRepository;
   private final HrGrpcClient hrGrpcClient;
+  private final ReservationMapper reservationMapper;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -92,7 +107,7 @@ public class ReservationService {
     res.setNotes(req.notes());
     res.setReceptionistStaffId(receptionistId);
 
-    return mapToDTO(reservationRepository.save(res));
+    return reservationMapper.toResponse(reservationRepository.save(res));
   }
 
   @Transactional
@@ -183,7 +198,7 @@ public class ReservationService {
 
     res.setDiagnosticDetail(detail);
 
-    return mapToDTO(reservationRepository.save(res));
+    return reservationMapper.toResponse(reservationRepository.save(res));
   }
 
   @Transactional
@@ -203,7 +218,7 @@ public class ReservationService {
     res.setStatus(paidStatus);
     res.setBillingInvoiceId(invoiceId);
 
-    return mapToDTO(reservationRepository.save(res));
+    return reservationMapper.toResponse(reservationRepository.save(res));
   }
 
   @Transactional
@@ -230,14 +245,14 @@ public class ReservationService {
       res.getPrescription().setIsFulfilled(Boolean.TRUE);
     }
 
-    return mapToDTO(reservationRepository.save(res));
+    return reservationMapper.toResponse(reservationRepository.save(res));
   }
 
   @Transactional(readOnly = true)
   public ReservationDTO.Response getReservationById(UUID id) {
     return reservationRepository
         .findById(id)
-        .map(this::mapToDTO)
+        .map(reservationMapper::toResponse)
         .orElseThrow(() -> new ResourceNotFoundException("Reservation not found: " + id));
   }
 
@@ -245,58 +260,14 @@ public class ReservationService {
   public PageResponse<ReservationDTO.Response> getReservationsByPatient(
       UUID patientId, Pageable pageable) {
     return PageResponse.from(
-        reservationRepository.findByPatientId(patientId, pageable).map(this::mapToDTO));
+        reservationRepository
+            .findByPatientId(patientId, pageable)
+            .map(reservationMapper::toResponse));
   }
 
   private String generateReservationNumber(String prefix) {
     String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
     int rand = 1000 + random.nextInt(9000);
     return prefix + "-" + datePart + "-" + rand;
-  }
-
-  public ReservationDTO.Response mapToDTO(Reservation r) {
-    ReservationDTO.DiagnosticDetailResponse diagDetail = null;
-    if (r.getDiagnosticDetail() != null) {
-      DiagnosticReservationDetail d = r.getDiagnosticDetail();
-      diagDetail =
-          new ReservationDTO.DiagnosticDetailResponse(
-              d.getModality().getId(),
-              d.getModality().getName(),
-              d.getModality().getCode(),
-              d.getBodyPart(),
-              d.getContrastUsed(),
-              d.getTechnicianId(),
-              d.getSafetyChecklistCompleted());
-    }
-
-    return new ReservationDTO.Response(
-        r.getId(),
-        r.getReservationNumber(),
-        r.getPatient().getId(),
-        r.getPatient().getFirstName() + " " + r.getPatient().getLastName(),
-        r.getPatient().getPhone(),
-        r.getCategory().getId(),
-        r.getCategory().getName(),
-        r.getCategory().getCode(),
-        r.getDepartmentId(),
-        r.getPractitionerId(),
-        r.getPrescription() != null ? r.getPrescription().getId() : null,
-        r.getRoom() != null ? r.getRoom().getId() : null,
-        r.getRoom() != null ? r.getRoom().getName() : null,
-        r.getReservationDate(),
-        r.getStartTime(),
-        r.getEndTime(),
-        r.getStatus().getId(),
-        r.getStatus().getCode(),
-        r.getStatus().getName(),
-        r.getStatus().getBadgeColorHex(),
-        r.getIsPaid(),
-        r.getBillingInvoiceId(),
-        r.getReasonForVisit(),
-        r.getNotes(),
-        r.getReceptionistStaffId(),
-        diagDetail,
-        r.getCreatedAt(),
-        r.getUpdatedAt());
   }
 }
