@@ -24,7 +24,6 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({
     CashDeskNotFoundException.class,
-
     ServiceCatalogNotFoundException.class,
     TariffVersionNotFoundException.class,
     BillableOrderNotFoundException.class,

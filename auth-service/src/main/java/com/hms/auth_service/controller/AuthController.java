@@ -80,8 +80,14 @@ public class AuthController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/validate")
+  @RequestMapping(
+      value = "/validate",
+      method = {
+        org.springframework.web.bind.annotation.RequestMethod.GET,
+        org.springframework.web.bind.annotation.RequestMethod.POST
+      })
   public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authHeader) {
+
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }

@@ -1,6 +1,11 @@
 server:
   port: 8000 # Gateway listens on port 8000
 
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://auth-service:8001}
+
+
 spring:
   cloud:
     gateway:
@@ -21,20 +26,20 @@ spring:
             - StripPrefix=2
             - JwtValidation
 
-        # Route for /api/docs/hr to hr-service /v3/api-docs
+        # Route for /api-docs/hr to hr-service /v3/api-docs
         - id: api-docs-hr-route
           uri: http://hr-service:8002
           predicates:
-            - Path=/api-docs/hr
+            - Path=/api-docs/hr/**, /api-docs/hr
           filters:
-            - RewritePath=/api-docs/hr,/v3/api-docs
+            - RewritePath=/api-docs/hr(?<segment>/?.*), /v3/api-docs${segment}
 
         - id: api-docs-auth-route
           uri: http://auth-service:8001
           predicates:
-            - Path=/api-docs/auth
+            - Path=/api-docs/auth/**, /api-docs/auth
           filters:
-            - RewritePath=/api-docs/auth,/v3/api-docs
+            - RewritePath=/api-docs/auth(?<segment>/?.*), /v3/api-docs${segment}
 
         # Route for /api/billing/** to billing-service
         - id: billing-service-route
@@ -49,6 +54,6 @@ spring:
         - id: api-docs-billing-route
           uri: http://billing-service:8003
           predicates:
-            - Path=/api-docs/billing
+            - Path=/api-docs/billing/**, /api-docs/billing
           filters:
-            - RewritePath=/api-docs/billing,/v3/api-docs
+            - RewritePath=/api-docs/billing(?<segment>/?.*), /v3/api-docs${segment}
