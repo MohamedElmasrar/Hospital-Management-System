@@ -57,3 +57,20 @@ spring:
             - Path=/api-docs/billing/**, /api-docs/billing
           filters:
             - RewritePath=/api-docs/billing(?<segment>/?.*), /v3/api-docs${segment}
+
+        # Route for /api/reception/** to reception-service
+        - id: reception-service-route
+          uri: http://reception-service:8004
+          predicates:
+            - Path=/api/reception/**
+          filters:
+            - StripPrefix=2
+            - JwtValidation
+
+        # Route for /api-docs/reception to reception-service /v3/api-docs
+        - id: api-docs-reception-route
+          uri: http://reception-service:8004
+          predicates:
+            - Path=/api-docs/reception/**, /api-docs/reception
+          filters:
+            - RewritePath=/api-docs/reception(?<segment>/?.*), /v3/api-docs${segment}

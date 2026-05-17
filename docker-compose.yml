@@ -38,6 +38,20 @@ services:
       - hr-service
 
 
+  reception-service:
+    container_name: reception-service
+    build: ./reception-service/
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://reception-db:5432/receptionDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      HR_GRPC_HOST: hr-service
+      HR_GRPC_PORT: 9091
+    depends_on:
+      - reception-db
+      - hr-service
+
+
   auth-db:
     image: postgres
     container_name: auth-db
@@ -68,7 +82,18 @@ services:
     volumes:
       - billing-db-data:/etc/data
 
+  reception-db:
+    image: postgres
+    container_name: reception-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: receptionDB
+    volumes:
+      - reception-db-data:/etc/data
+
 volumes:
   auth-db-data:
   hr-db-data:
   billing-db-data:
+  reception-db-data:
