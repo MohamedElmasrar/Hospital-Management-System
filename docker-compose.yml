@@ -37,6 +37,7 @@ services:
       HR_GRPC_PORT: 9091
     depends_on:
       - billing-db
+      - hr-service
 
   auth-db:
     image: postgres
