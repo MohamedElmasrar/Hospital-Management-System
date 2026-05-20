@@ -60,7 +60,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: authDB
     volumes:
-      - auth-db-data:/etc/data
+      - auth-db-data:/var/lib/postgresql/data
 
   hr-db:
     image: postgres
@@ -70,7 +70,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: hrDB
     volumes:
-      - hr-db-data:/etc/data
+      - hr-db-data:/var/lib/postgresql/data
 
   billing-db:
     image: postgres
@@ -80,7 +80,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: billingDB
     volumes:
-      - billing-db-data:/etc/data
+      - billing-db-data:/var/lib/postgresql/data
 
   reception-db:
     image: postgres
@@ -90,7 +90,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: receptionDB
     volumes:
-      - reception-db-data:/etc/data
+      - reception-db-data:/var/lib/postgresql/data
 
 volumes:
   auth-db-data:
