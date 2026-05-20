@@ -1,0 +1,68 @@
+{
+  "folders": [
+    {
+      "name": "Project (Root)",
+      "path": "."
+    },
+    {
+      "name": "API Gateway",
+      "path": "api-gateway"
+    },
+    {
+      "name": "Auth Service",
+      "path": "auth-service"
+    },
+    {
+      "name": "Billing Service",
+      "path": "billing-service"
+    },
+    {
+      "name": "HR Service",
+      "path": "hr-service"
+    },
+    {
+      "name": "Reception Service",
+      "path": "reception-service"
+    },
+    {
+      "name": "Frontend",
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.configuration.runtimes": [
+      {
+        "name": "JavaSE-21",
+        "path": "/usr/lib/jvm/java-21-openjdk-amd64",
+        "default": true
+      }
+    ],
+    "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
+    "java.jdt.ls.lombokSupport.enabled": true,
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms256m",
+    "java.server.launchMode": "Standard",
+    "java.project.importOnFirstTimeStartup": "automatic",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
+    "java.import.gradle.annotationProcessing.enabled": true,
+    "java.import.exclusions": [
+      "**/node_modules/**",
+      "**/.metadata/**",
+      "**/archetype/**",
+      "frontend/**"
+    ],
+    "gradle.nestedProjects": true,
+    "eslint.enable": true,
+    "eslint.workingDirectories": [
+      { "mode": "auto" },
+      "./frontend"
+    ],
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.suggest.completeFunctionCalls": true,
+    "javascript.suggest.completeFunctionCalls": true
+  }
+}
