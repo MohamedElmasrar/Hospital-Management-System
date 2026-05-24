@@ -19,14 +19,14 @@ public class QueueController {
   private final QueueService queueService;
 
   @PostMapping("/daily")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<QueueDTO.DailyQueueResponse> getOrCreateDailyQueue(
       @RequestParam UUID departmentId, @RequestParam UUID roomId) {
     return ResponseEntity.ok(queueService.getOrCreateDailyQueue(departmentId, roomId));
   }
 
   @PostMapping("/tickets")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<QueueDTO.TicketResponse> issueTicket(
       @Valid @RequestBody QueueDTO.IssueTicketRequest req) {
     return ResponseEntity.status(HttpStatus.CREATED).body(queueService.issueTicket(req));

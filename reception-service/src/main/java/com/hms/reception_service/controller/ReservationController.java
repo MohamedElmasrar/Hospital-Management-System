@@ -22,7 +22,7 @@ public class ReservationController {
   private final ReservationService reservationService;
 
   @PostMapping("/consultation")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<ReservationDTO.Response> createConsultationReservation(
       @Valid @RequestBody ReservationDTO.CreateConsultationRequest req,
       AuthenticatedPrincipal principal) {
@@ -31,7 +31,7 @@ public class ReservationController {
   }
 
   @PostMapping("/diagnostic")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<ReservationDTO.Response> createDiagnosticReservation(
       @Valid @RequestBody ReservationDTO.CreateDiagnosticRequest req,
       AuthenticatedPrincipal principal) {
@@ -40,27 +40,27 @@ public class ReservationController {
   }
 
   @PostMapping("/{id}/pay")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<ReservationDTO.Response> markAsPaid(
       @PathVariable UUID id, @RequestParam(required = false) UUID invoiceId) {
     return ResponseEntity.ok(reservationService.markAsPaid(id, invoiceId));
   }
 
   @PatchMapping("/{id}/status")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<ReservationDTO.Response> updateStatus(
       @PathVariable UUID id, @Valid @RequestBody ReservationDTO.UpdateStatusRequest req) {
     return ResponseEntity.ok(reservationService.updateStatus(id, req));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<ReservationDTO.Response> getReservationById(@PathVariable UUID id) {
     return ResponseEntity.ok(reservationService.getReservationById(id));
   }
 
   @GetMapping("/patient/{patientId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<PageResponse<ReservationDTO.Response>> getReservationsByPatient(
       @PathVariable UUID patientId, @PageableDefault(size = 20) Pageable pageable) {
     return ResponseEntity.ok(reservationService.getReservationsByPatient(patientId, pageable));

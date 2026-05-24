@@ -22,20 +22,20 @@ public class PatientController {
   private final PatientService patientService;
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<PatientDTO.Response> createPatient(
       @Valid @RequestBody PatientDTO.CreateRequest req) {
     return ResponseEntity.status(HttpStatus.CREATED).body(patientService.createPatient(req));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<PatientDTO.Response> getPatientById(@PathVariable UUID id) {
     return ResponseEntity.ok(patientService.getPatientById(id));
   }
 
   @GetMapping("/mrn/{mrn}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<PatientDTO.Response> getPatientByMrn(@PathVariable String mrn) {
     return ResponseEntity.ok(patientService.getPatientByMrn(mrn));
   }
@@ -47,14 +47,14 @@ public class PatientController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<PageResponse<PatientDTO.Response>> searchPatients(
       @RequestParam(required = false) String query, @PageableDefault(size = 20) Pageable pageable) {
     return ResponseEntity.ok(patientService.searchPatients(query, pageable));
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<PatientDTO.Response> updatePatient(
       @PathVariable UUID id, @Valid @RequestBody PatientDTO.UpdateRequest req) {
     return ResponseEntity.ok(patientService.updatePatient(id, req));

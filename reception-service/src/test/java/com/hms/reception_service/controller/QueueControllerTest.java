@@ -105,4 +105,42 @@ class QueueControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CALLED"));
   }
+
+  @Test
+  void issueTicket_whenReceptionist_shouldReturnCreated() throws Exception {
+    UUID resId = UUID.randomUUID();
+    QueueDTO.IssueTicketRequest req = new QueueDTO.IssueTicketRequest(resId, null);
+
+    QueueDTO.TicketResponse res =
+        new QueueDTO.TicketResponse(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            resId,
+            "CONS-002",
+            2,
+            UUID.randomUUID(),
+            "Normal",
+            10,
+            "WAITING",
+            new Date(),
+            null,
+            null,
+            null,
+            "Jane Doe",
+            "Room 102");
+
+    when(queueService.issueTicket(any())).thenReturn(res);
+
+    mockMvc
+        .perform(
+            post("/api/reception/queues/tickets")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
+                        .authorities(new SimpleGrantedAuthority("ROLE_RECEPTIONIST")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.ticketCode").value("CONS-002"));
+  }
 }

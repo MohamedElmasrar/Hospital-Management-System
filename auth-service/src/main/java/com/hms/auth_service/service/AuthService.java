@@ -26,7 +26,7 @@ public class AuthService {
   public LoginResult login(LoginRequestDTO request) {
     User user =
         userService.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
-    if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+    if (!user.isActive() || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
       throw new InvalidCredentialsException();
     }
 

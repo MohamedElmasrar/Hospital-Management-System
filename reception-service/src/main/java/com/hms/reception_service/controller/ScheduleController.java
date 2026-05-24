@@ -28,21 +28,21 @@ public class ScheduleController {
   }
 
   @GetMapping("/department/{departmentId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<List<ScheduleDTO.Response>> getSchedulesByDepartment(
       @PathVariable UUID departmentId) {
     return ResponseEntity.ok(scheduleService.getSchedulesByDepartment(departmentId));
   }
 
   @GetMapping("/practitioner/{practitionerId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<List<ScheduleDTO.Response>> getSchedulesByPractitioner(
       @PathVariable UUID practitionerId) {
     return ResponseEntity.ok(scheduleService.getSchedulesByPractitioner(practitionerId));
   }
 
   @GetMapping("/available-slots")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<List<ScheduleDTO.AvailableSlot>> getAvailableSlots(
       @RequestParam(required = false) UUID practitionerId,
       @RequestParam(required = false) UUID roomId,

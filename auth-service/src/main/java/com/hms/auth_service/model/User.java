@@ -26,4 +26,7 @@ public class User {
 
   @Column(name = "role")
   UserRole role = UserRole.EMPLOYEE;
+
+  @Column(name = "active", nullable = false)
+  boolean active = true;
 }

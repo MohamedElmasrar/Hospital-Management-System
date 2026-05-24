@@ -29,14 +29,14 @@ public class DiagnosticPrescriptionController {
   }
 
   @GetMapping("/patient/{patientId}/pending")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<List<DiagnosticPrescriptionDTO.Response>> getPendingPrescriptions(
       @PathVariable UUID patientId) {
     return ResponseEntity.ok(prescriptionService.getPendingPrescriptionsByPatient(patientId));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<DiagnosticPrescriptionDTO.Response> getPrescriptionById(
       @PathVariable UUID id) {
     return ResponseEntity.ok(prescriptionService.getPrescriptionById(id));

@@ -11,6 +11,7 @@ public interface UserMapper {
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "role", constant = "EMPLOYEE")
+  @Mapping(target = "active", constant = "true")
   @Mapping(target = "email", source = "request.email")
   @Mapping(target = "passwordHash", source = "passwordHash")
   User toUser(RegisterRequestDTO request, String passwordHash);
