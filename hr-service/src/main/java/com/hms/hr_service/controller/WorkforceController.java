@@ -22,7 +22,8 @@ public class WorkforceController {
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD')")
   public ResponseEntity<WorkforceDTO.CredentialResponse> addCredential(
       @PathVariable UUID employeeId, @Valid @RequestBody WorkforceDTO.CredentialRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(workforceService.addCredential(employeeId, request));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(workforceService.addCredential(employeeId, request));
   }
 
   @GetMapping("/credentials/expiring")
@@ -34,7 +35,8 @@ public class WorkforceController {
 
   @PostMapping("/shifts")
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD')")
-  public ResponseEntity<WorkforceDTO.ShiftResponse> createShift(@Valid @RequestBody WorkforceDTO.ShiftRequest request) {
+  public ResponseEntity<WorkforceDTO.ShiftResponse> createShift(
+      @Valid @RequestBody WorkforceDTO.ShiftRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(workforceService.createShift(request));
   }
 
@@ -56,7 +58,8 @@ public class WorkforceController {
 
   @PostMapping("/leave")
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
-  public ResponseEntity<WorkforceDTO.LeaveResponse> requestLeave(@Valid @RequestBody WorkforceDTO.LeaveRequest request) {
+  public ResponseEntity<WorkforceDTO.LeaveResponse> requestLeave(
+      @Valid @RequestBody WorkforceDTO.LeaveRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(workforceService.requestLeave(request));
   }
 

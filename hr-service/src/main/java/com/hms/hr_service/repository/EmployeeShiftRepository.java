@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EmployeeShiftRepository extends JpaRepository<EmployeeShift, UUID> {
-  List<EmployeeShift> findByEmployeeIdAndShiftDateBetween(UUID employeeId, LocalDate from, LocalDate to);
+  List<EmployeeShift> findByEmployeeIdAndShiftDateBetween(
+      UUID employeeId, LocalDate from, LocalDate to);
+
   List<EmployeeShift> findByShiftDate(LocalDate date);
 }

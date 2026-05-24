@@ -1,15 +1,15 @@
 package com.hms.auth_service.service;
 
-import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.dto.admin.UserResponse;
+import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.mapper.UserMapper;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,7 +29,9 @@ public class UserService {
 
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
-        .map(user -> new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.isActive()))
+        .map(
+            user ->
+                new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.isActive()))
         .toList();
   }
 

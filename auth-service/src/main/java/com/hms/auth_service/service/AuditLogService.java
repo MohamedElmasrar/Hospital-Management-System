@@ -23,9 +23,14 @@ public class AuditLogService {
 
   public List<AuditLogResponse> findAll() {
     return auditLogRepository.findAllByOrderByCreatedAtDesc().stream()
-        .map(log -> new AuditLogResponse(
-            log.getId(), log.getActorUserId(), log.getAction(), log.getTargetUserId(),
-            log.getCreatedAt()))
+        .map(
+            log ->
+                new AuditLogResponse(
+                    log.getId(),
+                    log.getActorUserId(),
+                    log.getAction(),
+                    log.getTargetUserId(),
+                    log.getCreatedAt()))
         .toList();
   }
 }

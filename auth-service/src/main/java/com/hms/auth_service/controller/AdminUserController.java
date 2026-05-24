@@ -43,7 +43,9 @@ public class AdminUserController {
       @PathVariable UUID id, @RequestParam boolean active, @AuthenticationPrincipal Jwt principal) {
     UserResponse response = toResponse(userService.updateActive(id, active));
     auditLogService.record(
-        UUID.fromString(principal.getSubject()), active ? "USER_ACTIVATED" : "USER_DEACTIVATED", id);
+        UUID.fromString(principal.getSubject()),
+        active ? "USER_ACTIVATED" : "USER_DEACTIVATED",
+        id);
     return ResponseEntity.ok(response);
   }
 
