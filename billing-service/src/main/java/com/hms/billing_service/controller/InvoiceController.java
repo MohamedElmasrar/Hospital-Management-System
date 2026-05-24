@@ -38,6 +38,18 @@ public class InvoiceController {
     return ResponseEntity.status(HttpStatus.CREATED).body(invoiceService.create(request, staffId));
   }
 
+  @PostMapping("/automatic")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @Operation(summary = "Create an invoice from all unbilled clinical charges")
+  public ResponseEntity<InvoiceDetailResponseDTO> createAutomaticInvoice(
+      @Valid @RequestBody CreateAutomaticInvoiceRequestDTO request,
+      AuthenticatedPrincipal principal) {
+    UUID staffId =
+        principal != null && principal.userId() != null ? principal.userId() : UUID.randomUUID();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(invoiceService.createAutomatic(request, staffId));
+  }
+
   @PostMapping("/{id}/line-items")
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
   @Operation(summary = "Add line item to invoice (DRAFT only)")
@@ -67,6 +79,21 @@ public class InvoiceController {
   @Operation(summary = "Get full invoice details by ID")
   public ResponseEntity<InvoiceDetailResponseDTO> getInvoice(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.getById(id));
+  }
+
+  @GetMapping(value = "/{id}/receipt", produces = "text/plain")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'PATIENT')")
+  @Operation(summary = "Get a printable invoice receipt")
+  public ResponseEntity<String> getReceipt(@PathVariable UUID id) {
+    InvoiceDetailResponseDTO invoice = invoiceService.getById(id);
+    String receipt =
+        "Invoice: " + invoice.invoiceNumber()
+            + "\nPatient: " + invoice.patientId()
+            + "\nStatus: " + invoice.status()
+            + "\nTotal: " + invoice.totalAmount()
+            + "\nPaid: " + invoice.paidAmount()
+            + "\nBalance: " + invoice.balanceDue();
+    return ResponseEntity.ok(receipt);
   }
 
   @GetMapping("/number/{invoiceNumber}")

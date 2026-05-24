@@ -41,6 +41,9 @@ public class BillableOrder {
   @Column(name = "practitioner_id", nullable = false)
   private UUID practitionerId;
 
+  @Column(name = "department_id")
+  private UUID departmentId;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "tariff_version_id", nullable = false)
   private ServiceTariffVersion tariffVersion;

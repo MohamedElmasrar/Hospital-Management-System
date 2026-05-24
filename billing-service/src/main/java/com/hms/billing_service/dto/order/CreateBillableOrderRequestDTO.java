@@ -11,6 +11,7 @@ public record CreateBillableOrderRequestDTO(
     @NotNull SourceOrderType orderType,
     @NotNull UUID patientId,
     @NotNull UUID practitionerId,
+    UUID departmentId,
     UUID tariffVersionId,
     UUID serviceCatalogId,
     Date performedAt,

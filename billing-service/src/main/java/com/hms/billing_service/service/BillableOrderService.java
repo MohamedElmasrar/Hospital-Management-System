@@ -75,6 +75,7 @@ public class BillableOrderService {
     order.setOrderType(request.orderType());
     order.setPatientId(request.patientId());
     order.setPractitionerId(request.practitionerId());
+    order.setDepartmentId(request.departmentId());
     order.setTariffVersion(tariffVersion);
     order.setPerformedAt(request.performedAt() != null ? request.performedAt() : new Date());
 

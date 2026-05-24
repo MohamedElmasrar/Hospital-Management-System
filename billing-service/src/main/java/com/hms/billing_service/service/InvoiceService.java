@@ -99,6 +99,32 @@ public class InvoiceService {
   }
 
   @Transactional
+  public InvoiceDetailResponseDTO createAutomatic(
+      CreateAutomaticInvoiceRequestDTO request, UUID staffId) {
+    List<BillableOrder> orders =
+        billableOrderRepository.findByPatientId(
+                request.patientId(), org.springframework.data.domain.Pageable.unpaged())
+            .getContent().stream()
+            .filter(order -> !lineItemRepository.existsByBillableOrderId(order.getId()))
+            .toList();
+    if (orders.isEmpty()) {
+      throw new InvalidOperationException("No unbilled charges found for patient");
+    }
+    CreateInvoiceRequestDTO invoiceRequest =
+        new CreateInvoiceRequestDTO(
+            request.patientId(),
+            request.cashDeskId(),
+            request.dueDate(),
+            orders.stream()
+                .map(
+                    order ->
+                        new CreateInvoiceLineItemRequestDTO(
+                            order.getId(), 1, BigDecimal.ZERO))
+                .toList());
+    return create(invoiceRequest, staffId);
+  }
+
+  @Transactional
   public InvoiceDetailResponseDTO addLineItem(UUID invoiceId, AddLineItemRequestDTO request) {
     Invoice invoice =
         invoiceRepository
