@@ -22,6 +22,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { NotificationsPopover } from './nav-notifications'
+import {
+  clearAuth,
+  getAuthUser,
+  getServerTokenSnapshot,
+  getTokenSnapshot,
+  subscribeAuth,
+} from '@/lib/auth'
+import { usePathname, useRouter } from 'next/navigation'
+import { useSyncExternalStore } from 'react'
 
 const sampleNotifications = [
   {
@@ -48,6 +57,31 @@ const sampleNotifications = [
 ]
 
 export function DashboardNavbar() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const token = useSyncExternalStore(
+    subscribeAuth,
+    getTokenSnapshot,
+    getServerTokenSnapshot
+  )
+  const user = token ? getAuthUser() : null
+
+  const pageName =
+    pathname === '/dashboard'
+      ? 'Dashboard'
+      : (pathname
+          .split('/')
+          .filter(Boolean)
+          .at(-1)
+          ?.split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ') ?? 'Dashboard')
+
+  function signOut() {
+    clearAuth()
+    router.replace('/login')
+  }
+
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
       <div className="flex min-w-0 items-center gap-2">
@@ -60,7 +94,7 @@ export function DashboardNavbar() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:inline-flex" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Dashboard</BreadcrumbPage>
+              <BreadcrumbPage>{pageName}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -76,21 +110,26 @@ export function DashboardNavbar() {
             }
           >
             <Avatar className="size-8">
-              <AvatarImage alt="Dr. Sarah Johnson" src="/avatars/user.png" />
-              <AvatarFallback>SJ</AvatarFallback>
+              <AvatarImage
+                alt={user?.email ?? 'Signed-in user'}
+                src="/avatars/user.png"
+              />
+              <AvatarFallback>{user?.role.slice(0, 2) ?? 'U'}</AvatarFallback>
             </Avatar>
             <span className="hidden font-medium sm:inline">
-              Dr. Sarah Johnson
+              {user?.email ?? 'Signed-in user'}
             </span>
             <ChevronDownIcon className="hidden sm:inline" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>Dr. Sarah Johnson</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {user?.email ?? 'Signed-in user'}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Sign out</DropdownMenuItem>
+              <DropdownMenuItem onClick={signOut}>Sign out</DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

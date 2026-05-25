@@ -18,11 +18,15 @@ export function LoginForm({
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const callBackUrl = searchParams.get('callBackUrl') || '/dashboard'
+  const requestedCallback = searchParams.get('callBackUrl')
+  const callBackUrl =
+    requestedCallback?.startsWith('/') && !requestedCallback.startsWith('//')
+      ? requestedCallback
+      : '/dashboard'
 
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState<string | undefined>('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { mutate: login, isPending } = useLogin()
 
@@ -40,7 +44,7 @@ export function LoginForm({
         onError: (err) => {
           const axiosError = err as AxiosError<{ error: string }>
           if (axiosError.response) {
-            setError(axiosError.response?.data.error)
+            setError(axiosError.response.data?.error ?? 'Invalid credentials')
           } else {
             setError('Unexpected Error Try Again')
           }
@@ -48,10 +52,11 @@ export function LoginForm({
         onSuccess: (data: LoginResponseDTO) => {
           if (data.accessToken) {
             localStorage.setItem('token', data.accessToken)
+            window.dispatchEvent(new Event('hms-auth'))
+            router.push(callBackUrl)
           } else {
             setError('Something goes wrong! Try again')
           }
-          router.push(callBackUrl)
         },
       }
     )

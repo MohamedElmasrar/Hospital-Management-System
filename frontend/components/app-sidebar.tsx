@@ -1,155 +1,175 @@
 'use client'
 
 import {
-  Activity,
-  DollarSign,
-  Home,
-  Infinity,
-  LinkIcon,
-  Package2,
-  Percent,
-  PieChart,
-  Settings,
-  ShoppingBag,
-  Sparkles,
-  Store,
-  TrendingUp,
+  CalendarDays,
+  ClipboardList,
+  CreditCard,
+  FileText,
+  Hospital,
+  LayoutDashboard,
+  LockKeyhole,
+  Logs,
+  Receipt,
+  Stethoscope,
   Users,
+  WalletCards,
 } from 'lucide-react'
+import Link from 'next/link'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import {
+  getServerTokenSnapshot,
+  getTokenSnapshot,
+  getAuthUser,
+  subscribeAuth,
+  type UserRole,
+} from '@/lib/auth'
+import { useSyncExternalStore } from 'react'
 import { Logo } from './Logo'
-import DashboardNavigation from './nav-main'
-import { TeamSwitcher } from './team-switcher'
+import DashboardNavigation, { type Route } from './nav-main'
 
-const dashboardRoutes = [
-  {
-    id: 'home',
-    title: 'Home',
-    icon: <Home className="size-4" />,
-    link: '#',
-  },
-  {
-    id: 'products',
-    title: 'Products',
-    icon: <Package2 className="size-4" />,
-    link: '#',
-    subs: [
-      {
-        title: 'Catalogue',
-        link: '#',
-        icon: <Package2 className="size-4" />,
-      },
-      {
-        title: 'Checkout Links',
-        link: '#',
-        icon: <LinkIcon className="size-4" />,
-      },
-      {
-        title: 'Discounts',
-        link: '#',
-        icon: <Percent className="size-4" />,
-      },
-    ],
-  },
-  {
-    id: 'usage-billing',
-    title: 'Usage Billing',
-    icon: <PieChart className="size-4" />,
-    link: '#',
-    subs: [
-      {
-        title: 'Meters',
-        link: '#',
-        icon: <PieChart className="size-4" />,
-      },
-      {
-        title: 'Events',
-        link: '#',
-        icon: <Activity className="size-4" />,
-      },
-    ],
-  },
-  {
-    id: 'benefits',
-    title: 'Benefits',
-    icon: <Sparkles className="size-4" />,
-    link: '#',
-  },
-  {
-    id: 'customers',
-    title: 'Customers',
-    icon: <Users className="size-4" />,
-    link: '#',
-  },
-  {
-    id: 'sales',
-    title: 'Sales',
-    icon: <ShoppingBag className="size-4" />,
-    link: '#',
-    subs: [
-      {
-        title: 'Orders',
-        link: '#',
-        icon: <ShoppingBag className="size-4" />,
-      },
-      {
-        title: 'Subscriptions',
-        link: '#',
-        icon: <Infinity className="size-4" />,
-      },
-    ],
-  },
-  {
-    id: 'storefront',
-    title: 'Storefront',
-    icon: <Store className="size-4" />,
-    link: '#',
-  },
-  {
-    id: 'analytics',
-    title: 'Analytics',
-    icon: <TrendingUp className="size-4" />,
-    link: '#',
-  },
-  {
-    id: 'finance',
-    title: 'Finance',
-    icon: <DollarSign className="size-4" />,
-    link: '#',
-    subs: [
-      { title: 'Incoming', link: '#' },
-      { title: 'Outgoing', link: '#' },
-      { title: 'Payout Account', link: '#' },
-    ],
-  },
-  {
-    id: 'settings',
-    title: 'Settings',
-    icon: <Settings className="size-4" />,
-    link: '#',
-    subs: [
-      { title: 'General', link: '#' },
-      { title: 'Webhooks', link: '#' },
-      { title: 'Custom Fields', link: '#' },
-    ],
-  },
-]
+const iconClassName = 'size-4'
 
-const teams = [
-  { id: '1', name: 'Alpha Inc.', logo: Logo, plan: 'Free' },
-  { id: '2', name: 'Beta Corp.', logo: Logo, plan: 'Free' },
-  { id: '3', name: 'Gamma Tech', logo: Logo, plan: 'Free' },
-]
+function link(title: string, path: string, icon: React.ReactNode): Route {
+  return { id: path, title, link: `/dashboard/${path}`, icon }
+}
+
+function routesForRole(role: UserRole): Route[] {
+  const reception = [
+    link('Patients', 'reception/patients', <Users className={iconClassName} />),
+    link(
+      'Appointments',
+      'reception/appointments',
+      <CalendarDays className={iconClassName} />
+    ),
+    link(
+      'Waiting Queue',
+      'reception/queue',
+      <ClipboardList className={iconClassName} />
+    ),
+    link(
+      'Admissions',
+      'reception/admissions',
+      <Hospital className={iconClassName} />
+    ),
+  ]
+  const billing = [
+    link('Invoices', 'billing/invoices', <Receipt className={iconClassName} />),
+    link(
+      'Payments',
+      'billing/payments',
+      <CreditCard className={iconClassName} />
+    ),
+    link(
+      'Insurance',
+      'billing/insurance',
+      <WalletCards className={iconClassName} />
+    ),
+    link('Reports', 'billing/reports', <FileText className={iconClassName} />),
+  ]
+  const hr = [
+    link('Employees', 'hr/employees', <Users className={iconClassName} />),
+    link(
+      'Departments',
+      'hr/departments',
+      <Hospital className={iconClassName} />
+    ),
+    link(
+      'Schedules',
+      'hr/schedules',
+      <CalendarDays className={iconClassName} />
+    ),
+    link(
+      'Leave Requests',
+      'hr/leave',
+      <ClipboardList className={iconClassName} />
+    ),
+    link('Attendance', 'hr/attendance', <Logs className={iconClassName} />),
+    link('Payroll', 'hr/payroll', <WalletCards className={iconClassName} />),
+  ]
+
+  const roleRoutes: Record<UserRole, Route[]> = {
+    ADMIN: [
+      link('Users', 'users', <LockKeyhole className={iconClassName} />),
+      link('Audit Logs', 'audit-logs', <Logs className={iconClassName} />),
+      ...reception,
+      ...billing,
+      ...hr,
+    ],
+    PATIENT: [
+      link(
+        'My Appointments',
+        'patient/appointments',
+        <CalendarDays className={iconClassName} />
+      ),
+      link(
+        'My Records',
+        'patient/records',
+        <FileText className={iconClassName} />
+      ),
+      link(
+        'My Billing',
+        'patient/billing',
+        <Receipt className={iconClassName} />
+      ),
+    ],
+    DOCTOR: [
+      link(
+        'My Schedule',
+        'clinical/schedule',
+        <CalendarDays className={iconClassName} />
+      ),
+      link(
+        'Patients',
+        'clinical/patients',
+        <Users className={iconClassName} />
+      ),
+      link(
+        'Consultations',
+        'clinical/consultations',
+        <Stethoscope className={iconClassName} />
+      ),
+    ],
+    EMPLOYEE: [
+      link(
+        'My Schedule',
+        'hr/schedules',
+        <CalendarDays className={iconClassName} />
+      ),
+      link(
+        'Leave Requests',
+        'hr/leave',
+        <ClipboardList className={iconClassName} />
+      ),
+      link(
+        'My Attendance',
+        'hr/attendance',
+        <Logs className={iconClassName} />
+      ),
+    ],
+    RECEPTIONIST: reception,
+    HR_HEAD: hr,
+  }
+
+  return [
+    link('Dashboard', '', <LayoutDashboard className={iconClassName} />),
+    ...roleRoutes[role],
+  ]
+}
 
 export function DashboardSidebar() {
   const { state } = useSidebar()
+  const token = useSyncExternalStore(
+    subscribeAuth,
+    getTokenSnapshot,
+    getServerTokenSnapshot
+  )
+  const role = token ? (getAuthUser()?.role ?? null) : null
   const isCollapsed = state === 'collapsed'
 
   return (
@@ -162,21 +182,21 @@ export function DashboardSidebar() {
             : 'flex-row items-center justify-between'
         )}
       >
-        <a className="flex items-center gap-2" href="#">
+        <Link className="flex items-center gap-2" href="/dashboard">
           <Logo className="h-8 w-8" />
           {!isCollapsed && (
             <span className="font-semibold text-black dark:text-white">
               HMS
             </span>
           )}
-        </a>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="gap-4 px-2 py-4">
-        <DashboardNavigation routes={dashboardRoutes} />
+        {role && <DashboardNavigation routes={routesForRole(role)} />}
       </SidebarContent>
-      <SidebarFooter className="px-2">
-        <TeamSwitcher teams={teams} />
-      </SidebarFooter>
+      <div className="px-4 pb-4 text-xs text-muted-foreground">
+        {role ? role.replace('_', ' ') : null}
+      </div>
     </Sidebar>
   )
 }
