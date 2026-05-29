@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.hms.auth_service.config.JwtProperties;
 import com.hms.auth_service.exception.InvalidRefreshTokenException;
 import com.hms.auth_service.model.RefreshToken;
 import com.hms.auth_service.model.User;
@@ -26,6 +27,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RefreshTokenServiceTest {
 
   @Mock private RefreshTokenRepository refreshTokenRepository;
+
+  @Mock private JwtProperties jwtProperties;
 
   @InjectMocks private RefreshTokenService refreshTokenService;
 
@@ -60,7 +63,7 @@ class RefreshTokenServiceTest {
     refreshToken.setUser(user);
     refreshToken.setTokenHash(tokenHash);
     refreshToken.setRevoked(false);
-    refreshToken.setCreatedAt(LocalDateTime.now().plusDays(7));
+    refreshToken.setValidUntil(LocalDateTime.now().plusDays(7));
 
     given(refreshTokenRepository.findWithUserByTokenHash(tokenHash))
         .willReturn(Optional.of(refreshToken));
@@ -95,7 +98,7 @@ class RefreshTokenServiceTest {
     refreshToken.setUser(user);
     refreshToken.setTokenHash(tokenHash);
     refreshToken.setRevoked(true);
-    refreshToken.setCreatedAt(LocalDateTime.now().plusDays(7));
+    refreshToken.setValidUntil(LocalDateTime.now().plusDays(7));
 
     given(refreshTokenRepository.findWithUserByTokenHash(tokenHash))
         .willReturn(Optional.of(refreshToken));
@@ -105,7 +108,7 @@ class RefreshTokenServiceTest {
   }
 
   @Test
-  void findAndValidateRefreshToken_createdAtInPast_throwsInvalidRefreshTokenException() {
+  void findAndValidateRefreshToken_expiredToken_throwsInvalidRefreshTokenException() {
     String rawToken = "past-token";
     String tokenHash = RefreshTokenService.hashToken(rawToken);
 
@@ -113,7 +116,7 @@ class RefreshTokenServiceTest {
     refreshToken.setUser(user);
     refreshToken.setTokenHash(tokenHash);
     refreshToken.setRevoked(false);
-    refreshToken.setCreatedAt(LocalDateTime.now().minusMinutes(5));
+    refreshToken.setValidUntil(LocalDateTime.now().minusMinutes(5));
 
     given(refreshTokenRepository.findWithUserByTokenHash(tokenHash))
         .willReturn(Optional.of(refreshToken));
@@ -156,6 +159,8 @@ class RefreshTokenServiceTest {
     String rawToken = "new-refresh-token";
     String expectedHash = RefreshTokenService.hashToken(rawToken);
 
+    given(jwtProperties.refreshTokenExpiryDays()).willReturn(7);
+
     refreshTokenService.createRefreshToken(user, rawToken);
 
     ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
@@ -165,5 +170,6 @@ class RefreshTokenServiceTest {
     assertThat(savedToken.getUser()).isEqualTo(user);
     assertThat(savedToken.getTokenHash()).isEqualTo(expectedHash);
     assertThat(savedToken.isRevoked()).isFalse();
+    assertThat(savedToken.getValidUntil()).isAfter(LocalDateTime.now().plusDays(6));
   }
 }

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
 
-  @EntityGraph(attributePaths = {"user", "user.email", "user.password_hash"})
+  @EntityGraph(attributePaths = "user")
   Optional<RefreshToken> findWithUserByTokenHash(String tokenHash);
 
   Optional<RefreshToken> findByTokenHash(String hashToken);

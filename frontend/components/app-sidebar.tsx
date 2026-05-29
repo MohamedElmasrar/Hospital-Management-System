@@ -36,7 +36,12 @@ import DashboardNavigation, { type Route } from './nav-main'
 const iconClassName = 'size-4'
 
 function link(title: string, path: string, icon: React.ReactNode): Route {
-  return { id: path, title, link: `/dashboard/${path}`, icon }
+  return {
+    id: path || 'dashboard',
+    title,
+    link: path ? `/${path}` : '/dashboard',
+    icon,
+  }
 }
 
 function routesForRole(role: UserRole): Route[] {

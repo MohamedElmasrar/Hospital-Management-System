@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -9,12 +9,37 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   turbopack: {
     rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
+      '*.css': {
+        loaders: ['@tailwindcss/turbopack'],
+        as: '*.css',
       },
     },
   },
-};
+  async redirects() {
+    return ['reception', 'billing', 'hr', 'clinical', 'patient']
+      .map((section) => ({
+        source: `/dashboard/${section}/:path*`,
+        destination: `/${section}/:path*`,
+        permanent: true,
+      }))
+      .concat([
+        {
+          source: '/dashboard/profile',
+          destination: '/profile',
+          permanent: true,
+        },
+        {
+          source: '/dashboard/users',
+          destination: '/users',
+          permanent: true,
+        },
+        {
+          source: '/dashboard/audit-logs',
+          destination: '/audit-logs',
+          permanent: true,
+        },
+      ])
+  },
+}
 
-export default nextConfig;
+export default nextConfig

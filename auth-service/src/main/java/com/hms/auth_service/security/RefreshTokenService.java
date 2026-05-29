@@ -1,5 +1,6 @@
 package com.hms.auth_service.security;
 
+import com.hms.auth_service.config.JwtProperties;
 import com.hms.auth_service.exception.InvalidRefreshTokenException;
 import com.hms.auth_service.model.RefreshToken;
 import com.hms.auth_service.model.User;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class RefreshTokenService {
 
   private final RefreshTokenRepository refreshTokenRepository;
+  private final JwtProperties jwtProperties;
 
   public RefreshToken findAndValidateRefreshToken(String rawToken) {
 
@@ -29,7 +31,8 @@ public class RefreshTokenService {
       throw new InvalidRefreshTokenException();
     }
 
-    if (refreshToken.getCreatedAt().isBefore(LocalDateTime.now())) {
+    if (refreshToken.getValidUntil() == null
+        || refreshToken.getValidUntil().isBefore(LocalDateTime.now())) {
       throw new InvalidRefreshTokenException();
     }
 
@@ -61,6 +64,8 @@ public class RefreshTokenService {
     RefreshToken refreshToken = new RefreshToken();
     refreshToken.setUser(user);
     refreshToken.setTokenHash(hashToken(rawRefreshToken));
+    refreshToken.setValidUntil(
+        LocalDateTime.now().plusDays(jwtProperties.refreshTokenExpiryDays()));
     refreshTokenRepository.save(refreshToken);
   }
 }
