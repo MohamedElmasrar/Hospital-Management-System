@@ -84,7 +84,6 @@ spring:
           predicates:
             - Path=/api/reception/**
           filters:
-            - StripPrefix=2
             - JwtValidation
 
         # Route for /api-docs/reception to reception-service /v3/api-docs

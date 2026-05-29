@@ -20,6 +20,7 @@ import com.hms.auth_service.exception.InvalidCredentialsException;
 import com.hms.auth_service.exception.InvalidRefreshTokenException;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.service.AuthService;
+import com.hms.auth_service.service.UserService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class AuthControllerTest {
 
   @MockitoBean private JwtProperties jwtProperties;
   @MockitoBean private AuthService authService;
+  @MockitoBean private UserService userService;
 
   // ===================== Login Tests =====================
 

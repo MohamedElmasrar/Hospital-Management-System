@@ -35,6 +35,11 @@ public class UserService {
         .toList();
   }
 
+  public UserResponse findById(UUID id) {
+    User user = userRepository.findById(id).orElseThrow();
+    return new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.isActive());
+  }
+
   @Transactional
   public User updateRole(UUID id, UserRole role) {
     User user = userRepository.findById(id).orElseThrow();

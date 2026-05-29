@@ -9,6 +9,10 @@ import {
 } from '@/lib/auth'
 import { useEffect, useSyncExternalStore } from 'react'
 
+const subscribeHydration = () => () => {}
+const getHydratedSnapshot = () => true
+const getServerHydratedSnapshot = () => false
+
 export function DashboardAuthGuard({
   children,
 }: {
@@ -21,13 +25,20 @@ export function DashboardAuthGuard({
     getTokenSnapshot,
     getServerTokenSnapshot
   )
+  const isHydrated = useSyncExternalStore(
+    subscribeHydration,
+    getHydratedSnapshot,
+    getServerHydratedSnapshot
+  )
 
   useEffect(() => {
+    if (!isHydrated) return
+
     if (!token || !getAuthUser()) {
       router.replace(`/login?callBackUrl=${encodeURIComponent(pathname)}`)
     }
-  }, [pathname, router, token])
+  }, [isHydrated, pathname, router, token])
 
-  if (!token) return null
+  if (!isHydrated || !token) return null
   return children
 }

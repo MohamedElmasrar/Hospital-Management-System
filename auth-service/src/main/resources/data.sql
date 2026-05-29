@@ -17,6 +17,7 @@ VALUES
   ('00000000-0000-0000-0000-000000000006', 'hr_head@email.com',
    '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 5, TRUE)
 ON CONFLICT (email) DO UPDATE
-SET password_hash = EXCLUDED.password_hash,
+SET id = EXCLUDED.id,
+    password_hash = EXCLUDED.password_hash,
     role = EXCLUDED.role,
     active = EXCLUDED.active;

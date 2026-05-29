@@ -88,6 +88,13 @@ public class EmployeeService {
   }
 
   @Transactional(readOnly = true)
+  public EmployeeDetailResponseDTO getByUserId(UUID userId) {
+    Employee employee =
+        employeeRepository.findByUserId(userId).orElseThrow(EmployeeNotFoundException::new);
+    return getById(employee.getId());
+  }
+
+  @Transactional(readOnly = true)
   public PageResponse<EmployeeResponseDTO> search(
       String search, EmploymentStatus status, Pageable pageable) {
     Specification<Employee> spec =

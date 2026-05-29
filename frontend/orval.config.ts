@@ -1,4 +1,4 @@
-import { defineConfig } from 'orval';
+import { defineConfig } from 'orval'
 
 export default defineConfig({
   authService: {
@@ -10,6 +10,9 @@ export default defineConfig({
       client: 'react-query',
       baseUrl: 'auth',
       override: {
+        query: {
+          useSuspenseQuery: true,
+        },
         mutator: {
           path: './lib/axios-instance.ts',
           name: 'customInstance',
@@ -25,8 +28,11 @@ export default defineConfig({
       target: 'app/api/generated/hr',
       schemas: 'app/api/generated/hr/model',
       client: 'react-query',
-      baseUrl: 'hr',
+      baseUrl: 'api/hr',
       override: {
+        query: {
+          useSuspenseQuery: true,
+        },
         mutator: {
           path: './lib/axios-instance.ts',
           name: 'customInstance',
@@ -42,8 +48,11 @@ export default defineConfig({
       target: 'app/api/generated/billing',
       schemas: 'app/api/generated/billing/model',
       client: 'react-query',
-      baseUrl: 'billing',
+      baseUrl: 'api/billing',
       override: {
+        query: {
+          useSuspenseQuery: true,
+        },
         mutator: {
           path: './lib/axios-instance.ts',
           name: 'customInstance',
@@ -59,8 +68,11 @@ export default defineConfig({
       target: 'app/api/generated/reception',
       schemas: 'app/api/generated/reception/model',
       client: 'react-query',
-      baseUrl: 'reception',
+      baseUrl: '',
       override: {
+        query: {
+          useSuspenseQuery: true,
+        },
         mutator: {
           path: './lib/axios-instance.ts',
           name: 'customInstance',
@@ -68,4 +80,4 @@ export default defineConfig({
       },
     },
   },
-});
+})

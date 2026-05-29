@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronDownIcon } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,6 +31,8 @@ import {
 } from '@/lib/auth'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
+import { useProfile } from '@/lib/profile'
+import { useQueryClient } from '@tanstack/react-query'
 
 const sampleNotifications = [
   {
@@ -59,12 +61,16 @@ const sampleNotifications = [
 export function DashboardNavbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const token = useSyncExternalStore(
     subscribeAuth,
     getTokenSnapshot,
     getServerTokenSnapshot
   )
   const user = token ? getAuthUser() : null
+  const { data: profile } = useProfile()
+  const displayName = profile?.displayName ?? user?.email ?? 'Signed-in user'
+  const initials = profile?.initials ?? user?.role.slice(0, 2) ?? 'U'
 
   const pageName =
     pathname === '/dashboard'
@@ -79,6 +85,7 @@ export function DashboardNavbar() {
 
   function signOut() {
     clearAuth()
+    queryClient.clear()
     router.replace('/login')
   }
 
@@ -110,24 +117,20 @@ export function DashboardNavbar() {
             }
           >
             <Avatar className="size-8">
-              <AvatarImage
-                alt={user?.email ?? 'Signed-in user'}
-                src="/avatars/user.png"
-              />
-              <AvatarFallback>{user?.role.slice(0, 2) ?? 'U'}</AvatarFallback>
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
-            <span className="hidden font-medium sm:inline">
-              {user?.email ?? 'Signed-in user'}
-            </span>
+            <span className="hidden font-medium sm:inline">{displayName}</span>
             <ChevronDownIcon className="hidden sm:inline" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>
-                {user?.email ?? 'Signed-in user'}
-              </DropdownMenuLabel>
+              <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push('/dashboard/profile')}
+              >
+                Profile
+              </DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem onClick={signOut}>Sign out</DropdownMenuItem>
             </DropdownMenuGroup>

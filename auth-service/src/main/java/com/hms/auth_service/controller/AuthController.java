@@ -1,12 +1,14 @@
 package com.hms.auth_service.controller;
 
 import com.hms.auth_service.config.JwtProperties;
+import com.hms.auth_service.dto.admin.UserResponse;
 import com.hms.auth_service.dto.login.LoginRequestDTO;
 import com.hms.auth_service.dto.login.LoginResponseDTO;
 import com.hms.auth_service.dto.refresh.RefreshAccessTokenResponseDTO;
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.service.AuthService;
 import com.hms.auth_service.service.AuthService.LoginResult;
+import com.hms.auth_service.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +33,7 @@ public class AuthController {
 
   private final JwtProperties jwtProperties;
   private final AuthService authService;
+  private final UserService userService;
 
   @PostMapping("/login")
   public ResponseEntity<LoginResponseDTO> login(
@@ -54,6 +59,11 @@ public class AuthController {
     String accessToken = authService.refresh(rawToken);
 
     return ResponseEntity.ok(new RefreshAccessTokenResponseDTO(accessToken));
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserResponse> me(@AuthenticationPrincipal Jwt jwt) {
+    return ResponseEntity.ok(userService.findById(java.util.UUID.fromString(jwt.getSubject())));
   }
 
   @PostMapping("/register")

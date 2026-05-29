@@ -11,8 +11,10 @@ import com.hms.hr_service.dto.Employee.PostalAddressDTO;
 import com.hms.hr_service.dto.Employee.UpdateEmployeeRequestDTO;
 import com.hms.hr_service.dto.PageResponse;
 import com.hms.hr_service.enums.EmploymentStatus;
+import com.hms.hr_service.security.AuthenticatedPrincipal;
 import com.hms.hr_service.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +33,14 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
 
   private final EmployeeService employeeService;
+
+  @GetMapping("/me")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'HR_HEAD')")
+  @Operation(summary = "Get the authenticated employee profile")
+  public ResponseEntity<EmployeeDetailResponseDTO> getMyProfile(
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
+    return ResponseEntity.ok(employeeService.getByUserId(principal.userId()));
+  }
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD')")

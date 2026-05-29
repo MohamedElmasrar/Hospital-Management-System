@@ -11,5 +11,7 @@ public interface EmployeeRepository
 
   Optional<Employee> findByIdentifier(String identifier);
 
+  Optional<Employee> findByUserId(UUID userId);
+
   boolean existsByIdentifier(String identifier);
 }

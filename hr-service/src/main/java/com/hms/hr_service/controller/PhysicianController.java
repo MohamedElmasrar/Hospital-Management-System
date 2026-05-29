@@ -5,8 +5,10 @@ import com.hms.hr_service.dto.Physician.AssignPhysicianSpecialtyRequestDTO;
 import com.hms.hr_service.dto.Physician.CreatePhysicianRequestDTO;
 import com.hms.hr_service.dto.Physician.PhysicianResponseDTO;
 import com.hms.hr_service.dto.Physician.UpdatePhysicianRequestDTO;
+import com.hms.hr_service.security.AuthenticatedPrincipal;
 import com.hms.hr_service.service.PhysicianService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,14 @@ import org.springframework.web.bind.annotation.*;
 public class PhysicianController {
 
   private final PhysicianService physicianService;
+
+  @GetMapping("/me")
+  @PreAuthorize("hasRole('DOCTOR')")
+  @Operation(summary = "Get the authenticated physician profile")
+  public ResponseEntity<PhysicianResponseDTO> getMyProfile(
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
+    return ResponseEntity.ok(physicianService.getByUserId(principal.userId()));
+  }
 
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD')")

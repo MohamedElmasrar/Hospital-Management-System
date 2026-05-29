@@ -10,6 +10,7 @@ import { useLogin } from '@/app/api/generated/auth/auth-controller/auth-controll
 import { LoginResponseDTO } from '@/app/api/generated/auth/model'
 import { AxiosError } from 'axios'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function LoginForm({
   className,
@@ -17,6 +18,7 @@ export function LoginForm({
 }: React.ComponentProps<'form'>) {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const requestedCallback = searchParams.get('callBackUrl')
   const callBackUrl =
@@ -51,6 +53,7 @@ export function LoginForm({
         },
         onSuccess: (data: LoginResponseDTO) => {
           if (data.accessToken) {
+            queryClient.clear()
             localStorage.setItem('token', data.accessToken)
             window.dispatchEvent(new Event('hms-auth'))
             router.push(callBackUrl)

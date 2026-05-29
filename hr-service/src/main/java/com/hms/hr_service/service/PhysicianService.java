@@ -110,6 +110,17 @@ public class PhysicianService {
   }
 
   @Transactional(readOnly = true)
+  public PhysicianResponseDTO getByUserId(UUID userId) {
+    Employee employee =
+        employeeRepository.findByUserId(userId).orElseThrow(EmployeeNotFoundException::new);
+    Physician physician =
+        physicianRepository
+            .findByEmployeeId(employee.getId())
+            .orElseThrow(PhysicianNotFoundException::new);
+    return toResponseDTO(physician);
+  }
+
+  @Transactional(readOnly = true)
   public PageResponse<PhysicianResponseDTO> search(String search, Pageable pageable) {
     Specification<Physician> spec = PhysicianSpecification.hasSearch(search);
     Page<Physician> page = physicianRepository.findAll(spec, pageable);

@@ -28,12 +28,14 @@ public interface EmployeeMapper {
   EmployeeResponseDTO employeeToEmployeeResponseDTO(Employee employee);
 
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "userId", ignore = true)
   @Mapping(target = "dateCreated", ignore = true)
   @Mapping(target = "dateModified", ignore = true)
   Employee createEmployeeRequestDTOToEmployee(CreateEmployeeRequestDTO dto);
 
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "userId", ignore = true)
   @Mapping(target = "identifier", ignore = true)
   @Mapping(target = "dateCreated", ignore = true)
   @Mapping(target = "dateModified", ignore = true)

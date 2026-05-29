@@ -54,6 +54,7 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	systemProperty 'spring.sql.init.mode', 'never'
 }
 
 protobuf {
