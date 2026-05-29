@@ -1,3 +1,5 @@
+import { ReceptionAppointmentsTable } from '@/components/reception/reception-appointments-table'
+
 export default function ReceptionAppointmentsPage() {
-  return <h1 className="text-2xl font-semibold">Appointments</h1>
+  return <ReceptionAppointmentsTable />
 }

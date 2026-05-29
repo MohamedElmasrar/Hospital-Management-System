@@ -1,5 +1,6 @@
 package com.hms.reception_service.service;
 
+import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.admission.AdmissionDTO;
 import com.hms.reception_service.dto.admission.EmergencyAdmissionDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
@@ -9,10 +10,12 @@ import com.hms.reception_service.model.Admission;
 import com.hms.reception_service.model.Bed;
 import com.hms.reception_service.model.EmergencyAdmission;
 import com.hms.reception_service.repository.*;
+import com.hms.reception_service.specification.AdmissionSpecifications;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +40,15 @@ public class AdmissionService {
     return bedRepository.findByOccupiedFalse().stream().map(this::toBedResponse).toList();
   }
 
+  @Transactional(readOnly = true)
+  public PageResponse<AdmissionDTO.Response> searchAdmissions(
+      String query, boolean activeOnly, Pageable pageable) {
+    return PageResponse.from(
+        admissionRepository
+            .findAll(AdmissionSpecifications.search(query, activeOnly), pageable)
+            .map(this::toResponse));
+  }
+
   @Transactional
   public AdmissionDTO.Response admit(AdmissionDTO.AdmitRequest request) {
     var patient =
@@ -47,7 +59,8 @@ public class AdmissionService {
         bedRepository
             .findById(request.bedId())
             .orElseThrow(() -> new ResourceNotFoundException("Bed not found"));
-    if (bed.isOccupied() || admissionRepository.findByPatientIdAndDischargedAtIsNull(patient.getId()).isPresent()) {
+    if (bed.isOccupied()
+        || admissionRepository.findByPatientIdAndDischargedAtIsNull(patient.getId()).isPresent()) {
       throw new ResourceAlreadyExistsException("Patient or bed already has an active admission");
     }
     bed.setOccupied(true);
@@ -97,6 +110,8 @@ public class AdmissionService {
     return new AdmissionDTO.Response(
         admission.getId(),
         admission.getPatient().getId(),
+        admission.getPatient().getFirstName() + " " + admission.getPatient().getLastName(),
+        admission.getPatient().getPhone(),
         admission.getBed().getId(),
         admission.getBed().getBedCode(),
         admission.getBed().getWard(),
@@ -106,7 +121,17 @@ public class AdmissionService {
   }
 
   private AdmissionDTO.Response toBedResponse(Bed bed) {
-    return new AdmissionDTO.Response(null, bed.getPatientId(), bed.getId(), bed.getBedCode(), bed.getWard(), null, null, null);
+    return new AdmissionDTO.Response(
+        null,
+        bed.getPatientId(),
+        null,
+        null,
+        bed.getId(),
+        bed.getBedCode(),
+        bed.getWard(),
+        null,
+        null,
+        null);
   }
 
   private EmergencyAdmissionDTO.Response toEmergencyResponse(EmergencyAdmission admission) {

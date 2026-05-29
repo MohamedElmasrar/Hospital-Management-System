@@ -1,5 +1,6 @@
 package com.hms.reception_service.service;
 
+import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.queue.QueueDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
@@ -14,12 +15,14 @@ import com.hms.reception_service.repository.QueuePriorityLevelRepository;
 import com.hms.reception_service.repository.QueueTicketRepository;
 import com.hms.reception_service.repository.ReservationRepository;
 import com.hms.reception_service.repository.ReservationStatusRepository;
+import com.hms.reception_service.specification.QueueTicketSpecifications;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -212,5 +215,14 @@ public class QueueService {
   @Transactional(readOnly = true)
   public List<QueueDTO.TicketResponse> getQueueTickets(UUID queueId) {
     return queueMapper.toTicketResponseList(ticketRepository.findAllQueueTickets(queueId));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<QueueDTO.TicketResponse> searchTickets(
+      LocalDate date, String query, Pageable pageable) {
+    return PageResponse.from(
+        ticketRepository
+            .findAll(QueueTicketSpecifications.search(date, query), pageable)
+            .map(queueMapper::toTicketResponse));
   }
 }

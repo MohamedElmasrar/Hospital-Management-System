@@ -33,13 +33,17 @@ public class ReminderService {
 
   @Transactional(readOnly = true)
   public List<ReminderDTO.Response> findByReservation(UUID reservationId) {
-    return reminderRepository.findByReservationId(reservationId).stream().map(this::toResponse).toList();
+    return reminderRepository.findByReservationId(reservationId).stream()
+        .map(this::toResponse)
+        .toList();
   }
 
   @Transactional
   public ReminderDTO.Response markSent(UUID id) {
     AppointmentReminder reminder =
-        reminderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
+        reminderRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
     reminder.setSentAt(LocalDateTime.now());
     return toResponse(reminderRepository.save(reminder));
   }

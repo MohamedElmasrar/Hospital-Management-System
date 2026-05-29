@@ -1,5 +1,6 @@
 package com.hms.reception_service.dto.patient;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class PatientDTO {
       String chronicConditions,
       Boolean isActive) {}
 
+  @Schema(name = "PatientResponse")
   public record Response(
       UUID id,
       String mrn,

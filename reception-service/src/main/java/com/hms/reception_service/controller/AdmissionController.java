@@ -1,12 +1,15 @@
 package com.hms.reception_service.controller;
 
+import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.admission.AdmissionDTO;
 import com.hms.reception_service.dto.admission.EmergencyAdmissionDTO;
 import com.hms.reception_service.service.AdmissionService;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,16 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
 public class AdmissionController {
   private final AdmissionService admissionService;
+
+  @GetMapping
+  public ResponseEntity<PageResponse<AdmissionDTO.Response>> searchAdmissions(
+      @RequestParam(required = false) String query,
+      @RequestParam(defaultValue = "true") boolean activeOnly,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    var pageable = PageRequest.of(page, size, Sort.by("admittedAt").descending());
+    return ResponseEntity.ok(admissionService.searchAdmissions(query, activeOnly, pageable));
+  }
 
   @PostMapping("/beds")
   public ResponseEntity<AdmissionDTO.Response> createBed(

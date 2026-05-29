@@ -21,6 +21,7 @@ import com.hms.reception_service.repository.PatientRepository;
 import com.hms.reception_service.repository.ReservationCategoryRepository;
 import com.hms.reception_service.repository.ReservationRepository;
 import com.hms.reception_service.repository.ReservationStatusRepository;
+import com.hms.reception_service.specification.ReservationSpecifications;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -262,6 +263,15 @@ public class ReservationService {
     return PageResponse.from(
         reservationRepository
             .findByPatientId(patientId, pageable)
+            .map(reservationMapper::toResponse));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<ReservationDTO.Response> searchReservations(
+      String query, LocalDate date, Pageable pageable) {
+    return PageResponse.from(
+        reservationRepository
+            .findAll(ReservationSpecifications.search(query, date), pageable)
             .map(reservationMapper::toResponse));
   }
 

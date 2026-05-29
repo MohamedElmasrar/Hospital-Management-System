@@ -5,9 +5,12 @@ import com.hms.reception_service.dto.reservation.ReservationDTO;
 import com.hms.reception_service.security.AuthenticatedPrincipal;
 import com.hms.reception_service.service.ReservationService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,21 @@ import org.springframework.web.bind.annotation.*;
 public class ReservationController {
 
   private final ReservationService reservationService;
+
+  @GetMapping
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
+  public ResponseEntity<PageResponse<ReservationDTO.Response>> searchReservations(
+      @RequestParam(required = false) String query,
+      @RequestParam(required = false) LocalDate date,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    var pageable =
+        PageRequest.of(
+            page,
+            size,
+            Sort.by("reservationDate").descending().and(Sort.by("startTime").descending()));
+    return ResponseEntity.ok(reservationService.searchReservations(query, date, pageable));
+  }
 
   @PostMapping("/consultation")
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST', 'PATIENT')")

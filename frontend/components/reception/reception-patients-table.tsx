@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchPatients } from '@/app/api/generated/reception/patient-controller/patient-controller'
-import type { Response as Patient } from '@/app/api/generated/reception/model'
+import type { PatientResponse as Patient } from '@/app/api/generated/reception/model'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {

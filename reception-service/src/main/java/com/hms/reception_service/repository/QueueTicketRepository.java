@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface QueueTicketRepository extends JpaRepository<QueueTicket, UUID> {
+public interface QueueTicketRepository
+    extends JpaRepository<QueueTicket, UUID>, JpaSpecificationExecutor<QueueTicket> {
   Optional<QueueTicket> findByReservationId(UUID reservationId);
 
   List<QueueTicket> findByQueueIdAndStatus(UUID queueId, String status);

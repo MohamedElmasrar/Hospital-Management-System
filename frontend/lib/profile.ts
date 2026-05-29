@@ -11,7 +11,7 @@ import type {
   PhysicianResponseDTO,
 } from '@/app/api/generated/hr/model'
 import { useGetMyProfile as usePhysicianProfile } from '@/app/api/generated/hr/physician-controller/physician-controller'
-import type { Response as PatientResponse } from '@/app/api/generated/reception/model'
+import type { PatientResponse } from '@/app/api/generated/reception/model'
 import { useGetMyProfile as usePatientProfile } from '@/app/api/generated/reception/patient-controller/patient-controller'
 
 export type EmployeeProfile = EmployeeDetailResponseDTO
