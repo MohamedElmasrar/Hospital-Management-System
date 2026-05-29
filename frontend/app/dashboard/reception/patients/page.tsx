@@ -1,3 +1,5 @@
+import { ReceptionPatientsTable } from '@/components/reception/reception-patients-table'
+
 export default function ReceptionPatientsPage() {
-  return <h1 className="text-2xl font-semibold">Patients</h1>
+  return <ReceptionPatientsTable />
 }
