@@ -31,6 +31,12 @@ export function notifyAuthChanged() {
   }
 }
 
+export function setAccessToken(token: string) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('token', token)
+  notifyAuthChanged()
+}
+
 type JwtPayload = {
   sub?: string
   role?: string

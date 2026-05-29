@@ -33,6 +33,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
 import { useProfile } from '@/lib/profile'
 import { useQueryClient } from '@tanstack/react-query'
+import { useLogout } from '@/app/api/generated/auth/auth-controller/auth-controller'
 
 const sampleNotifications = [
   {
@@ -62,6 +63,7 @@ export function DashboardNavbar() {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { mutate: logout } = useLogout()
   const token = useSyncExternalStore(
     subscribeAuth,
     getTokenSnapshot,
@@ -84,9 +86,13 @@ export function DashboardNavbar() {
           .join(' ') ?? 'Dashboard')
 
   function signOut() {
-    clearAuth()
-    queryClient.clear()
-    router.replace('/login')
+    logout(undefined, {
+      onSettled: () => {
+        clearAuth()
+        queryClient.clear()
+        router.replace('/login')
+      },
+    })
   }
 
   return (

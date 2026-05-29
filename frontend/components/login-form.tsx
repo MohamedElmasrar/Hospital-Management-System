@@ -11,6 +11,7 @@ import { LoginResponseDTO } from '@/app/api/generated/auth/model'
 import { AxiosError } from 'axios'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import { setAccessToken } from '@/lib/auth'
 
 export function LoginForm({
   className,
@@ -54,8 +55,7 @@ export function LoginForm({
         onSuccess: (data: LoginResponseDTO) => {
           if (data.accessToken) {
             queryClient.clear()
-            localStorage.setItem('token', data.accessToken)
-            window.dispatchEvent(new Event('hms-auth'))
+            setAccessToken(data.accessToken)
             router.push(callBackUrl)
           } else {
             setError('Something goes wrong! Try again')
