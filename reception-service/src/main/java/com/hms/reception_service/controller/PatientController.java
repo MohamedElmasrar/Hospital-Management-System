@@ -48,6 +48,16 @@ public class PatientController {
     return ResponseEntity.ok(patientService.getPatientByUserId(principal.userId()));
   }
 
+  @GetMapping("/practitioner/{practitionerId}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+  public ResponseEntity<PageResponse<PatientDTO.Response>> searchPractitionerPatients(
+      @PathVariable UUID practitionerId,
+      @RequestParam(required = false) String query,
+      @PageableDefault(size = 20) Pageable pageable) {
+    return ResponseEntity.ok(
+        patientService.searchPatientsByPractitioner(practitionerId, query, pageable));
+  }
+
   @GetMapping
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<PageResponse<PatientDTO.Response>> searchPatients(

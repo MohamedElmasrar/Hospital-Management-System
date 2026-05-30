@@ -7,6 +7,7 @@ import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.mapper.PatientMapper;
 import com.hms.reception_service.model.Patient;
 import com.hms.reception_service.repository.PatientRepository;
+import com.hms.reception_service.specification.PatientSpecifications;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -70,6 +71,15 @@ public class PatientService {
   public PageResponse<PatientDTO.Response> searchPatients(String query, Pageable pageable) {
     return PageResponse.from(
         patientRepository.searchPatients(query, pageable).map(patientMapper::toResponse));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<PatientDTO.Response> searchPatientsByPractitioner(
+      UUID practitionerId, String query, Pageable pageable) {
+    return PageResponse.from(
+        patientRepository
+            .findAll(PatientSpecifications.relatedToPractitioner(practitionerId, query), pageable)
+            .map(patientMapper::toResponse));
   }
 
   @Transactional
