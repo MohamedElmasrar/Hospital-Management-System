@@ -87,12 +87,18 @@ public class InvoiceController {
   public ResponseEntity<String> getReceipt(@PathVariable UUID id) {
     InvoiceDetailResponseDTO invoice = invoiceService.getById(id);
     String receipt =
-        "Invoice: " + invoice.invoiceNumber()
-            + "\nPatient: " + invoice.patientId()
-            + "\nStatus: " + invoice.status()
-            + "\nTotal: " + invoice.totalAmount()
-            + "\nPaid: " + invoice.paidAmount()
-            + "\nBalance: " + invoice.balanceDue();
+        "Invoice: "
+            + invoice.invoiceNumber()
+            + "\nPatient: "
+            + invoice.patientId()
+            + "\nStatus: "
+            + invoice.status()
+            + "\nTotal: "
+            + invoice.totalAmount()
+            + "\nPaid: "
+            + invoice.paidAmount()
+            + "\nBalance: "
+            + invoice.balanceDue();
     return ResponseEntity.ok(receipt);
   }
 

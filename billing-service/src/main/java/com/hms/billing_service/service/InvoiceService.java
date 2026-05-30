@@ -102,9 +102,11 @@ public class InvoiceService {
   public InvoiceDetailResponseDTO createAutomatic(
       CreateAutomaticInvoiceRequestDTO request, UUID staffId) {
     List<BillableOrder> orders =
-        billableOrderRepository.findByPatientId(
+        billableOrderRepository
+            .findByPatientId(
                 request.patientId(), org.springframework.data.domain.Pageable.unpaged())
-            .getContent().stream()
+            .getContent()
+            .stream()
             .filter(order -> !lineItemRepository.existsByBillableOrderId(order.getId()))
             .toList();
     if (orders.isEmpty()) {
@@ -117,9 +119,7 @@ public class InvoiceService {
             request.dueDate(),
             orders.stream()
                 .map(
-                    order ->
-                        new CreateInvoiceLineItemRequestDTO(
-                            order.getId(), 1, BigDecimal.ZERO))
+                    order -> new CreateInvoiceLineItemRequestDTO(order.getId(), 1, BigDecimal.ZERO))
                 .toList());
     return create(invoiceRequest, staffId);
   }
