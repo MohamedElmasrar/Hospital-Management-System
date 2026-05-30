@@ -133,11 +133,13 @@ class RefreshTokenServiceTest {
     RefreshToken refreshToken = new RefreshToken();
     refreshToken.setTokenHash(tokenHash);
     refreshToken.setRevoked(false);
+    refreshToken.setUser(user);
 
     given(refreshTokenRepository.findByTokenHash(tokenHash)).willReturn(Optional.of(refreshToken));
 
-    refreshTokenService.revokeRefreshToken(rawToken);
+    Optional<User> revokedUser = refreshTokenService.revokeRefreshToken(rawToken);
 
+    assertThat(revokedUser).contains(user);
     assertThat(refreshToken.isRevoked()).isTrue();
     verify(refreshTokenRepository).save(refreshToken);
   }
@@ -149,8 +151,20 @@ class RefreshTokenServiceTest {
 
     given(refreshTokenRepository.findByTokenHash(tokenHash)).willReturn(Optional.empty());
 
-    refreshTokenService.revokeRefreshToken(rawToken);
+    assertThat(refreshTokenService.revokeRefreshToken(rawToken)).isEmpty();
 
+    verify(refreshTokenRepository, never()).save(any());
+  }
+
+  @Test
+  void revokeRefreshToken_alreadyRevoked_doesNotCountAgain() {
+    String rawToken = "already-revoked-token";
+    RefreshToken refreshToken = new RefreshToken();
+    refreshToken.setRevoked(true);
+    given(refreshTokenRepository.findByTokenHash(RefreshTokenService.hashToken(rawToken)))
+        .willReturn(Optional.of(refreshToken));
+
+    assertThat(refreshTokenService.revokeRefreshToken(rawToken)).isEmpty();
     verify(refreshTokenRepository, never()).save(any());
   }
 

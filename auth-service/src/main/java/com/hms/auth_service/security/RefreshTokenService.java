@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -50,13 +51,15 @@ public class RefreshTokenService {
     }
   }
 
-  public void revokeRefreshToken(String rawToken) {
-    refreshTokenRepository
+  public Optional<User> revokeRefreshToken(String rawToken) {
+    return refreshTokenRepository
         .findByTokenHash(hashToken(rawToken))
-        .ifPresent(
+        .filter(token -> !token.isRevoked())
+        .map(
             token -> {
               token.setRevoked(true);
               refreshTokenRepository.save(token);
+              return token.getUser();
             });
   }
 

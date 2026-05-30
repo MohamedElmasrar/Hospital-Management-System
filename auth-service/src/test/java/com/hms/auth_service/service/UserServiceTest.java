@@ -9,8 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
+import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.mapper.UserMapper;
+import com.hms.auth_service.messaging.AnalyticsEventPublisher;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import java.util.Optional;
@@ -28,6 +30,7 @@ class UserServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private BCryptPasswordEncoder passwordEncoder;
   @Mock private UserMapper userMapper;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private UserService userService;
 
@@ -61,14 +64,18 @@ class UserServiceTest {
     User expectedUser = new User();
     expectedUser.setEmail("new_user@email.com");
     expectedUser.setPasswordHash("$2a$10$encodedPasswordHash");
+    expectedUser.setId(UUID.randomUUID());
 
     given(userRepository.existsByEmail("new_user@email.com")).willReturn(false);
     given(passwordEncoder.encode("plainPassword123")).willReturn("$2a$10$encodedPasswordHash");
     given(userMapper.toUser(request, "$2a$10$encodedPasswordHash")).willReturn(expectedUser);
+    given(userRepository.save(expectedUser)).willReturn(expectedUser);
 
     userService.registerNewUser(request);
 
     verify(userRepository).save(expectedUser);
+    verify(analyticsEventPublisher)
+        .publishUserEvent("USER_REGISTERED", expectedUser.getId(), expectedUser.getRole());
   }
 
   @Test
@@ -82,5 +89,37 @@ class UserServiceTest {
 
     verify(userRepository, never()).save(any());
     verifyNoInteractions(passwordEncoder);
+    verifyNoInteractions(analyticsEventPublisher);
+  }
+
+  @Test
+  void updateRole_emitsEventOnlyWhenRoleChanges() {
+    User user = new User();
+    user.setId(UUID.randomUUID());
+    user.setRole(UserRole.EMPLOYEE);
+    given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+    given(userRepository.save(user)).willReturn(user);
+
+    userService.updateRole(user.getId(), UserRole.DOCTOR);
+    userService.updateRole(user.getId(), UserRole.DOCTOR);
+
+    verify(userRepository).save(user);
+    verify(analyticsEventPublisher)
+        .publishUserEvent("USER_ROLE_UPDATED", user.getId(), UserRole.DOCTOR);
+  }
+
+  @Test
+  void updateActive_emitsEventOnlyWhenStatusChanges() {
+    User user = new User();
+    user.setId(UUID.randomUUID());
+    given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+    given(userRepository.save(user)).willReturn(user);
+
+    userService.updateActive(user.getId(), false);
+    userService.updateActive(user.getId(), false);
+
+    verify(userRepository).save(user);
+    verify(analyticsEventPublisher)
+        .publishUserEvent("USER_DEACTIVATED", user.getId(), user.getRole());
   }
 }

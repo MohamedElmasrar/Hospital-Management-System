@@ -5,6 +5,7 @@ import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.mapper.UserMapper;
+import com.hms.auth_service.messaging.AnalyticsEventPublisher;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,6 +23,7 @@ public class UserService {
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   public Optional<User> findByEmail(String email) {
     return userRepository.findByEmail(email);
@@ -43,15 +45,26 @@ public class UserService {
   @Transactional
   public User updateRole(UUID id, UserRole role) {
     User user = userRepository.findById(id).orElseThrow();
+    if (user.getRole() == role) {
+      return user;
+    }
     user.setRole(role);
-    return userRepository.save(user);
+    User saved = userRepository.save(user);
+    analyticsEventPublisher.publishUserEvent("USER_ROLE_UPDATED", saved.getId(), saved.getRole());
+    return saved;
   }
 
   @Transactional
   public User updateActive(UUID id, boolean active) {
     User user = userRepository.findById(id).orElseThrow();
+    if (user.isActive() == active) {
+      return user;
+    }
     user.setActive(active);
-    return userRepository.save(user);
+    User saved = userRepository.save(user);
+    analyticsEventPublisher.publishUserEvent(
+        active ? "USER_ACTIVATED" : "USER_DEACTIVATED", saved.getId(), saved.getRole());
+    return saved;
   }
 
   @Transactional
@@ -63,6 +76,7 @@ public class UserService {
     String passwordHash = passwordEncoder.encode(request.password());
     User userToSave = userMapper.toUser(request, passwordHash);
 
-    userRepository.save(userToSave);
+    User saved = userRepository.save(userToSave);
+    analyticsEventPublisher.publishUserEvent("USER_REGISTERED", saved.getId(), saved.getRole());
   }
 }

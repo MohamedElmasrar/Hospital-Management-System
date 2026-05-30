@@ -3,6 +3,7 @@ package com.hms.auth_service.service;
 import com.hms.auth_service.dto.login.LoginRequestDTO;
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.exception.InvalidCredentialsException;
+import com.hms.auth_service.messaging.AnalyticsEventPublisher;
 import com.hms.auth_service.model.RefreshToken;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.security.JwtTokenService;
@@ -20,6 +21,7 @@ public class AuthService {
   private final RefreshTokenService refreshTokenService;
   private final UserService userService;
   private final BCryptPasswordEncoder passwordEncoder;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   public record LoginResult(String accessToken, String rawRefreshToken) {}
 
@@ -35,6 +37,7 @@ public class AuthService {
     String rawRefreshToken = jwtTokenService.generateRefreshToken();
 
     refreshTokenService.createRefreshToken(user, rawRefreshToken);
+    analyticsEventPublisher.publishUserEvent("USER_LOGGED_IN", user.getId(), user.getRole());
 
     return new LoginResult(accessToken, rawRefreshToken);
   }
@@ -45,7 +48,10 @@ public class AuthService {
 
     User user = refreshToken.getUser();
 
-    return jwtTokenService.generateAccessToken(user.getId(), user.getRole());
+    String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getRole());
+    analyticsEventPublisher.publishUserEvent(
+        "ACCESS_TOKEN_REFRESHED", user.getId(), user.getRole());
+    return accessToken;
   }
 
   @Transactional
@@ -54,7 +60,12 @@ public class AuthService {
       return;
     }
 
-    refreshTokenService.revokeRefreshToken(rawToken);
+    refreshTokenService
+        .revokeRefreshToken(rawToken)
+        .ifPresent(
+            user ->
+                analyticsEventPublisher.publishUserEvent(
+                    "USER_LOGGED_OUT", user.getId(), user.getRole()));
   }
 
   public void registerNewUser(RegisterRequestDTO request) {

@@ -24,3 +24,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+
+# Agents
+.agents
+.codex
+
+# AWS
+.aws

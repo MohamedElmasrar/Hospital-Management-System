@@ -11,6 +11,7 @@ import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.InvalidCredentialsException;
 import com.hms.auth_service.exception.InvalidRefreshTokenException;
+import com.hms.auth_service.messaging.AnalyticsEventPublisher;
 import com.hms.auth_service.model.RefreshToken;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.security.JwtTokenService;
@@ -32,6 +33,7 @@ class AuthServiceTest {
   @Mock private BCryptPasswordEncoder passwordEncoder;
   @Mock private JwtTokenService jwtTokenService;
   @Mock private UserService userService;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private AuthService authService;
 
@@ -64,6 +66,8 @@ class AuthServiceTest {
     assertThat(result.rawRefreshToken()).isEqualTo("raw-refresh-token-xyz");
 
     verify(refreshTokenService).createRefreshToken(existingUser, "raw-refresh-token-xyz");
+    verify(analyticsEventPublisher)
+        .publishUserEvent("USER_LOGGED_IN", existingUser.getId(), existingUser.getRole());
   }
 
   @Test
@@ -108,6 +112,8 @@ class AuthServiceTest {
     assertThat(result).isEqualTo("new-access-token");
     verify(refreshTokenService).findAndValidateRefreshToken(rawRefreshToken);
     verify(jwtTokenService).generateAccessToken(existingUser.getId(), existingUser.getRole());
+    verify(analyticsEventPublisher)
+        .publishUserEvent("ACCESS_TOKEN_REFRESHED", existingUser.getId(), existingUser.getRole());
   }
 
   @Test
@@ -126,10 +132,14 @@ class AuthServiceTest {
   @Test
   void logout_validToken_revokesRefreshToken() {
     String rawRefreshToken = "valid-raw-refresh-token";
+    given(refreshTokenService.revokeRefreshToken(rawRefreshToken))
+        .willReturn(Optional.of(existingUser));
 
     authService.logout(rawRefreshToken);
 
     verify(refreshTokenService).revokeRefreshToken(rawRefreshToken);
+    verify(analyticsEventPublisher)
+        .publishUserEvent("USER_LOGGED_OUT", existingUser.getId(), existingUser.getRole());
   }
 
   @Test

@@ -24,9 +24,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authDB
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       auth-db:
         condition: service_healthy
+      kafka:
+        condition: service_started
   hr-service:
     container_name: hr-service
     build: ./hr-service/
