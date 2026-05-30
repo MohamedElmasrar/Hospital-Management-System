@@ -5,6 +5,7 @@ import com.hms.reception_service.dto.patient.PatientDTO;
 import com.hms.reception_service.exception.ResourceAlreadyExistsException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.mapper.PatientMapper;
+import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.Patient;
 import com.hms.reception_service.repository.PatientRepository;
 import com.hms.reception_service.specification.PatientSpecifications;
@@ -25,6 +26,7 @@ public class PatientService {
 
   private final PatientRepository patientRepository;
   private final PatientMapper patientMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -39,7 +41,9 @@ public class PatientService {
     Patient patient = patientMapper.toEntity(req);
     patient.setMrn(generateUniqueMrn());
 
-    return patientMapper.toResponse(patientRepository.save(patient));
+    Patient saved = patientRepository.save(patient);
+    analyticsEventPublisher.publish("PATIENT_CREATED", "PATIENT", saved.getId());
+    return patientMapper.toResponse(saved);
   }
 
   @Transactional(readOnly = true)

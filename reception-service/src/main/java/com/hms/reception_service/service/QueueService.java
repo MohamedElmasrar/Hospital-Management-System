@@ -5,6 +5,7 @@ import com.hms.reception_service.dto.queue.QueueDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.mapper.QueueMapper;
+import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.DailyQueue;
 import com.hms.reception_service.model.ExaminationRoom;
 import com.hms.reception_service.model.QueuePriorityLevel;
@@ -38,6 +39,7 @@ public class QueueService {
   private final QueuePriorityLevelRepository priorityRepository;
   private final ReservationStatusRepository statusRepository;
   private final QueueMapper queueMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public QueueDTO.DailyQueueResponse getOrCreateDailyQueue(UUID departmentId, UUID roomId) {
@@ -146,7 +148,9 @@ public class QueueService {
               reservationRepository.save(res);
             });
 
-    return queueMapper.toTicketResponse(ticketRepository.save(ticket));
+    QueueTicket saved = ticketRepository.save(ticket);
+    analyticsEventPublisher.publish("QUEUE_TICKET_ISSUED", "QUEUE_TICKET", saved.getId());
+    return queueMapper.toTicketResponse(saved);
   }
 
   @Transactional
@@ -178,7 +182,9 @@ public class QueueService {
               reservationRepository.save(nextTicket.getReservation());
             });
 
-    return queueMapper.toTicketResponse(ticketRepository.save(nextTicket));
+    QueueTicket saved = ticketRepository.save(nextTicket);
+    analyticsEventPublisher.publish("QUEUE_TICKET_CALLED", "QUEUE_TICKET", saved.getId());
+    return queueMapper.toTicketResponse(saved);
   }
 
   @Transactional
@@ -188,6 +194,8 @@ public class QueueService {
             .findById(ticketId)
             .orElseThrow(() -> new ResourceNotFoundException("Ticket not found: " + ticketId));
 
+    String oldTicketStatus = ticket.getStatus();
+    String oldReservationStatus = ticket.getReservation().getStatus().getCode();
     ticket.setStatus(newStatus.toUpperCase());
     Date now = new Date();
 
@@ -211,7 +219,16 @@ public class QueueService {
               });
     }
 
-    return queueMapper.toTicketResponse(ticketRepository.save(ticket));
+    QueueTicket saved = ticketRepository.save(ticket);
+    if (!"COMPLETED".equals(oldReservationStatus)
+        && "COMPLETED".equals(saved.getReservation().getStatus().getCode())) {
+      analyticsEventPublisher.publish(
+          "RESERVATION_COMPLETED", "RESERVATION", saved.getReservation().getId());
+    }
+    if (!"COMPLETED".equals(oldTicketStatus) && "COMPLETED".equals(saved.getStatus())) {
+      analyticsEventPublisher.publish("QUEUE_TICKET_COMPLETED", "QUEUE_TICKET", saved.getId());
+    }
+    return queueMapper.toTicketResponse(saved);
   }
 
   @Transactional(readOnly = true)

@@ -6,6 +6,7 @@ import com.hms.billing_service.enums.ClaimStatus;
 import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.exception.*;
 import com.hms.billing_service.mapper.InsuranceMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.InsuranceClaim;
 import com.hms.billing_service.model.InsuranceProvider;
 import com.hms.billing_service.model.Invoice;
@@ -33,6 +34,7 @@ public class InsuranceService {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceService invoiceService;
   private final InsuranceMapper insuranceMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   // --- Provider Operations ---
 
@@ -98,6 +100,7 @@ public class InsuranceService {
     policy.setIsActive(true);
 
     PatientInsurancePolicy saved = policyRepository.save(policy);
+    analyticsEventPublisher.publish("INSURANCE_POLICY_CREATED", "INSURANCE_POLICY", saved.getId());
     return insuranceMapper.policyToResponseDTO(saved);
   }
 
@@ -161,6 +164,7 @@ public class InsuranceService {
     claim.setSubmittedAt(new Date());
 
     InsuranceClaim saved = claimRepository.save(claim);
+    analyticsEventPublisher.publish("INSURANCE_CLAIM_SUBMITTED", "INSURANCE_CLAIM", saved.getId());
     return insuranceMapper.claimToResponseDTO(saved);
   }
 
@@ -175,6 +179,7 @@ public class InsuranceService {
                     new InsuranceClaimNotFoundException(
                         "Insurance claim not found with ID: " + claimId));
 
+    ClaimStatus oldStatus = claim.getStatus();
     claim.setStatus(request.status());
     if (request.status() == ClaimStatus.APPROVED || request.status() == ClaimStatus.SETTLED) {
       BigDecimal approved =
@@ -186,14 +191,22 @@ public class InsuranceService {
     }
 
     InsuranceClaim updated = claimRepository.save(claim);
+    if (oldStatus != updated.getStatus()) {
+      analyticsEventPublisher.publish(
+          "INSURANCE_CLAIM_" + updated.getStatus().name(), "INSURANCE_CLAIM", updated.getId());
+    }
 
     // Re-check invoice balance
     Invoice invoice = claim.getInvoice();
     InvoiceService.InvoiceCalculations calc = invoiceService.calculate(invoice);
     if (calc.balanceDue().compareTo(BigDecimal.ZERO) <= 0
         && invoice.getStatus() != InvoiceStatus.VOID) {
+      boolean becamePaid = invoice.getStatus() != InvoiceStatus.PAID;
       invoice.setStatus(InvoiceStatus.PAID);
       invoiceRepository.save(invoice);
+      if (becamePaid) {
+        analyticsEventPublisher.publish("INVOICE_PAID", "INVOICE", invoice.getId());
+      }
     }
 
     return insuranceMapper.claimToResponseDTO(updated);

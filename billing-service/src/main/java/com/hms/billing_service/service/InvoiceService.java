@@ -11,6 +11,7 @@ import com.hms.billing_service.exception.*;
 import com.hms.billing_service.mapper.InsuranceMapper;
 import com.hms.billing_service.mapper.InvoiceMapper;
 import com.hms.billing_service.mapper.PaymentMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.*;
 import com.hms.billing_service.repository.*;
 import java.math.BigDecimal;
@@ -36,6 +37,7 @@ public class InvoiceService {
   private final PaymentMapper paymentMapper;
   private final InsuranceMapper insuranceMapper;
   private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public InvoiceDetailResponseDTO create(CreateInvoiceRequestDTO request, UUID staffId) {
@@ -95,6 +97,7 @@ public class InvoiceService {
     }
 
     Invoice saved = invoiceRepository.save(invoice);
+    analyticsEventPublisher.publish("INVOICE_CREATED", "INVOICE", saved.getId());
     return getDetailDTO(saved);
   }
 
@@ -207,8 +210,12 @@ public class InvoiceService {
       throw new InvalidOperationException("Cannot revert a paid invoice to draft");
     }
 
+    InvoiceStatus oldStatus = invoice.getStatus();
     invoice.setStatus(newStatus);
     Invoice saved = invoiceRepository.save(invoice);
+    if (oldStatus != newStatus) {
+      publishStatusEvent(saved);
+    }
     return getDetailDTO(saved);
   }
 
@@ -266,8 +273,21 @@ public class InvoiceService {
           "Cannot void invoice that has completed payments. Refund payments first.");
     }
 
+    boolean changed = invoice.getStatus() != InvoiceStatus.VOID;
     invoice.setStatus(InvoiceStatus.VOID);
     invoiceRepository.save(invoice);
+    if (changed) {
+      publishStatusEvent(invoice);
+    }
+  }
+
+  private void publishStatusEvent(Invoice invoice) {
+    if (invoice.getStatus() == InvoiceStatus.ISSUED
+        || invoice.getStatus() == InvoiceStatus.PAID
+        || invoice.getStatus() == InvoiceStatus.VOID) {
+      analyticsEventPublisher.publish(
+          "INVOICE_" + invoice.getStatus().name(), "INVOICE", invoice.getId());
+    }
   }
 
   // --- Calculation helpers ---

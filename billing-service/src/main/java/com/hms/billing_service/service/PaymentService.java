@@ -10,6 +10,7 @@ import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.exception.InvoiceNotFoundException;
 import com.hms.billing_service.exception.PaymentNotFoundException;
 import com.hms.billing_service.mapper.PaymentMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.CashDesk;
 import com.hms.billing_service.model.Invoice;
 import com.hms.billing_service.model.Payment;
@@ -36,6 +37,7 @@ public class PaymentService {
   private final InvoiceService invoiceService;
   private final PaymentMapper paymentMapper;
   private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public PaymentResponseDTO processPayment(ProcessPaymentRequestDTO request, UUID cashierId) {
@@ -95,10 +97,20 @@ public class PaymentService {
     if (remainingBalance.compareTo(BigDecimal.ZERO) <= 0) {
       invoice.setStatus(InvoiceStatus.PAID);
       invoiceRepository.save(invoice);
+      analyticsEventPublisher.publish("INVOICE_PAID", "INVOICE", invoice.getId());
     } else if (invoice.getStatus() == InvoiceStatus.DRAFT) {
       invoice.setStatus(InvoiceStatus.ISSUED);
       invoiceRepository.save(invoice);
+      analyticsEventPublisher.publish("INVOICE_ISSUED", "INVOICE", invoice.getId());
     }
+
+    analyticsEventPublisher.publish(
+        "PAYMENT_COMPLETED",
+        "PAYMENT",
+        saved.getId(),
+        saved.getAmount(),
+        "method",
+        saved.getMethod().name());
 
     return paymentMapper.paymentToPaymentResponseDTO(saved);
   }
@@ -149,7 +161,16 @@ public class PaymentService {
         && invoice.getStatus() == InvoiceStatus.PAID) {
       invoice.setStatus(InvoiceStatus.ISSUED);
       invoiceRepository.save(invoice);
+      analyticsEventPublisher.publish("INVOICE_ISSUED", "INVOICE", invoice.getId());
     }
+
+    analyticsEventPublisher.publish(
+        "PAYMENT_REFUNDED",
+        "PAYMENT",
+        updated.getId(),
+        updated.getAmount(),
+        "method",
+        updated.getMethod().name());
 
     return paymentMapper.paymentToPaymentResponseDTO(updated);
   }

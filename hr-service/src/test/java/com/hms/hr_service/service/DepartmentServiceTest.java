@@ -33,6 +33,7 @@ class DepartmentServiceTest {
   @Mock private DepartmentRepository departmentRepository;
   @Mock private MedicalOrganizationRepository medicalOrganizationRepository;
   @Mock private DepartmentMapper departmentMapper;
+  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private DepartmentService departmentService;
 

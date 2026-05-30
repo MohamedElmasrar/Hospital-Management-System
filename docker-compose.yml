@@ -37,9 +37,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://hr-db:5432/hrDB
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       hr-db:
         condition: service_healthy
+      kafka:
+        condition: service_started
   billing-service:
     container_name: billing-service
     build: ./billing-service/
@@ -49,10 +52,13 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       HR_GRPC_HOST: hr-service
       HR_GRPC_PORT: 9091
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       billing-db:
         condition: service_healthy
       hr-service:
+        condition: service_started
+      kafka:
         condition: service_started
 
 
@@ -65,10 +71,13 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
       HR_GRPC_HOST: hr-service
       HR_GRPC_PORT: 9091
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       reception-db:
         condition: service_healthy
       hr-service:
+        condition: service_started
+      kafka:
         condition: service_started
 
   analytics-service:

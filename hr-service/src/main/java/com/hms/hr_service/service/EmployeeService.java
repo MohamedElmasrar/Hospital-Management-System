@@ -15,6 +15,7 @@ import com.hms.hr_service.exception.DepartmentNotFoundException;
 import com.hms.hr_service.exception.EmployeeNotFoundException;
 import com.hms.hr_service.exception.ResourceAlreadyExistsException;
 import com.hms.hr_service.mapper.EmployeeMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.ContactPoint;
 import com.hms.hr_service.model.Department;
 import com.hms.hr_service.model.Employee;
@@ -45,6 +46,7 @@ public class EmployeeService {
   private final EmployeeAssignmentRepository employeeAssignmentRepository;
   private final DepartmentRepository departmentRepository;
   private final EmployeeMapper employeeMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public EmployeeResponseDTO create(CreateEmployeeRequestDTO request) {
@@ -66,6 +68,7 @@ public class EmployeeService {
           employeeMapper.createEmployeeRequestDTOToPostalAddress(request, saved));
     }
 
+    analyticsEventPublisher.publish("EMPLOYEE_CREATED", "EMPLOYEE", saved.getId());
     return employeeMapper.employeeToEmployeeResponseDTO(saved);
   }
 
@@ -124,8 +127,10 @@ public class EmployeeService {
     EmployeeAssignment assignment =
         employeeMapper.toEmployeeAssignment(request, employee, department);
 
-    return employeeMapper.employeeAssignmentToEmployeeAssignmentResponseDTO(
-        employeeAssignmentRepository.save(assignment));
+    EmployeeAssignment saved = employeeAssignmentRepository.save(assignment);
+    analyticsEventPublisher.publish(
+        "EMPLOYEE_ASSIGNED_TO_DEPARTMENT", "EMPLOYEE_ASSIGNMENT", saved.getId());
+    return employeeMapper.employeeAssignmentToEmployeeAssignmentResponseDTO(saved);
   }
 
   @Transactional(readOnly = true)

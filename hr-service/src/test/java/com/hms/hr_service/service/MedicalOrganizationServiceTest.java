@@ -29,6 +29,7 @@ class MedicalOrganizationServiceTest {
 
   @Mock private MedicalOrganizationRepository medicalOrganizationRepository;
   @Mock private MedicalOrganizationMapper medicalOrganizationMapper;
+  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private MedicalOrganizationService medicalOrganizationService;
 

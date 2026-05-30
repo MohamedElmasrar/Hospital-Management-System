@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.hms.billing_service.dto.invoice.CreateInvoiceLineItemRequestDTO;
 import com.hms.billing_service.dto.invoice.CreateInvoiceRequestDTO;
+import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.enums.SourceOrderType;
 import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.mapper.InsuranceMapper;
@@ -35,6 +36,7 @@ class InvoiceServiceTest {
   @Mock private PaymentRepository paymentRepository;
   @Mock private InsuranceClaimRepository insuranceClaimRepository;
   @Mock private com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
+  @Mock private com.hms.billing_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   private InvoiceMapper invoiceMapper;
   private PaymentMapper paymentMapper;
@@ -57,7 +59,8 @@ class InvoiceServiceTest {
             invoiceMapper,
             paymentMapper,
             insuranceMapper,
-            hrGrpcClient);
+            hrGrpcClient,
+            analyticsEventPublisher);
   }
 
   @Test
@@ -152,5 +155,18 @@ class InvoiceServiceTest {
     assertThatThrownBy(() -> invoiceService.create(request, UUID.randomUUID()))
         .isInstanceOf(InvalidOperationException.class)
         .hasMessageContaining("does not belong to patient");
+  }
+
+  @Test
+  void voidInvoice_alreadyVoid_doesNotCountAgain() {
+    UUID invoiceId = UUID.randomUUID();
+    Invoice invoice = new Invoice();
+    invoice.setId(invoiceId);
+    invoice.setStatus(InvoiceStatus.VOID);
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+
+    invoiceService.voidInvoice(invoiceId);
+
+    verifyNoInteractions(analyticsEventPublisher);
   }
 }

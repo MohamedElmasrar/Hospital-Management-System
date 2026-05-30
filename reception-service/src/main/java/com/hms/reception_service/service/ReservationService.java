@@ -6,6 +6,7 @@ import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
 import com.hms.reception_service.mapper.ReservationMapper;
+import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.DiagnosticModality;
 import com.hms.reception_service.model.DiagnosticPrescription;
 import com.hms.reception_service.model.DiagnosticReservationDetail;
@@ -47,6 +48,7 @@ public class ReservationService {
   private final DiagnosticPrescriptionRepository prescriptionRepository;
   private final HrGrpcClient hrGrpcClient;
   private final ReservationMapper reservationMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -109,7 +111,14 @@ public class ReservationService {
     res.setNotes(req.notes());
     res.setReceptionistStaffId(receptionistId);
 
-    return reservationMapper.toResponse(reservationRepository.save(res));
+    Reservation saved = reservationRepository.save(res);
+    analyticsEventPublisher.publish(
+        "CONSULTATION_RESERVED",
+        "RESERVATION",
+        saved.getId(),
+        "department_id",
+        req.departmentId().toString());
+    return reservationMapper.toResponse(saved);
   }
 
   @Transactional
@@ -201,7 +210,14 @@ public class ReservationService {
 
     res.setDiagnosticDetail(detail);
 
-    return reservationMapper.toResponse(reservationRepository.save(res));
+    Reservation saved = reservationRepository.save(res);
+    analyticsEventPublisher.publish(
+        "DIAGNOSTIC_RESERVED",
+        "RESERVATION",
+        saved.getId(),
+        "department_id",
+        req.departmentId().toString());
+    return reservationMapper.toResponse(saved);
   }
 
   @Transactional
@@ -217,11 +233,16 @@ public class ReservationService {
             .findByCode("PAID")
             .orElseThrow(() -> new ResourceNotFoundException("Status PAID not found"));
 
+    boolean becamePaid = !Boolean.TRUE.equals(res.getIsPaid());
     res.setIsPaid(Boolean.TRUE);
     res.setStatus(paidStatus);
     res.setBillingInvoiceId(invoiceId);
 
-    return reservationMapper.toResponse(reservationRepository.save(res));
+    Reservation saved = reservationRepository.save(res);
+    if (becamePaid) {
+      analyticsEventPublisher.publish("RESERVATION_PAID", "RESERVATION", saved.getId());
+    }
+    return reservationMapper.toResponse(saved);
   }
 
   @Transactional
@@ -239,16 +260,33 @@ public class ReservationService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Status not found: " + req.statusId()));
 
+    String oldStatus = res.getStatus().getCode();
     res.setStatus(newStatus);
     if (req.notes() != null && !req.notes().isBlank()) {
       res.setNotes((res.getNotes() != null ? res.getNotes() + "\n" : "") + req.notes());
     }
 
-    if ("COMPLETED".equals(newStatus.getCode()) && res.getPrescription() != null) {
+    boolean prescriptionFulfilled =
+        "COMPLETED".equals(newStatus.getCode())
+            && res.getPrescription() != null
+            && !Boolean.TRUE.equals(res.getPrescription().getIsFulfilled());
+    if (prescriptionFulfilled) {
       res.getPrescription().setIsFulfilled(Boolean.TRUE);
     }
 
-    return reservationMapper.toResponse(reservationRepository.save(res));
+    Reservation saved = reservationRepository.save(res);
+    if (!oldStatus.equals(newStatus.getCode())
+        && ("COMPLETED".equals(newStatus.getCode()) || "CANCELLED".equals(newStatus.getCode()))) {
+      analyticsEventPublisher.publish(
+          "RESERVATION_" + newStatus.getCode(), "RESERVATION", saved.getId());
+    }
+    if (prescriptionFulfilled) {
+      analyticsEventPublisher.publish(
+          "DIAGNOSTIC_PRESCRIPTION_FULFILLED",
+          "DIAGNOSTIC_PRESCRIPTION",
+          saved.getPrescription().getId());
+    }
+    return reservationMapper.toResponse(saved);
   }
 
   @Transactional(readOnly = true)

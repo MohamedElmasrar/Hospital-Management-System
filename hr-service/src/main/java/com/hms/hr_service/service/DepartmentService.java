@@ -8,6 +8,7 @@ import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.exception.DepartmentNotFoundException;
 import com.hms.hr_service.exception.MedicalOrganizationNotFoundException;
 import com.hms.hr_service.mapper.DepartmentMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.Department;
 import com.hms.hr_service.model.MedicalOrganization;
 import com.hms.hr_service.repository.DepartmentRepository;
@@ -28,6 +29,7 @@ public class DepartmentService {
   private final DepartmentRepository departmentRepository;
   private final MedicalOrganizationRepository medicalOrganizationRepository;
   private final DepartmentMapper departmentMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public DepartmentResponseDTO create(CreateDepartmentRequestDTO request) {
@@ -57,8 +59,9 @@ public class DepartmentService {
       department.setParentDepartment(parent);
     }
 
-    return departmentMapper.departmentToDepartmentResponseDTO(
-        departmentRepository.save(department));
+    Department saved = departmentRepository.save(department);
+    analyticsEventPublisher.publish("DEPARTMENT_CREATED", "DEPARTMENT", saved.getId());
+    return departmentMapper.departmentToDepartmentResponseDTO(saved);
   }
 
   @Transactional

@@ -2,6 +2,7 @@ package com.hms.hr_service.service;
 
 import com.hms.hr_service.dto.workforce.WorkforceDTO;
 import com.hms.hr_service.exception.*;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.*;
 import com.hms.hr_service.repository.*;
 import java.time.*;
@@ -19,6 +20,7 @@ public class WorkforceService {
   private final EmployeeShiftRepository shiftRepository;
   private final LeaveRequestRepository leaveRepository;
   private final AttendanceRecordRepository attendanceRepository;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public WorkforceDTO.CredentialResponse addCredential(
@@ -49,7 +51,9 @@ public class WorkforceService {
     shift.setShiftDate(request.shiftDate());
     shift.setStartsAt(request.startsAt());
     shift.setEndsAt(request.endsAt());
-    return shift(shiftRepository.save(shift));
+    EmployeeShift saved = shiftRepository.save(shift);
+    analyticsEventPublisher.publish("SHIFT_CREATED", "EMPLOYEE_SHIFT", saved.getId());
+    return shift(saved);
   }
 
   @Transactional(readOnly = true)
@@ -76,7 +80,9 @@ public class WorkforceService {
     leave.setEndsOn(request.endsOn());
     leave.setReason(request.reason());
     leave.setStatus("PENDING");
-    return leave(leaveRepository.save(leave));
+    LeaveRequest saved = leaveRepository.save(leave);
+    analyticsEventPublisher.publish("LEAVE_REQUESTED", "LEAVE_REQUEST", saved.getId());
+    return leave(saved);
   }
 
   @Transactional
@@ -89,9 +95,14 @@ public class WorkforceService {
     String status = request.status().toUpperCase();
     if (!Set.of("APPROVED", "REJECTED").contains(status))
       throw new IllegalArgumentException("Status must be APPROVED or REJECTED");
+    boolean changed = !status.equals(leave.getStatus());
     leave.setStatus(status);
     leave.setDecisionReason(request.decisionReason());
-    return leave(leaveRepository.save(leave));
+    LeaveRequest saved = leaveRepository.save(leave);
+    if (changed) {
+      analyticsEventPublisher.publish("LEAVE_" + status, "LEAVE_REQUEST", saved.getId());
+    }
+    return leave(saved);
   }
 
   @Transactional
@@ -101,11 +112,20 @@ public class WorkforceService {
         attendanceRepository
             .findByEmployeeIdAndAttendanceDate(request.employeeId(), request.attendanceDate())
             .orElseGet(AttendanceRecord::new);
+    boolean checkedIn = request.checkIn() && record.getCheckedInAt() == null;
+    boolean checkedOut = request.checkOut() && record.getCheckedOutAt() == null;
     record.setEmployee(employee);
     record.setAttendanceDate(request.attendanceDate());
-    if (request.checkIn()) record.setCheckedInAt(LocalDateTime.now());
-    if (request.checkOut()) record.setCheckedOutAt(LocalDateTime.now());
-    return attendance(attendanceRepository.save(record));
+    if (checkedIn) record.setCheckedInAt(LocalDateTime.now());
+    if (checkedOut) record.setCheckedOutAt(LocalDateTime.now());
+    AttendanceRecord saved = attendanceRepository.save(record);
+    if (checkedIn) {
+      analyticsEventPublisher.publish("ATTENDANCE_CHECKED_IN", "ATTENDANCE_RECORD", saved.getId());
+    }
+    if (checkedOut) {
+      analyticsEventPublisher.publish("ATTENDANCE_CHECKED_OUT", "ATTENDANCE_RECORD", saved.getId());
+    }
+    return attendance(saved);
   }
 
   public WorkforceDTO.PayrollResponse payroll(WorkforceDTO.PayrollRequest request) {

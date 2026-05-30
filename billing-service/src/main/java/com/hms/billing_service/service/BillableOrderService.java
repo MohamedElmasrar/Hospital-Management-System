@@ -8,6 +8,7 @@ import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.exception.ResourceAlreadyExistsException;
 import com.hms.billing_service.exception.TariffVersionNotFoundException;
 import com.hms.billing_service.mapper.BillableOrderMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.BillableOrder;
 import com.hms.billing_service.model.DiagnosticOrderDetail;
 import com.hms.billing_service.model.ServiceTariffVersion;
@@ -27,6 +28,7 @@ public class BillableOrderService {
   private final BillableOrderRepository billableOrderRepository;
   private final ServiceTariffVersionRepository tariffVersionRepository;
   private final BillableOrderMapper billableOrderMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
   private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
 
   @Transactional
@@ -86,6 +88,7 @@ public class BillableOrderService {
     }
 
     BillableOrder saved = billableOrderRepository.save(order);
+    analyticsEventPublisher.publish("BILLABLE_ORDER_CREATED", "BILLABLE_ORDER", saved.getId());
     return billableOrderMapper.billableOrderToBillableOrderResponseDTO(saved);
   }
 

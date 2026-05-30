@@ -39,6 +39,7 @@ class PaymentServiceTest {
   @Mock private CashDeskRepository cashDeskRepository;
   @Mock private InvoiceService invoiceService;
   @Mock private HrGrpcClient hrGrpcClient;
+  @Mock private com.hms.billing_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   private PaymentMapper paymentMapper;
   private PaymentService paymentService;
@@ -53,7 +54,8 @@ class PaymentServiceTest {
             cashDeskRepository,
             invoiceService,
             paymentMapper,
-            hrGrpcClient);
+            hrGrpcClient,
+            analyticsEventPublisher);
   }
 
   @Test
@@ -138,5 +140,14 @@ class PaymentServiceTest {
     assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("100.00"));
     assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
     verify(invoiceRepository).save(invoice);
+    verify(analyticsEventPublisher).publish("INVOICE_PAID", "INVOICE", invoiceId);
+    verify(analyticsEventPublisher)
+        .publish(
+            "PAYMENT_COMPLETED",
+            "PAYMENT",
+            savedPayment.getId(),
+            new BigDecimal("100.00"),
+            "method",
+            "CARD");
   }
 }

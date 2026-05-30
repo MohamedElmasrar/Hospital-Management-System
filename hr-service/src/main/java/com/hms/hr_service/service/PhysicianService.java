@@ -14,6 +14,7 @@ import com.hms.hr_service.exception.PhysicianNotFoundException;
 import com.hms.hr_service.exception.ResourceAlreadyExistsException;
 import com.hms.hr_service.mapper.MedicalSpecialtyMapper;
 import com.hms.hr_service.mapper.PhysicianMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.Employee;
 import com.hms.hr_service.model.MedicalSpecialty;
 import com.hms.hr_service.model.Physician;
@@ -43,6 +44,7 @@ public class PhysicianService {
   private final PhysicianSpecialtyRepository physicianSpecialtyRepository;
   private final PhysicianMapper physicianMapper;
   private final MedicalSpecialtyMapper medicalSpecialtyMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public PhysicianResponseDTO create(CreatePhysicianRequestDTO request) {
@@ -82,6 +84,7 @@ public class PhysicianService {
       }
     }
 
+    analyticsEventPublisher.publish("PHYSICIAN_CREATED", "PHYSICIAN", savedPhysician.getId());
     return physicianMapper.toPhysicianResponseDTO(savedPhysician, specialties);
   }
 

@@ -5,6 +5,7 @@ import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
 import com.hms.reception_service.mapper.DiagnosticPrescriptionMapper;
+import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.DiagnosticModality;
 import com.hms.reception_service.model.DiagnosticPrescription;
 import com.hms.reception_service.model.Patient;
@@ -31,6 +32,7 @@ public class DiagnosticPrescriptionService {
   private final DiagnosticModalityRepository modalityRepository;
   private final HrGrpcClient hrGrpcClient;
   private final DiagnosticPrescriptionMapper prescriptionMapper;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -57,7 +59,10 @@ public class DiagnosticPrescriptionService {
     rx.setReferringPractitionerId(doctorId);
     rx.setModality(modality);
 
-    return prescriptionMapper.toResponse(prescriptionRepository.save(rx));
+    DiagnosticPrescription saved = prescriptionRepository.save(rx);
+    analyticsEventPublisher.publish(
+        "DIAGNOSTIC_PRESCRIPTION_CREATED", "DIAGNOSTIC_PRESCRIPTION", saved.getId());
+    return prescriptionMapper.toResponse(saved);
   }
 
   @Transactional(readOnly = true)
@@ -81,8 +86,13 @@ public class DiagnosticPrescriptionService {
             .findById(prescriptionId)
             .orElseThrow(
                 () -> new ResourceNotFoundException("Prescription not found: " + prescriptionId));
+    if (Boolean.TRUE.equals(rx.getIsFulfilled())) {
+      return;
+    }
     rx.setIsFulfilled(Boolean.TRUE);
     prescriptionRepository.save(rx);
+    analyticsEventPublisher.publish(
+        "DIAGNOSTIC_PRESCRIPTION_FULFILLED", "DIAGNOSTIC_PRESCRIPTION", rx.getId());
   }
 
   private String generateUniquePrescriptionCode() {

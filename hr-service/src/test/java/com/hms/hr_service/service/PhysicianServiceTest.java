@@ -41,6 +41,7 @@ class PhysicianServiceTest {
   @Mock private PhysicianSpecialtyRepository physicianSpecialtyRepository;
   @Mock private PhysicianMapper physicianMapper;
   @Mock private MedicalSpecialtyMapper medicalSpecialtyMapper;
+  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private PhysicianService physicianService;
 
@@ -93,6 +94,7 @@ class PhysicianServiceTest {
     assertThat(result).isNotNull();
     assertThat(result.licenseNumber()).isEqualTo("LIC-12345");
     verify(physicianRepository).save(any(Physician.class));
+    verify(analyticsEventPublisher).publish("PHYSICIAN_CREATED", "PHYSICIAN", physicianId);
   }
 
   @Test

@@ -53,6 +53,7 @@ class EmployeeServiceTest {
   @Mock private EmployeeAssignmentRepository employeeAssignmentRepository;
   @Mock private DepartmentRepository departmentRepository;
   @Mock private EmployeeMapper employeeMapper;
+  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private EmployeeService employeeService;
 
@@ -120,6 +121,7 @@ class EmployeeServiceTest {
     assertThat(result).isNotNull();
     assertThat(result.identifier()).isEqualTo("EMP-001");
     verify(employeeRepository).save(employee);
+    verify(analyticsEventPublisher).publish("EMPLOYEE_CREATED", "EMPLOYEE", employeeId);
     verify(contactPointRepository).save(any(ContactPoint.class));
     verify(postalAddressRepository).save(any(PostalAddress.class));
   }

@@ -6,6 +6,7 @@ import com.hms.reception_service.dto.admission.EmergencyAdmissionDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceAlreadyExistsException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
+import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.Admission;
 import com.hms.reception_service.model.Bed;
 import com.hms.reception_service.model.EmergencyAdmission;
@@ -26,6 +27,7 @@ public class AdmissionService {
   private final AdmissionRepository admissionRepository;
   private final EmergencyAdmissionRepository emergencyAdmissionRepository;
   private final PatientRepository patientRepository;
+  private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public AdmissionDTO.Response createBed(AdmissionDTO.CreateBedRequest request) {
@@ -71,7 +73,9 @@ public class AdmissionService {
     admission.setReason(request.reason());
     admission.setAdmittedAt(LocalDateTime.now());
     bedRepository.save(bed);
-    return toResponse(admissionRepository.save(admission));
+    Admission saved = admissionRepository.save(admission);
+    analyticsEventPublisher.publish("PATIENT_ADMITTED", "ADMISSION", saved.getId());
+    return toResponse(saved);
   }
 
   @Transactional
@@ -88,7 +92,9 @@ public class AdmissionService {
     bed.setOccupied(false);
     bed.setPatientId(null);
     bedRepository.save(bed);
-    return toResponse(admissionRepository.save(admission));
+    Admission saved = admissionRepository.save(admission);
+    analyticsEventPublisher.publish("PATIENT_DISCHARGED", "ADMISSION", saved.getId());
+    return toResponse(saved);
   }
 
   @Transactional
@@ -103,7 +109,10 @@ public class AdmissionService {
               .findById(request.patientId())
               .orElseThrow(() -> new ResourceNotFoundException("Patient not found")));
     }
-    return toEmergencyResponse(emergencyAdmissionRepository.save(admission));
+    EmergencyAdmission saved = emergencyAdmissionRepository.save(admission);
+    analyticsEventPublisher.publish(
+        "EMERGENCY_ADMISSION_CREATED", "EMERGENCY_ADMISSION", saved.getId());
+    return toEmergencyResponse(saved);
   }
 
   private AdmissionDTO.Response toResponse(Admission admission) {
