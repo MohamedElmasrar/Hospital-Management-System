@@ -11,6 +11,7 @@ import com.hms.reception_service.model.ServiceSchedule;
 import com.hms.reception_service.repository.ExaminationRoomRepository;
 import com.hms.reception_service.repository.ReservationRepository;
 import com.hms.reception_service.repository.ServiceScheduleRepository;
+import com.hms.reception_service.specification.ReservationSpecifications;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -98,13 +99,15 @@ public class ScheduleService {
         boolean isConflicted;
         if (practitionerId != null) {
           List<Reservation> conflicts =
-              reservationRepository.findConflictingPractitionerReservations(
-                  practitionerId, date, current, slotEnd);
+              reservationRepository.findAll(
+                  ReservationSpecifications.conflictingPractitioner(
+                      practitionerId, date, current, slotEnd));
           isConflicted = !conflicts.isEmpty();
         } else {
           List<Reservation> conflicts =
-              reservationRepository.findConflictingRoomReservations(
-                  schedule.getRoom().getId(), date, current, slotEnd);
+              reservationRepository.findAll(
+                  ReservationSpecifications.conflictingRoom(
+                      schedule.getRoom().getId(), date, current, slotEnd));
           isConflicted = !conflicts.isEmpty();
         }
 

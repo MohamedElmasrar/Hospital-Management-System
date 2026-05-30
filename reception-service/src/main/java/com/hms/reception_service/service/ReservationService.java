@@ -77,8 +77,9 @@ public class ReservationService {
 
     // Check for conflicts
     List<Reservation> conflicts =
-        reservationRepository.findConflictingPractitionerReservations(
-            req.practitionerId(), req.reservationDate(), req.startTime(), req.endTime());
+        reservationRepository.findAll(
+            ReservationSpecifications.conflictingPractitioner(
+                req.practitionerId(), req.reservationDate(), req.startTime(), req.endTime()));
     if (!conflicts.isEmpty()) {
       throw new InvalidOperationException(
           "Practitioner is already booked during the requested time slot");
@@ -143,8 +144,9 @@ public class ReservationService {
 
     // Check room conflict
     List<Reservation> roomConflicts =
-        reservationRepository.findConflictingRoomReservations(
-            req.roomId(), req.reservationDate(), req.startTime(), req.endTime());
+        reservationRepository.findAll(
+            ReservationSpecifications.conflictingRoom(
+                req.roomId(), req.reservationDate(), req.startTime(), req.endTime()));
     if (!roomConflicts.isEmpty()) {
       throw new InvalidOperationException(
           "Examination room / scanner is already booked during this time slot");

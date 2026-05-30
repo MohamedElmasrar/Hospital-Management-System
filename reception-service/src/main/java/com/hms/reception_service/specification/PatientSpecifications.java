@@ -13,6 +13,15 @@ public final class PatientSpecifications {
 
   private PatientSpecifications() {}
 
+  public static Specification<Patient> activeMatching(String searchTerm) {
+    return (root, query, criteriaBuilder) -> {
+      List<Predicate> predicates = new ArrayList<>();
+      predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
+      addSearchPredicate(searchTerm, root, criteriaBuilder, predicates);
+      return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+    };
+  }
+
   public static Specification<Patient> relatedToPractitioner(
       UUID practitionerId, String searchTerm) {
     return (root, query, criteriaBuilder) -> {
@@ -21,27 +30,33 @@ public final class PatientSpecifications {
       reservation
           .select(reservationRoot.get("patient").get("id"))
           .where(
-              criteriaBuilder.equal(
-                  reservationRoot.get("practitionerId"), practitionerId),
-              criteriaBuilder.equal(
-                  reservationRoot.get("patient").get("id"), root.get("id")));
+              criteriaBuilder.equal(reservationRoot.get("practitionerId"), practitionerId),
+              criteriaBuilder.equal(reservationRoot.get("patient").get("id"), root.get("id")));
 
       List<Predicate> predicates = new ArrayList<>();
       predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
       predicates.add(criteriaBuilder.exists(reservation));
 
-      if (searchTerm != null && !searchTerm.isBlank()) {
-        String pattern = "%" + searchTerm.trim().toLowerCase(Locale.ROOT) + "%";
-        predicates.add(
-            criteriaBuilder.or(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), pattern),
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), pattern),
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("mrn")), pattern),
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("nationalId")), pattern),
-                criteriaBuilder.like(root.get("phone"), pattern)));
-      }
+      addSearchPredicate(searchTerm, root, criteriaBuilder, predicates);
 
       return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
     };
+  }
+
+  private static void addSearchPredicate(
+      String searchTerm,
+      jakarta.persistence.criteria.Root<Patient> root,
+      jakarta.persistence.criteria.CriteriaBuilder criteriaBuilder,
+      List<Predicate> predicates) {
+    if (searchTerm == null || searchTerm.isBlank()) return;
+
+    String pattern = "%" + searchTerm.trim().toLowerCase(Locale.ROOT) + "%";
+    predicates.add(
+        criteriaBuilder.or(
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), pattern),
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), pattern),
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("mrn")), pattern),
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("nationalId")), pattern),
+            criteriaBuilder.like(root.get("phone"), pattern)));
   }
 }

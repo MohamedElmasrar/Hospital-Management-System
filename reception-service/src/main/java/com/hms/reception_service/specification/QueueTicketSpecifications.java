@@ -4,6 +4,7 @@ import com.hms.reception_service.model.QueueTicket;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class QueueTicketSpecifications {
@@ -30,5 +31,14 @@ public final class QueueTicketSpecifications {
     }
 
     return Specification.allOf(filters);
+  }
+
+  public static Specification<QueueTicket> inQueue(UUID queueId) {
+    return (root, query, builder) -> builder.equal(root.get("queue").get("id"), queueId);
+  }
+
+  public static Specification<QueueTicket> waitingInQueue(UUID queueId) {
+    return inQueue(queueId)
+        .and((root, query, builder) -> builder.equal(root.get("status"), "WAITING"));
   }
 }

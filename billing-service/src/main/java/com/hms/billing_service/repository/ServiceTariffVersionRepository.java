@@ -1,27 +1,26 @@
 package com.hms.billing_service.repository;
 
 import com.hms.billing_service.model.ServiceTariffVersion;
+import com.hms.billing_service.specification.ServiceTariffVersionSpecifications;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ServiceTariffVersionRepository extends JpaRepository<ServiceTariffVersion, UUID> {
+public interface ServiceTariffVersionRepository
+    extends JpaRepository<ServiceTariffVersion, UUID>,
+        JpaSpecificationExecutor<ServiceTariffVersion> {
 
   List<ServiceTariffVersion> findByCatalogItemIdOrderByEffectiveFromDesc(UUID catalogItemId);
 
-  @Query(
-      "SELECT v FROM ServiceTariffVersion v WHERE v.catalogItem.id = :catalogItemId "
-          + "AND v.effectiveFrom <= :date AND (v.effectiveTo IS NULL OR v.effectiveTo > :date) "
-          + "ORDER BY v.effectiveFrom DESC")
-  List<ServiceTariffVersion> findActiveTariffCandidates(
-      @Param("catalogItemId") UUID catalogItemId, @Param("date") Date date);
-
   default Optional<ServiceTariffVersion> findActiveTariff(UUID catalogItemId, Date date) {
-    List<ServiceTariffVersion> list = findActiveTariffCandidates(catalogItemId, date);
+    List<ServiceTariffVersion> list =
+        findAll(
+            ServiceTariffVersionSpecifications.activeOn(catalogItemId, date),
+            Sort.by(Sort.Direction.DESC, "effectiveFrom"));
     return list.isEmpty() ? Optional.empty() : Optional.of(list.getFirst());
   }
 

@@ -70,7 +70,9 @@ public class PatientService {
   @Transactional(readOnly = true)
   public PageResponse<PatientDTO.Response> searchPatients(String query, Pageable pageable) {
     return PageResponse.from(
-        patientRepository.searchPatients(query, pageable).map(patientMapper::toResponse));
+        patientRepository
+            .findAll(PatientSpecifications.activeMatching(query), pageable)
+            .map(patientMapper::toResponse));
   }
 
   @Transactional(readOnly = true)

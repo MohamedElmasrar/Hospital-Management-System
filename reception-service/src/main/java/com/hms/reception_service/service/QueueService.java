@@ -23,6 +23,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -155,7 +156,8 @@ public class QueueService {
             .findById(queueId)
             .orElseThrow(() -> new ResourceNotFoundException("Queue not found: " + queueId));
 
-    List<QueueTicket> waitingTickets = ticketRepository.findNextWaitingTickets(queueId);
+    List<QueueTicket> waitingTickets =
+        ticketRepository.findAll(QueueTicketSpecifications.waitingInQueue(queueId), queueOrder());
     if (waitingTickets.isEmpty()) {
       throw new InvalidOperationException("No waiting tickets in queue");
     }
@@ -214,7 +216,12 @@ public class QueueService {
 
   @Transactional(readOnly = true)
   public List<QueueDTO.TicketResponse> getQueueTickets(UUID queueId) {
-    return queueMapper.toTicketResponseList(ticketRepository.findAllQueueTickets(queueId));
+    return queueMapper.toTicketResponseList(
+        ticketRepository.findAll(QueueTicketSpecifications.inQueue(queueId), queueOrder()));
+  }
+
+  private Sort queueOrder() {
+    return Sort.by(Sort.Order.desc("priority.weight"), Sort.Order.asc("sequenceNumber"));
   }
 
   @Transactional(readOnly = true)

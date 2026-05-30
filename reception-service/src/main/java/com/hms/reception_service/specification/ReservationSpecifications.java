@@ -2,6 +2,7 @@ package com.hms.reception_service.specification;
 
 import com.hms.reception_service.model.Reservation;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,5 +32,27 @@ public final class ReservationSpecifications {
     }
 
     return Specification.allOf(filters);
+  }
+
+  public static Specification<Reservation> conflictingPractitioner(
+      java.util.UUID practitionerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+    return conflictingSlot(date, startTime, endTime)
+        .and((root, query, builder) -> builder.equal(root.get("practitionerId"), practitionerId));
+  }
+
+  public static Specification<Reservation> conflictingRoom(
+      java.util.UUID roomId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+    return conflictingSlot(date, startTime, endTime)
+        .and((root, query, builder) -> builder.equal(root.get("room").get("id"), roomId));
+  }
+
+  private static Specification<Reservation> conflictingSlot(
+      LocalDate date, LocalTime startTime, LocalTime endTime) {
+    return (root, query, builder) ->
+        builder.and(
+            builder.equal(root.get("reservationDate"), date),
+            builder.isFalse(root.get("status").get("isTerminal")),
+            builder.lessThan(root.get("startTime"), endTime),
+            builder.greaterThan(root.get("endTime"), startTime));
   }
 }
