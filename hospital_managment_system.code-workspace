@@ -25,6 +25,10 @@
       "path": "reception-service"
     },
     {
+      "name": "Analytics Service",
+      "path": "analytics-service"
+    },
+    {
       "name": "Frontend",
       "path": "frontend"
     }

@@ -80,4 +80,24 @@ export default defineConfig({
       },
     },
   },
+
+  analyticsService: {
+    input: 'http://localhost:8000/api-docs/analytics',
+    output: {
+      mode: 'tags-split',
+      target: 'app/api/generated/analytics',
+      schemas: 'app/api/generated/analytics/model',
+      client: 'react-query',
+      baseUrl: '',
+      override: {
+        query: {
+          useSuspenseQuery: true,
+        },
+        mutator: {
+          path: './lib/axios-instance.ts',
+          name: 'customInstance',
+        },
+      },
+    },
+  },
 })

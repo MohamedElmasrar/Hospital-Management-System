@@ -93,3 +93,19 @@ spring:
             - Path=/api-docs/reception/**, /api-docs/reception
           filters:
             - RewritePath=/api-docs/reception(?<segment>/?.*), /v3/api-docs${segment}
+
+        # Route for /api/analytics/** to analytics-service
+        - id: analytics-service-route
+          uri: http://analytics-service:8005
+          predicates:
+            - Path=/api/analytics/**
+          filters:
+            - JwtValidation
+
+        # Route for /api-docs/analytics to analytics-service /v3/api-docs
+        - id: api-docs-analytics-route
+          uri: http://analytics-service:8005
+          predicates:
+            - Path=/api-docs/analytics/**, /api-docs/analytics
+          filters:
+            - RewritePath=/api-docs/analytics(?<segment>/?.*), /v3/api-docs${segment}
