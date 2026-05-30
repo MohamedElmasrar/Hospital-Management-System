@@ -39,6 +39,23 @@ public class ReservationController {
     return ResponseEntity.ok(reservationService.searchReservations(query, date, pageable));
   }
 
+  @GetMapping("/practitioner/{practitionerId}/consultations")
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+  public ResponseEntity<PageResponse<ReservationDTO.Response>> searchDoctorConsultations(
+      @PathVariable UUID practitionerId,
+      @RequestParam(required = false) String query,
+      @RequestParam(required = false) LocalDate date,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    var pageable =
+        PageRequest.of(
+            page,
+            size,
+            Sort.by("reservationDate").descending().and(Sort.by("startTime").descending()));
+    return ResponseEntity.ok(
+        reservationService.searchDoctorConsultations(practitionerId, query, date, pageable));
+  }
+
   @PostMapping("/consultation")
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST', 'PATIENT')")
   public ResponseEntity<ReservationDTO.Response> createConsultationReservation(

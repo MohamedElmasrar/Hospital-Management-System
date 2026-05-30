@@ -277,6 +277,17 @@ public class ReservationService {
             .map(reservationMapper::toResponse));
   }
 
+  @Transactional(readOnly = true)
+  public PageResponse<ReservationDTO.Response> searchDoctorConsultations(
+      UUID practitionerId, String query, LocalDate date, Pageable pageable) {
+    return PageResponse.from(
+        reservationRepository
+            .findAll(
+                ReservationSpecifications.doctorConsultations(practitionerId, query, date),
+                pageable)
+            .map(reservationMapper::toResponse));
+  }
+
   private String generateReservationNumber(String prefix) {
     String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
     int rand = 1000 + random.nextInt(9000);

@@ -1,10 +1,8 @@
 'use client'
 
-import type {
-  PageResponsePatientResponse,
-  PatientResponse,
-} from '@/app/api/generated/reception/model'
+import type { PatientResponse } from '@/app/api/generated/reception/model'
 import { useGetMyProfile } from '@/app/api/generated/hr/physician-controller/physician-controller'
+import { useSearchPractitionerPatients } from '@/app/api/generated/reception/patient-controller/patient-controller'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,8 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { customInstance } from '@/lib/axios-instance'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData } from '@tanstack/react-query'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 
@@ -42,25 +39,6 @@ function formatDate(value?: string) {
 function formatValue(value?: string) {
   if (!value) return '—'
   return value.toLowerCase().replaceAll('_', ' ')
-}
-
-async function getDoctorPatients(
-  practitionerId: string,
-  query: string,
-  page: number,
-  signal?: AbortSignal
-) {
-  return customInstance<PageResponsePatientResponse>({
-    url: `/api/reception/patients/practitioner/${practitionerId}`,
-    method: 'GET',
-    params: {
-      query: query || undefined,
-      page,
-      size: PAGE_SIZE,
-      sort: 'lastName,asc',
-    },
-    signal,
-  })
 }
 
 function PatientRow({ patient }: { patient: PatientResponse }) {
@@ -101,13 +79,14 @@ export function DoctorPatientsTable() {
   const [page, setPage] = useState(0)
   const physician = useGetMyProfile()
   const practitionerId = physician.data?.id
-  const patientsQuery = useQuery({
-    queryKey: ['doctor-patients', practitionerId, query, page],
-    queryFn: ({ signal }) =>
-      getDoctorPatients(practitionerId!, query, page, signal),
-    enabled: Boolean(practitionerId),
-    placeholderData: keepPreviousData,
-  })
+  const patientsQuery = useSearchPractitionerPatients(
+    practitionerId ?? '',
+    {
+      query: query || undefined,
+      pageable: { page, size: PAGE_SIZE, sort: ['lastName,asc'] },
+    },
+    { query: { placeholderData: keepPreviousData } }
+  )
 
   const data = patientsQuery.data
   const patients = data?.content ?? []
