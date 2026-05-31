@@ -1,3 +1,11 @@
-export default function dashboardPage() {
-  return <h1 className="text-2xl font-semibold">Dashboard</h1>
+import { DashboardOverview } from '@/components/dashboard/overview'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Suspense } from 'react'
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+      <DashboardOverview />
+    </Suspense>
+  )
 }
