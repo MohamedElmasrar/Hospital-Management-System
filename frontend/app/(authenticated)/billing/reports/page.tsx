@@ -1,3 +1,11 @@
+import { BillingReportsPageContent } from '@/components/management/billing-reports-page'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Suspense } from 'react'
+
 export default function BillingReportsPage() {
-  return <h1 className="text-2xl font-semibold">Billing Reports</h1>
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+      <BillingReportsPageContent />
+    </Suspense>
+  )
 }

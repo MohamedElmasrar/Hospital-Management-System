@@ -1,3 +1,5 @@
+import { InsurancePageContent } from '@/components/management/insurance-page'
+
 export default function BillingInsurancePage() {
-  return <h1 className="text-2xl font-semibold">Insurance</h1>
+  return <InsurancePageContent />
 }

@@ -6,6 +6,7 @@ import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.security.AuthenticatedPrincipal;
 import com.hms.billing_service.service.InvoiceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -32,7 +33,8 @@ public class InvoiceController {
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
   @Operation(summary = "Create an invoice")
   public ResponseEntity<InvoiceDetailResponseDTO> createInvoice(
-      @Valid @RequestBody CreateInvoiceRequestDTO request, AuthenticatedPrincipal principal) {
+      @Valid @RequestBody CreateInvoiceRequestDTO request,
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     UUID staffId =
         principal != null && principal.userId() != null ? principal.userId() : UUID.randomUUID();
     return ResponseEntity.status(HttpStatus.CREATED).body(invoiceService.create(request, staffId));
@@ -43,7 +45,7 @@ public class InvoiceController {
   @Operation(summary = "Create an invoice from all unbilled clinical charges")
   public ResponseEntity<InvoiceDetailResponseDTO> createAutomaticInvoice(
       @Valid @RequestBody CreateAutomaticInvoiceRequestDTO request,
-      AuthenticatedPrincipal principal) {
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     UUID staffId =
         principal != null && principal.userId() != null ? principal.userId() : UUID.randomUUID();
     return ResponseEntity.status(HttpStatus.CREATED)

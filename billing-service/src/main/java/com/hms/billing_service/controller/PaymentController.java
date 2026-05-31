@@ -6,6 +6,7 @@ import com.hms.billing_service.dto.payment.ProcessPaymentRequestDTO;
 import com.hms.billing_service.security.AuthenticatedPrincipal;
 import com.hms.billing_service.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -31,7 +32,8 @@ public class PaymentController {
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
   @Operation(summary = "Process a payment against an invoice")
   public ResponseEntity<PaymentResponseDTO> processPayment(
-      @Valid @RequestBody ProcessPaymentRequestDTO request, AuthenticatedPrincipal principal) {
+      @Valid @RequestBody ProcessPaymentRequestDTO request,
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     UUID cashierId =
         principal != null && principal.userId() != null ? principal.userId() : UUID.randomUUID();
     return ResponseEntity.status(HttpStatus.CREATED)

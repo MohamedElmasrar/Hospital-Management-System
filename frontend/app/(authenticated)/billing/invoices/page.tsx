@@ -1,3 +1,5 @@
+import { InvoicesPageContent } from '@/components/management/invoices-page'
+
 export default function BillingInvoicesPage() {
-  return <h1 className="text-2xl font-semibold">Invoices</h1>
+  return <InvoicesPageContent />
 }
