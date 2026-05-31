@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class PatientDTO {
 
+  @Schema(name = "PatientCreateRequest")
   public record CreateRequest(
       String nationalId,
       @NotBlank(message = "First name is required") String firstName,

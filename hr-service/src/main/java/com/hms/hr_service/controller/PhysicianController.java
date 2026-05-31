@@ -51,7 +51,7 @@ public class PhysicianController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   @Operation(summary = "Search physicians with pagination")
   public ResponseEntity<PageResponse<PhysicianResponseDTO>> searchPhysicians(
       @RequestParam(required = false) String search,

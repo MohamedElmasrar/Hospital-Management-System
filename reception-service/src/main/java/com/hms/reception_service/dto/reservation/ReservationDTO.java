@@ -15,8 +15,12 @@ public class ReservationDTO {
       @NotNull(message = "Practitioner ID is required") UUID practitionerId,
       UUID roomId,
       @NotNull(message = "Reservation date is required") LocalDate reservationDate,
-      @NotNull(message = "Start time is required") LocalTime startTime,
-      @NotNull(message = "End time is required") LocalTime endTime,
+      @NotNull(message = "Start time is required")
+          @Schema(type = "string", format = "time", example = "09:00")
+          LocalTime startTime,
+      @NotNull(message = "End time is required")
+          @Schema(type = "string", format = "time", example = "09:30")
+          LocalTime endTime,
       String reasonForVisit,
       String notes) {}
 
@@ -27,8 +31,12 @@ public class ReservationDTO {
       @NotNull(message = "Modality ID is required") UUID modalityId,
       @NotNull(message = "Room ID is required") UUID roomId,
       @NotNull(message = "Reservation date is required") LocalDate reservationDate,
-      @NotNull(message = "Start time is required") LocalTime startTime,
-      @NotNull(message = "End time is required") LocalTime endTime,
+      @NotNull(message = "Start time is required")
+          @Schema(type = "string", format = "time", example = "09:00")
+          LocalTime startTime,
+      @NotNull(message = "End time is required")
+          @Schema(type = "string", format = "time", example = "09:30")
+          LocalTime endTime,
       String bodyPart,
       Boolean contrastUsed,
       UUID technicianId,

@@ -63,7 +63,7 @@ public class DepartmentController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   @Operation(summary = "List departments for a medical organization")
   public ResponseEntity<PageResponse<DepartmentResponseDTO>> listDepartments(
       @RequestParam UUID organizationId,

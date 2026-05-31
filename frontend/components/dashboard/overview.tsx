@@ -36,9 +36,11 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 import type { UserRole } from '@/lib/auth'
 import { useState, type ReactNode } from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { CreateAppointmentDialog } from './create-appointment-dialog'
 
 const LIMIT = 100
 const chartConfig = {
@@ -372,6 +374,61 @@ const headings: Record<UserRole, string> = {
   EMPLOYEE: 'My work overview',
 }
 
+const quickLinks: Record<UserRole, { label: string; href: string }[]> = {
+  ADMIN: [
+    { label: 'Manage users', href: '/users' },
+    { label: 'Review invoices', href: '/billing/invoices' },
+    { label: 'Audit logs', href: '/audit-logs' },
+  ],
+  RECEPTIONIST: [
+    { label: 'Find patient', href: '/reception/patients' },
+    { label: 'Appointments', href: '/reception/appointments' },
+    { label: 'Waiting queue', href: '/reception/queue' },
+  ],
+  DOCTOR: [
+    { label: 'My schedule', href: '/clinical/schedule' },
+    { label: 'Consultations', href: '/clinical/consultations' },
+    { label: 'Patients', href: '/clinical/patients' },
+  ],
+  HR_HEAD: [
+    { label: 'Employees', href: '/hr/employees' },
+    { label: 'Leave requests', href: '/hr/leave' },
+    { label: 'Schedules', href: '/hr/schedules' },
+  ],
+  EMPLOYEE: [
+    { label: 'Create invoice', href: '/billing/invoices' },
+    { label: 'Record payment', href: '/billing/payments' },
+    { label: 'My attendance', href: '/hr/attendance' },
+  ],
+}
+
+function QuickActions({ role }: { role: UserRole }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Quick actions</CardTitle>
+        <CardDescription>
+          {role === 'RECEPTIONIST'
+            ? 'Register an arrival and send the patient to billing before the consultation.'
+            : 'Open the tasks you use most often.'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-2">
+        {role === 'RECEPTIONIST' && <CreateAppointmentDialog />}
+        {quickLinks[role].map((item) => (
+          <Button
+            key={item.href}
+            variant="outline"
+            render={<Link href={item.href} />}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
 export function DashboardOverview() {
   const role = useRole()
   const [date] = useState(() => new Date())
@@ -389,6 +446,7 @@ export function DashboardOverview() {
         </p>
       </div>
       <AccountCard />
+      {role && <QuickActions role={role} />}
       {!role ? (
         <Skeleton className="h-64 w-full" />
       ) : role === 'ADMIN' ? (

@@ -124,6 +124,7 @@ function routesForRole(role: UserRole): Route[] {
       ),
     ],
     EMPLOYEE: [
+      ...billing,
       link(
         'My Schedule',
         'hr/schedules',

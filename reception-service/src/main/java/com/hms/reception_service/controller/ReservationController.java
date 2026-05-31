@@ -4,6 +4,7 @@ import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.reservation.ReservationDTO;
 import com.hms.reception_service.security.AuthenticatedPrincipal;
 import com.hms.reception_service.service.ReservationService;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,7 +61,7 @@ public class ReservationController {
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<ReservationDTO.Response> createConsultationReservation(
       @Valid @RequestBody ReservationDTO.CreateConsultationRequest req,
-      AuthenticatedPrincipal principal) {
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(reservationService.createConsultationReservation(req, principal.userId()));
   }
@@ -69,7 +70,7 @@ public class ReservationController {
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
   public ResponseEntity<ReservationDTO.Response> createDiagnosticReservation(
       @Valid @RequestBody ReservationDTO.CreateDiagnosticRequest req,
-      AuthenticatedPrincipal principal) {
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(reservationService.createDiagnosticReservation(req, principal.userId()));
   }

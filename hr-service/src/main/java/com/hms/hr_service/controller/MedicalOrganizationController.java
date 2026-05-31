@@ -31,7 +31,7 @@ public class MedicalOrganizationController {
   private final MedicalOrganizationService medicalOrganizationService;
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   @Operation(
       summary =
           "Endpoint to get all the Medical Organizations based on a search term sorted by name")

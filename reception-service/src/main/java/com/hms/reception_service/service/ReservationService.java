@@ -93,6 +93,14 @@ public class ReservationService {
           roomRepository
               .findById(req.roomId())
               .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + req.roomId()));
+      if (!reservationRepository
+          .findAll(
+              ReservationSpecifications.conflictingRoom(
+                  req.roomId(), req.reservationDate(), req.startTime(), req.endTime()))
+          .isEmpty()) {
+        throw new InvalidOperationException(
+            "Room is already booked during the requested time slot");
+      }
     }
 
     Reservation res = new Reservation();
