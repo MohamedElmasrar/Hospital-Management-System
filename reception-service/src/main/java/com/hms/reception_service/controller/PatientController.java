@@ -2,9 +2,7 @@ package com.hms.reception_service.controller;
 
 import com.hms.reception_service.dto.PageResponse;
 import com.hms.reception_service.dto.patient.PatientDTO;
-import com.hms.reception_service.security.AuthenticatedPrincipal;
 import com.hms.reception_service.service.PatientService;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -39,13 +37,6 @@ public class PatientController {
   @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<PatientDTO.Response> getPatientByMrn(@PathVariable String mrn) {
     return ResponseEntity.ok(patientService.getPatientByMrn(mrn));
-  }
-
-  @GetMapping("/me")
-  @PreAuthorize("hasRole('PATIENT')")
-  public ResponseEntity<PatientDTO.Response> getMyProfile(
-      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
-    return ResponseEntity.ok(patientService.getPatientByUserId(principal.userId()));
   }
 
   @GetMapping("/practitioner/{practitionerId}")

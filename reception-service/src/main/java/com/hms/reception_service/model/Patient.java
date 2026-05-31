@@ -27,9 +27,6 @@ public class Patient {
   @Column(name = "mrn", unique = true, nullable = false, length = 30)
   private String mrn;
 
-  @Column(name = "user_id", unique = true)
-  private UUID userId;
-
   @Column(name = "national_id", unique = true, length = 50)
   private String nationalId;
 

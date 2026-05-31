@@ -32,7 +32,6 @@ public interface PatientMapper {
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "mrn", ignore = true)
-  @Mapping(target = "userId", ignore = true)
   @Mapping(target = "nationalId", ignore = true)
   @Mapping(target = "dateCreated", ignore = true)
   @Mapping(target = "dateModified", ignore = true)

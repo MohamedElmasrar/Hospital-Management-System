@@ -106,23 +106,6 @@ function routesForRole(role: UserRole): Route[] {
       ...billing,
       ...hr,
     ],
-    PATIENT: [
-      link(
-        'My Appointments',
-        'patient/appointments',
-        <CalendarDays className={iconClassName} />
-      ),
-      link(
-        'My Records',
-        'patient/records',
-        <FileText className={iconClassName} />
-      ),
-      link(
-        'My Billing',
-        'patient/billing',
-        <Receipt className={iconClassName} />
-      ),
-    ],
     DOCTOR: [
       link(
         'My Schedule',

@@ -11,11 +11,8 @@ import type {
   PhysicianResponseDTO,
 } from '@/app/api/generated/hr/model'
 import { useGetMyProfile as usePhysicianProfile } from '@/app/api/generated/hr/physician-controller/physician-controller'
-import type { PatientResponse } from '@/app/api/generated/reception/model'
-import { useGetMyProfile as usePatientProfile } from '@/app/api/generated/reception/patient-controller/patient-controller'
 
 export type EmployeeProfile = EmployeeDetailResponseDTO
-export type PatientProfile = PatientResponse
 export type PhysicianProfile = PhysicianResponseDTO
 
 type ProfileAccount = Required<
@@ -23,10 +20,8 @@ type ProfileAccount = Required<
 >
 
 export type Profile = {
-  kind: 'patient' | 'employee'
   account: ProfileAccount
   employee: EmployeeProfile | null
-  patient: PatientProfile | null
   physician: PhysicianProfile | null
   displayName: string
   initials: string
@@ -45,25 +40,6 @@ function getInitials(firstName?: string, lastName?: string) {
   return `${firstName?.charAt(0) ?? ''}${lastName?.charAt(0) ?? ''}`.toUpperCase()
 }
 
-export function patientProfile(
-  accountResponse: UserResponse,
-  patient: PatientProfile
-): Profile {
-  const account = accountFrom(accountResponse)
-  const displayName =
-    `${patient.firstName ?? ''} ${patient.lastName ?? ''}`.trim()
-
-  return {
-    kind: 'patient',
-    account,
-    patient,
-    employee: null,
-    physician: null,
-    displayName,
-    initials: getInitials(patient.firstName, patient.lastName),
-  }
-}
-
 export function employeeProfile(
   accountResponse: UserResponse,
   employee: EmployeeProfile,
@@ -74,10 +50,8 @@ export function employeeProfile(
     `${employee.givenName ?? ''} ${employee.familyName ?? ''}`.trim()
 
   return {
-    kind: 'employee',
     account,
     employee,
-    patient: null,
     physician,
     displayName,
     initials: getInitials(employee.givenName, employee.familyName),
@@ -87,20 +61,17 @@ export function employeeProfile(
 export function useProfile() {
   const account = useMe()
   const role = account.data?.role
-  const patient = usePatientProfile({ query: { enabled: role === 'PATIENT' } })
   const employee = useEmployeeProfile({
-    query: { enabled: Boolean(role && role !== 'PATIENT') },
+    query: { enabled: Boolean(role) },
   })
   const physician = usePhysicianProfile({
     query: { enabled: role === 'DOCTOR' },
   })
 
   const data =
-    account.data && role === 'PATIENT' && patient.data
-      ? patientProfile(account.data, patient.data)
-      : account.data && role && role !== 'PATIENT' && employee.data
-        ? employeeProfile(account.data, employee.data, physician.data ?? null)
-        : undefined
+    account.data && role && employee.data
+      ? employeeProfile(account.data, employee.data, physician.data ?? null)
+      : undefined
 
   return { data }
 }

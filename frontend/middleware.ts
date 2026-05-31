@@ -63,7 +63,6 @@ export const config = {
     '/billing/:path*',
     '/hr/:path*',
     '/clinical/:path*',
-    '/patient/:path*',
     '/login',
   ],
 }

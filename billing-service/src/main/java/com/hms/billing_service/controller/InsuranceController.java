@@ -66,8 +66,7 @@ public class InsuranceController {
   }
 
   @GetMapping("/policies/patient/{patientId}")
-  @PreAuthorize(
-      "hasAnyRole('ADMIN', 'EMPLOYEE') or (hasRole('PATIENT') and #patientId.toString() == authentication.name)")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
   @Operation(summary = "Get insurance policies for a patient")
   public ResponseEntity<List<InsurancePolicyResponseDTO>> getPoliciesByPatient(
       @PathVariable UUID patientId) {

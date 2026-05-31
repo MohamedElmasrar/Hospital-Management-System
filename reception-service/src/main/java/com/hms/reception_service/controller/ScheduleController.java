@@ -42,7 +42,7 @@ public class ScheduleController {
   }
 
   @GetMapping("/available-slots")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<List<ScheduleDTO.AvailableSlot>> getAvailableSlots(
       @RequestParam(required = false) UUID practitionerId,
       @RequestParam(required = false) UUID roomId,

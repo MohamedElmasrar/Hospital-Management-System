@@ -106,7 +106,7 @@ class InvoiceControllerTest {
   }
 
   @Test
-  void createInvoice_whenPatient_shouldReturnForbidden() throws Exception {
+  void createInvoice_whenDoctor_shouldReturnForbidden() throws Exception {
     CreateInvoiceRequestDTO request =
         new CreateInvoiceRequestDTO(
             UUID.randomUUID(),
@@ -120,7 +120,7 @@ class InvoiceControllerTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(new SimpleGrantedAuthority("ROLE_PATIENT")))
+                        .authorities(new SimpleGrantedAuthority("ROLE_DOCTOR")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());

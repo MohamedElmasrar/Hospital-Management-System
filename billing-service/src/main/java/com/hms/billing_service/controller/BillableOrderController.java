@@ -43,8 +43,7 @@ public class BillableOrderController {
   }
 
   @GetMapping("/patient/{patientId}")
-  @PreAuthorize(
-      "hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR') or (hasRole('PATIENT') and #patientId.toString() == authentication.name)")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
   @Operation(summary = "Get billable orders for a patient")
   public ResponseEntity<PageResponse<BillableOrderResponseDTO>> getByPatient(
       @PathVariable UUID patientId,

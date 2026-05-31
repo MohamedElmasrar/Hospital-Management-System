@@ -1,6 +1,7 @@
 package com.hms.auth_service.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -78,25 +79,24 @@ class JwtTokenServiceTest {
   }
 
   @Test
-  void validateToken_validToken_returnsTrue() {
+  void decodeToken_validToken_returnsClaims() {
     String token = "valid-token";
     Jwt mockedJwt = mock(Jwt.class);
     given(jwtDecoder.decode(token)).willReturn(mockedJwt);
 
-    boolean result = jwtTokenService.validateToken(token);
+    Jwt result = jwtTokenService.decodeToken(token);
 
-    assertThat(result).isTrue();
+    assertThat(result).isSameAs(mockedJwt);
     verify(jwtDecoder).decode(token);
   }
 
   @Test
-  void validateToken_invalidToken_returnsFalse() {
+  void decodeToken_invalidToken_throws() {
     String token = "invalid-token";
     given(jwtDecoder.decode(token)).willThrow(new BadJwtException("Token invalid or expired"));
 
-    boolean result = jwtTokenService.validateToken(token);
-
-    assertThat(result).isFalse();
+    assertThatThrownBy(() -> jwtTokenService.decodeToken(token))
+        .isInstanceOf(BadJwtException.class);
     verify(jwtDecoder).decode(token);
   }
 }

@@ -89,7 +89,6 @@ class ReceptionMappersTest {
   void testPatientMapper() {
     PatientDTO.CreateRequest req =
         new PatientDTO.CreateRequest(
-            UUID.randomUUID(),
             "CIN12345",
             "Sarah",
             "Connor",

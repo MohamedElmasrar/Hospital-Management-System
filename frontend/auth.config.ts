@@ -11,7 +11,6 @@ export const authConfig = {
     '/billing',
     '/hr',
     '/clinical',
-    '/patient',
   ],
 } as const
 

@@ -51,7 +51,6 @@ class PatientAnalyticsTest {
 
   private PatientDTO.CreateRequest request(String nationalId) {
     return new PatientDTO.CreateRequest(
-        null,
         nationalId,
         "Test",
         "Patient",

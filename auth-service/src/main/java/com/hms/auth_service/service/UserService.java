@@ -44,6 +44,9 @@ public class UserService {
 
   @Transactional
   public User updateRole(UUID id, UserRole role) {
+    if (role == UserRole.DISABLED) {
+      throw new IllegalArgumentException("Disabled is not an assignable role");
+    }
     User user = userRepository.findById(id).orElseThrow();
     if (user.getRole() == role) {
       return user;

@@ -46,7 +46,7 @@ public class PaymentController {
   }
 
   @GetMapping("/invoice/{invoiceId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
   @Operation(summary = "Get all payments for an invoice")
   public ResponseEntity<List<PaymentResponseDTO>> getByInvoice(@PathVariable UUID invoiceId) {
     return ResponseEntity.ok(paymentService.getByInvoice(invoiceId));

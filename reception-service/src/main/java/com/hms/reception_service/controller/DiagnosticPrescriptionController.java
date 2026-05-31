@@ -36,7 +36,7 @@ public class DiagnosticPrescriptionController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'PATIENT')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
   public ResponseEntity<DiagnosticPrescriptionDTO.Response> getPrescriptionById(
       @PathVariable UUID id) {
     return ResponseEntity.ok(prescriptionService.getPrescriptionById(id));

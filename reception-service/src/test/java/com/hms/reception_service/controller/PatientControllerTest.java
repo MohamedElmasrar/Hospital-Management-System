@@ -45,7 +45,6 @@ class PatientControllerTest {
   void createPatient_whenEmployee_shouldReturnCreated() throws Exception {
     PatientDTO.CreateRequest req =
         new PatientDTO.CreateRequest(
-            null,
             "CIN12345",
             "John",
             "Doe",
@@ -62,7 +61,6 @@ class PatientControllerTest {
         new PatientDTO.Response(
             UUID.randomUUID(),
             "MRN-20261017-001",
-            null,
             "CIN12345",
             "John",
             "Doe",
@@ -101,7 +99,6 @@ class PatientControllerTest {
         new PatientDTO.Response(
             id,
             "MRN-20261017-001",
-            null,
             "CIN12345",
             "John",
             "Doe",

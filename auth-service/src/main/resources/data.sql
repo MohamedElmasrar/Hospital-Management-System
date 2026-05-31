@@ -2,12 +2,14 @@
 -- The value stored in password_hash is a BCrypt hash, never the plaintext password.
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email);
 
+-- Remove legacy patient logins while preserving the ordinals of staff roles.
+DELETE FROM refresh_token WHERE user_id IN (SELECT id FROM users WHERE role = 1);
+DELETE FROM users WHERE role = 1;
+
 INSERT INTO users (id, email, password_hash, role, active)
 VALUES
   ('00000000-0000-0000-0000-000000000001', 'admin@email.com',
    '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 0, TRUE),
-  ('00000000-0000-0000-0000-000000000002', 'patient@email.com',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1, TRUE),
   ('00000000-0000-0000-0000-000000000003', 'doctor@email.com',
    '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 2, TRUE),
   ('00000000-0000-0000-0000-000000000004', 'employee@email.com',

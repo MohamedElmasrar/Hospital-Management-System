@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.hms.auth_service.dto.admin.UserResponse;
 import com.hms.auth_service.dto.login.LoginRequestDTO;
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.enums.UserRole;
@@ -25,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -97,6 +100,17 @@ class AuthServiceTest {
   }
 
   @Test
+  void login_disabledRole_throwsInvalidCredentialsException() {
+    existingUser.setRole(UserRole.DISABLED);
+    LoginRequestDTO request = new LoginRequestDTO(existingUser.getEmail(), "password");
+    given(userService.findByEmail(request.email())).willReturn(Optional.of(existingUser));
+
+    assertThatThrownBy(() -> authService.login(request))
+        .isInstanceOf(InvalidCredentialsException.class);
+    verifyNoInteractions(passwordEncoder, jwtTokenService, refreshTokenService);
+  }
+
+  @Test
   void refresh_validRefreshToken_returnsNewAccessToken() {
     String rawRefreshToken = "valid-raw-refresh-token";
     RefreshToken refreshToken = new RefreshToken();
@@ -126,6 +140,18 @@ class AuthServiceTest {
     assertThatThrownBy(() -> authService.refresh(rawRefreshToken))
         .isInstanceOf(InvalidRefreshTokenException.class);
 
+    verifyNoInteractions(jwtTokenService);
+  }
+
+  @Test
+  void refresh_disabledRole_throwsInvalidCredentialsException() {
+    existingUser.setRole(UserRole.DISABLED);
+    RefreshToken refreshToken = new RefreshToken();
+    refreshToken.setUser(existingUser);
+    given(refreshTokenService.findAndValidateRefreshToken("legacy-token")).willReturn(refreshToken);
+
+    assertThatThrownBy(() -> authService.refresh("legacy-token"))
+        .isInstanceOf(InvalidCredentialsException.class);
     verifyNoInteractions(jwtTokenService);
   }
 
@@ -175,22 +201,48 @@ class AuthServiceTest {
   @Test
   void validateToken_validToken_returnsTrue() {
     String token = "valid-token";
-    given(jwtTokenService.validateToken(token)).willReturn(true);
+    Jwt jwt =
+        Jwt.withTokenValue(token)
+            .header("alg", "HS256")
+            .subject(existingUser.getId().toString())
+            .claim("role", "EMPLOYEE")
+            .build();
+    given(jwtTokenService.decodeToken(token)).willReturn(jwt);
+    given(userService.findById(existingUser.getId()))
+        .willReturn(
+            new UserResponse(
+                existingUser.getId(), existingUser.getEmail(), UserRole.EMPLOYEE, true));
 
     boolean isValid = authService.validateToken(token);
 
     assertThat(isValid).isTrue();
-    verify(jwtTokenService).validateToken(token);
+    verify(jwtTokenService).decodeToken(token);
   }
 
   @Test
   void validateToken_invalidToken_returnsFalse() {
     String token = "invalid-token";
-    given(jwtTokenService.validateToken(token)).willReturn(false);
+    given(jwtTokenService.decodeToken(token)).willThrow(new BadJwtException("Invalid token"));
 
     boolean isValid = authService.validateToken(token);
 
     assertThat(isValid).isFalse();
-    verify(jwtTokenService).validateToken(token);
+    verify(jwtTokenService).decodeToken(token);
+  }
+
+  @Test
+  void validateToken_deletedUser_returnsFalse() {
+    String token = "old-token";
+    Jwt jwt =
+        Jwt.withTokenValue(token)
+            .header("alg", "HS256")
+            .subject(existingUser.getId().toString())
+            .claim("role", "PATIENT")
+            .build();
+    given(jwtTokenService.decodeToken(token)).willReturn(jwt);
+    given(userService.findById(existingUser.getId()))
+        .willThrow(new java.util.NoSuchElementException());
+
+    assertThat(authService.validateToken(token)).isFalse();
   }
 }

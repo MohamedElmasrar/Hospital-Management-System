@@ -74,7 +74,8 @@ These rules apply to the entire repository. More specific `AGENTS.md` files may 
 - Add mapper tests when mappings contain nested relationships, computed values, update behavior, or ignored fields.
 - Follow existing endpoint naming, response wrappers, validation, and role authorization patterns.
 - Use the existing `PageResponse<T>` shape for paginated endpoints.
-- Scope doctor, patient, and employee endpoints to the authenticated user's domain where possible.
+- Patients are clinical records, not application users. Do not add patient accounts, patient roles, patient self-service routes, or auth-user links to patient records.
+- Scope doctor and employee endpoints to the authenticated user's domain where possible.
 - Keep OpenAPI output accurate so Orval generates correct parameter and response types.
 
 ## Formatting and verification

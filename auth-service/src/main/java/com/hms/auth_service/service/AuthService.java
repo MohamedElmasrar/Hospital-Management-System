@@ -2,6 +2,7 @@ package com.hms.auth_service.service;
 
 import com.hms.auth_service.dto.login.LoginRequestDTO;
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
+import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.InvalidCredentialsException;
 import com.hms.auth_service.messaging.AnalyticsEventPublisher;
 import com.hms.auth_service.model.RefreshToken;
@@ -9,8 +10,12 @@ import com.hms.auth_service.model.User;
 import com.hms.auth_service.security.JwtTokenService;
 import com.hms.auth_service.security.RefreshTokenService;
 import jakarta.transaction.Transactional;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +33,9 @@ public class AuthService {
   public LoginResult login(LoginRequestDTO request) {
     User user =
         userService.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
-    if (!user.isActive() || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+    if (user.getRole() == UserRole.DISABLED
+        || !user.isActive()
+        || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
       throw new InvalidCredentialsException();
     }
 
@@ -47,6 +54,9 @@ public class AuthService {
     RefreshToken refreshToken = refreshTokenService.findAndValidateRefreshToken(rawToken);
 
     User user = refreshToken.getUser();
+    if (!user.isActive() || user.getRole() == UserRole.DISABLED) {
+      throw new InvalidCredentialsException();
+    }
 
     String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getRole());
     analyticsEventPublisher.publishUserEvent(
@@ -73,6 +83,14 @@ public class AuthService {
   }
 
   public boolean validateToken(String token) {
-    return jwtTokenService.validateToken(token);
+    try {
+      Jwt jwt = jwtTokenService.decodeToken(token);
+      var account = userService.findById(UUID.fromString(jwt.getSubject()));
+      return account.active()
+          && account.role() != UserRole.DISABLED
+          && account.role().name().equals(jwt.getClaimAsString("role"));
+    } catch (JwtException | IllegalArgumentException | NoSuchElementException e) {
+      return false;
+    }
   }
 }

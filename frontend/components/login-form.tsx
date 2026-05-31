@@ -56,6 +56,9 @@ export function LoginForm({
           if (data.accessToken) {
             queryClient.clear()
             setAccessToken(data.accessToken)
+            setEmail('')
+            setPassword('')
+            setError('')
             router.push(callBackUrl)
           } else {
             setError('Something goes wrong! Try again')

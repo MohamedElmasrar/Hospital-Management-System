@@ -63,15 +63,6 @@ public class PatientService {
   }
 
   @Transactional(readOnly = true)
-  public PatientDTO.Response getPatientByUserId(UUID userId) {
-    return patientRepository
-        .findByUserId(userId)
-        .map(patientMapper::toResponse)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("Patient profile not found for user: " + userId));
-  }
-
-  @Transactional(readOnly = true)
   public PageResponse<PatientDTO.Response> searchPatients(String query, Pageable pageable) {
     return PageResponse.from(
         patientRepository

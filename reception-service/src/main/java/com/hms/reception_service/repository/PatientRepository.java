@@ -12,8 +12,6 @@ public interface PatientRepository
 
   Optional<Patient> findByNationalId(String nationalId);
 
-  Optional<Patient> findByUserId(UUID userId);
-
   boolean existsByNationalId(String nationalId);
 
   boolean existsByMrn(String mrn);

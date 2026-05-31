@@ -10,7 +10,6 @@ import java.util.UUID;
 public class PatientDTO {
 
   public record CreateRequest(
-      UUID userId,
       String nationalId,
       @NotBlank(message = "First name is required") String firstName,
       @NotBlank(message = "Last name is required") String lastName,
@@ -41,7 +40,6 @@ public class PatientDTO {
   public record Response(
       UUID id,
       String mrn,
-      UUID userId,
       String nationalId,
       String firstName,
       String lastName,

@@ -41,7 +41,7 @@ class AnalyticsEventPublisherTest {
     when(kafkaTemplate.send(anyString(), anyString(), anyString()))
         .thenReturn(CompletableFuture.completedFuture(null));
 
-    publisher.publishUserEvent("USER_REGISTERED", userId, UserRole.PATIENT);
+    publisher.publishUserEvent("USER_REGISTERED", userId, UserRole.EMPLOYEE);
 
     ArgumentCaptor<String> payload = ArgumentCaptor.forClass(String.class);
     verify(kafkaTemplate)
@@ -54,7 +54,7 @@ class AnalyticsEventPublisherTest {
         .contains("\"sourceService\":\"auth-service\"")
         .contains("\"aggregateId\":\"" + userId + "\"")
         .contains("\"metricName\":\"USER_REGISTERED\"")
-        .contains("\"dimensionValue\":\"PATIENT\"")
+        .contains("\"dimensionValue\":\"EMPLOYEE\"")
         .doesNotContain("email", "password", "token");
   }
 

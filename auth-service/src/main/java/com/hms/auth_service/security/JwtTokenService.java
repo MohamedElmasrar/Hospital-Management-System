@@ -9,11 +9,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,12 +46,7 @@ public class JwtTokenService {
     return HexFormat.of().formatHex(bytes);
   }
 
-  public boolean validateToken(String token) {
-    try {
-      jwtDecoder.decode(token);
-      return true;
-    } catch (JwtException e) {
-      return false;
-    }
+  public Jwt decodeToken(String token) {
+    return jwtDecoder.decode(token);
   }
 }
