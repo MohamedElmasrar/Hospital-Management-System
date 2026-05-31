@@ -1,5 +1,6 @@
 package com.hms.hr_service.dto.workforce;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.*;
@@ -22,16 +23,18 @@ public class WorkforceDTO {
       @NotNull UUID employeeId,
       UUID departmentId,
       @NotNull LocalDate shiftDate,
-      @NotNull LocalTime startsAt,
-      @NotNull LocalTime endsAt) {}
+      @NotNull @Schema(type = "string", format = "time", example = "09:00") LocalTime startsAt,
+      @NotNull @Schema(type = "string", format = "time", example = "17:00") LocalTime endsAt) {}
 
   public record ShiftResponse(
       UUID id,
       UUID employeeId,
+      String employeeName,
       UUID departmentId,
+      String departmentName,
       LocalDate shiftDate,
-      LocalTime startsAt,
-      LocalTime endsAt) {}
+      @Schema(type = "string", format = "time") LocalTime startsAt,
+      @Schema(type = "string", format = "time") LocalTime endsAt) {}
 
   public record LeaveRequest(
       @NotNull UUID employeeId,
@@ -44,6 +47,7 @@ public class WorkforceDTO {
   public record LeaveResponse(
       UUID id,
       UUID employeeId,
+      String employeeName,
       LocalDate startsOn,
       LocalDate endsOn,
       String reason,
@@ -59,6 +63,7 @@ public class WorkforceDTO {
   public record AttendanceResponse(
       UUID id,
       UUID employeeId,
+      String employeeName,
       LocalDate attendanceDate,
       LocalDateTime checkedInAt,
       LocalDateTime checkedOutAt) {}

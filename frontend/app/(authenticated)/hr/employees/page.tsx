@@ -1,3 +1,5 @@
+import { EmployeesPage } from '@/components/hr/employees-page'
+
 export default function HrEmployeesPage() {
-  return <h1 className="text-2xl font-semibold">Employees</h1>
+  return <EmployeesPage />
 }

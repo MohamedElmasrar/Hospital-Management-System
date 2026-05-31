@@ -1,13 +1,23 @@
 package com.hms.hr_service.service;
 
+import com.hms.hr_service.dto.MedicalOrganization.MedicalOrganizationResponseDTO;
+import com.hms.hr_service.dto.PageResponse;
 import com.hms.hr_service.dto.workforce.WorkforceDTO;
+import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.exception.*;
+import com.hms.hr_service.mapper.MedicalOrganizationMapper;
+import com.hms.hr_service.mapper.WorkforceMapper;
 import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.*;
 import com.hms.hr_service.repository.*;
+import com.hms.hr_service.security.AuthenticatedPrincipal;
+import com.hms.hr_service.security.HrAccessService;
+import com.hms.hr_service.specification.WorkforceSpecification;
 import java.time.*;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +31,88 @@ public class WorkforceService {
   private final LeaveRequestRepository leaveRepository;
   private final AttendanceRecordRepository attendanceRepository;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final HrAccessService hrAccessService;
+  private final MedicalOrganizationRepository organizationRepository;
+  private final MedicalOrganizationMapper organizationMapper;
+  private final WorkforceMapper workforceMapper;
+
+  public UUID departmentOrganizationId(UUID departmentId) {
+    return department(departmentId).getMedicalOrganization().getId();
+  }
+
+  public UUID leaveEmployeeId(UUID leaveId) {
+    return leaveRepository
+        .findById(leaveId)
+        .orElseThrow(() -> new IllegalArgumentException("Leave request not found"))
+        .getEmployee()
+        .getId();
+  }
+
+  @Transactional(readOnly = true)
+  public List<MedicalOrganizationResponseDTO> managedOrganizations(
+      AuthenticatedPrincipal principal) {
+    var organizations =
+        principal.role() == UserRole.ADMIN
+            ? organizationRepository.findAll()
+            : organizationRepository.findAllById(hrAccessService.managedOrganizationIds(principal));
+    return organizations.stream()
+        .map(organizationMapper::medicalOrganizationToMedicalOrganizationResponseDTO)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<WorkforceDTO.ShiftResponse> listShifts(
+      UUID organizationId,
+      UUID employeeId,
+      LocalDate from,
+      LocalDate to,
+      Pageable pageable,
+      AuthenticatedPrincipal principal) {
+    requireManagementScope(principal, organizationId, employeeId);
+    return PageResponse.from(
+        shiftRepository
+            .findAll(WorkforceSpecification.shifts(employeeId, organizationId, from, to), pageable)
+            .map(workforceMapper::shift));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<WorkforceDTO.LeaveResponse> listLeave(
+      UUID organizationId,
+      UUID employeeId,
+      String status,
+      Pageable pageable,
+      AuthenticatedPrincipal principal) {
+    requireManagementScope(principal, organizationId, employeeId);
+    return PageResponse.from(
+        leaveRepository
+            .findAll(WorkforceSpecification.leave(employeeId, organizationId, status), pageable)
+            .map(workforceMapper::leave));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<WorkforceDTO.AttendanceResponse> listAttendance(
+      UUID organizationId,
+      UUID employeeId,
+      LocalDate from,
+      LocalDate to,
+      Pageable pageable,
+      AuthenticatedPrincipal principal) {
+    requireManagementScope(principal, organizationId, employeeId);
+    return PageResponse.from(
+        attendanceRepository
+            .findAll(
+                WorkforceSpecification.attendance(employeeId, organizationId, from, to), pageable)
+            .map(workforceMapper::attendance));
+  }
+
+  private void requireManagementScope(
+      AuthenticatedPrincipal principal, UUID organizationId, UUID employeeId) {
+    if (principal.role() == UserRole.HR_HEAD) {
+      if (organizationId == null) throw new AccessDeniedException("Organization required");
+      hrAccessService.requireOrganization(principal, organizationId);
+      if (employeeId != null) hrAccessService.requireEmployee(principal, employeeId);
+    }
+  }
 
   @Transactional
   public WorkforceDTO.CredentialResponse addCredential(
@@ -31,20 +123,23 @@ public class WorkforceService {
     credential.setCredentialType(request.credentialType());
     credential.setCredentialNumber(request.credentialNumber());
     credential.setExpiresOn(request.expiresOn());
-    return credential(credentialRepository.save(credential));
+    return workforceMapper.credential(credentialRepository.save(credential));
   }
 
   @Transactional(readOnly = true)
   public List<WorkforceDTO.CredentialResponse> expiringCredentials(int days) {
     LocalDate limit = LocalDate.now().plusDays(Math.max(days, 0));
     return credentialRepository.findByExpiresOnLessThanEqual(limit).stream()
-        .map(this::credential)
+        .map(workforceMapper::credential)
         .toList();
   }
 
   @Transactional
   public WorkforceDTO.ShiftResponse createShift(WorkforceDTO.ShiftRequest request) {
     Employee employee = employee(request.employeeId());
+    if (!request.startsAt().isBefore(request.endsAt())) {
+      throw new IllegalArgumentException("Shift end must be after start");
+    }
     EmployeeShift shift = new EmployeeShift();
     shift.setEmployee(employee);
     shift.setDepartment(request.departmentId() == null ? null : department(request.departmentId()));
@@ -53,20 +148,20 @@ public class WorkforceService {
     shift.setEndsAt(request.endsAt());
     EmployeeShift saved = shiftRepository.save(shift);
     analyticsEventPublisher.publish("SHIFT_CREATED", "EMPLOYEE_SHIFT", saved.getId());
-    return shift(saved);
+    return workforceMapper.shift(saved);
   }
 
   @Transactional(readOnly = true)
   public List<WorkforceDTO.ShiftResponse> shifts(UUID employeeId, LocalDate from, LocalDate to) {
     employee(employeeId);
     return shiftRepository.findByEmployeeIdAndShiftDateBetween(employeeId, from, to).stream()
-        .map(this::shift)
+        .map(workforceMapper::shift)
         .toList();
   }
 
   @Transactional(readOnly = true)
   public List<WorkforceDTO.ShiftResponse> availability(LocalDate date) {
-    return shiftRepository.findByShiftDate(date).stream().map(this::shift).toList();
+    return shiftRepository.findByShiftDate(date).stream().map(workforceMapper::shift).toList();
   }
 
   @Transactional
@@ -82,7 +177,7 @@ public class WorkforceService {
     leave.setStatus("PENDING");
     LeaveRequest saved = leaveRepository.save(leave);
     analyticsEventPublisher.publish("LEAVE_REQUESTED", "LEAVE_REQUEST", saved.getId());
-    return leave(saved);
+    return workforceMapper.leave(saved);
   }
 
   @Transactional
@@ -102,7 +197,7 @@ public class WorkforceService {
     if (changed) {
       analyticsEventPublisher.publish("LEAVE_" + status, "LEAVE_REQUEST", saved.getId());
     }
-    return leave(saved);
+    return workforceMapper.leave(saved);
   }
 
   @Transactional
@@ -125,7 +220,7 @@ public class WorkforceService {
     if (checkedOut) {
       analyticsEventPublisher.publish("ATTENDANCE_CHECKED_OUT", "ATTENDANCE_RECORD", saved.getId());
     }
-    return attendance(saved);
+    return workforceMapper.attendance(saved);
   }
 
   public WorkforceDTO.PayrollResponse payroll(WorkforceDTO.PayrollRequest request) {
@@ -145,44 +240,5 @@ public class WorkforceService {
 
   private Department department(UUID id) {
     return departmentRepository.findById(id).orElseThrow(DepartmentNotFoundException::new);
-  }
-
-  private WorkforceDTO.CredentialResponse credential(EmployeeCredential c) {
-    return new WorkforceDTO.CredentialResponse(
-        c.getId(),
-        c.getEmployee().getId(),
-        c.getCredentialType(),
-        c.getCredentialNumber(),
-        c.getExpiresOn());
-  }
-
-  private WorkforceDTO.ShiftResponse shift(EmployeeShift s) {
-    return new WorkforceDTO.ShiftResponse(
-        s.getId(),
-        s.getEmployee().getId(),
-        s.getDepartment() == null ? null : s.getDepartment().getId(),
-        s.getShiftDate(),
-        s.getStartsAt(),
-        s.getEndsAt());
-  }
-
-  private WorkforceDTO.LeaveResponse leave(LeaveRequest l) {
-    return new WorkforceDTO.LeaveResponse(
-        l.getId(),
-        l.getEmployee().getId(),
-        l.getStartsOn(),
-        l.getEndsOn(),
-        l.getReason(),
-        l.getStatus(),
-        l.getDecisionReason());
-  }
-
-  private WorkforceDTO.AttendanceResponse attendance(AttendanceRecord a) {
-    return new WorkforceDTO.AttendanceResponse(
-        a.getId(),
-        a.getEmployee().getId(),
-        a.getAttendanceDate(),
-        a.getCheckedInAt(),
-        a.getCheckedOutAt());
   }
 }

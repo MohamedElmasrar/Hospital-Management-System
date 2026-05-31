@@ -2,6 +2,7 @@ package com.hms.hr_service.service;
 
 import com.hms.hr_service.dto.Employee.AssignEmployeeRequestDTO;
 import com.hms.hr_service.dto.Employee.ContactPointResponseDTO;
+import com.hms.hr_service.dto.Employee.CreateAssignedEmployeeRequestDTO;
 import com.hms.hr_service.dto.Employee.CreateContactPointRequestDTO;
 import com.hms.hr_service.dto.Employee.CreateEmployeeRequestDTO;
 import com.hms.hr_service.dto.Employee.EmployeeAssignmentResponseDTO;
@@ -11,6 +12,7 @@ import com.hms.hr_service.dto.Employee.PostalAddressDTO;
 import com.hms.hr_service.dto.Employee.UpdateEmployeeRequestDTO;
 import com.hms.hr_service.dto.PageResponse;
 import com.hms.hr_service.enums.EmploymentStatus;
+import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.exception.DepartmentNotFoundException;
 import com.hms.hr_service.exception.EmployeeNotFoundException;
 import com.hms.hr_service.exception.ResourceAlreadyExistsException;
@@ -26,6 +28,8 @@ import com.hms.hr_service.repository.DepartmentRepository;
 import com.hms.hr_service.repository.EmployeeAssignmentRepository;
 import com.hms.hr_service.repository.EmployeeRepository;
 import com.hms.hr_service.repository.PostalAddressRepository;
+import com.hms.hr_service.security.AuthenticatedPrincipal;
+import com.hms.hr_service.security.HrAccessService;
 import com.hms.hr_service.specification.EmployeeSpecification;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +51,28 @@ public class EmployeeService {
   private final DepartmentRepository departmentRepository;
   private final EmployeeMapper employeeMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final HrAccessService hrAccessService;
+
+  public UUID departmentOrganizationId(UUID departmentId) {
+    return departmentRepository
+        .findById(departmentId)
+        .orElseThrow(DepartmentNotFoundException::new)
+        .getMedicalOrganization()
+        .getId();
+  }
+
+  @Transactional
+  public EmployeeResponseDTO createAssigned(
+      CreateAssignedEmployeeRequestDTO request, AuthenticatedPrincipal principal) {
+    Department department =
+        departmentRepository
+            .findById(request.assignment().departmentId())
+            .orElseThrow(DepartmentNotFoundException::new);
+    hrAccessService.requireOrganization(principal, department.getMedicalOrganization().getId());
+    EmployeeResponseDTO created = create(request.employee());
+    assignToDepartment(created.id(), request.assignment());
+    return created;
+  }
 
   @Transactional
   public EmployeeResponseDTO create(CreateEmployeeRequestDTO request) {
@@ -100,9 +126,23 @@ public class EmployeeService {
   @Transactional(readOnly = true)
   public PageResponse<EmployeeResponseDTO> search(
       String search, EmploymentStatus status, Pageable pageable) {
+    return search(search, status, null, pageable, null);
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<EmployeeResponseDTO> search(
+      String search,
+      EmploymentStatus status,
+      UUID organizationId,
+      Pageable pageable,
+      AuthenticatedPrincipal principal) {
+    if (principal != null && principal.role() == UserRole.HR_HEAD) {
+      hrAccessService.requireOrganization(principal, organizationId);
+    }
     Specification<Employee> spec =
         Specification.where(EmployeeSpecification.hasSearch(search))
-            .and(EmployeeSpecification.hasEmploymentStatus(status));
+            .and(EmployeeSpecification.hasEmploymentStatus(status))
+            .and(EmployeeSpecification.assignedToOrganization(organizationId));
 
     Page<Employee> page = employeeRepository.findAll(spec, pageable);
     return PageResponse.from(page.map(employeeMapper::employeeToEmployeeResponseDTO));

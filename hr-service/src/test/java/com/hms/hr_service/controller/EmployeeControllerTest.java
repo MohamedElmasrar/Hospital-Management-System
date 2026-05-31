@@ -13,6 +13,7 @@ import com.hms.hr_service.enums.AddressType;
 import com.hms.hr_service.enums.ContactType;
 import com.hms.hr_service.enums.EmploymentStatus;
 import com.hms.hr_service.exception.GlobalExceptionHandler;
+import com.hms.hr_service.security.HrAccessService;
 import com.hms.hr_service.security.SecurityConfig;
 import com.hms.hr_service.service.EmployeeService;
 import java.util.UUID;
@@ -33,6 +34,7 @@ class EmployeeControllerTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @MockitoBean private EmployeeService employeeService;
+  @MockitoBean private HrAccessService hrAccessService;
 
   @Test
   void updateEmployee_whenAdmin_shouldSucceed() throws Exception {

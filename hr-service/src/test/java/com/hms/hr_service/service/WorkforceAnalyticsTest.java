@@ -1,9 +1,11 @@
 package com.hms.hr_service.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.hms.hr_service.dto.workforce.WorkforceDTO;
+import com.hms.hr_service.mapper.WorkforceMapper;
 import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.AttendanceRecord;
 import com.hms.hr_service.model.Employee;
@@ -14,6 +16,7 @@ import com.hms.hr_service.repository.EmployeeRepository;
 import com.hms.hr_service.repository.EmployeeShiftRepository;
 import com.hms.hr_service.repository.LeaveRequestRepository;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -31,7 +34,27 @@ class WorkforceAnalyticsTest {
   @Mock private LeaveRequestRepository leaveRepository;
   @Mock private AttendanceRecordRepository attendanceRepository;
   @Mock private AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private WorkforceMapper workforceMapper;
   @InjectMocks private WorkforceService workforceService;
+
+  @Test
+  void shiftEndMustFollowStart() {
+    UUID employeeId = UUID.randomUUID();
+    Employee employee = new Employee();
+    employee.setId(employeeId);
+    when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
+
+    assertThatThrownBy(
+            () ->
+                workforceService.createShift(
+                    new WorkforceDTO.ShiftRequest(
+                        employeeId,
+                        null,
+                        LocalDate.of(2026, 10, 30),
+                        LocalTime.of(17, 0),
+                        LocalTime.of(9, 0))))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
 
   @Test
   void repeatedCheckInIsCountedOnce() {

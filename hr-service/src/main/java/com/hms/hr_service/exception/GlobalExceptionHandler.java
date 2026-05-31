@@ -67,4 +67,9 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access Denied"));
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<Map<String, String>> handleInvalidRequest(IllegalArgumentException ex) {
+    return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+  }
 }
