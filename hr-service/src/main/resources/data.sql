@@ -202,3 +202,37 @@ SELECT md5('hms-dev-leave-' || e.id || '-' || n)::uuid, e.id,
 FROM employee e CROSS JOIN generate_series(1, 3) n
 WHERE e.identifier IN ('EMP-DOC-001', 'EMP-ADM-001', 'EMP-REC-001')
 ON CONFLICT DO NOTHING;
+
+-- Development payroll settings and monthly records. All amounts are mock values.
+INSERT INTO payroll_settings (organization_id, currency, pay_day, overtime_hourly_rate)
+VALUES ('10000000-0000-0000-0000-000000000001', 'MAD', 28, 50.00)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO employee_compensations (id, organization_id, employee_id, base_salary, allowance, deductions)
+SELECT md5('hms-dev-compensation-' || e.id)::uuid,
+ '10000000-0000-0000-0000-000000000001', e.id,
+ CASE WHEN EXISTS (SELECT 1 FROM physician p WHERE p.employee_id = e.id) THEN 15000.00 ELSE 8000.00 END,
+ 500.00, 200.00
+FROM employee e
+WHERE e.identifier IN ('EMP-DOC-001', 'EMP-ADM-001', 'EMP-REC-001', 'EMP-HR-001', 'DEV-EMP-BILLER', 'DEV-EMP-DOC2')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO payroll_records (id, organization_id, employee_id, period, currency, pay_date,
+ status, base_salary, allowance, overtime_hours, overtime_hourly_rate, overtime_pay,
+ extra_deductions, deductions, gross_pay, net_pay, created_at, approved_at, approved_by,
+ paid_at, paid_by, version)
+SELECT md5('hms-dev-payroll-' || c.employee_id || '-' || period::date)::uuid,
+ c.organization_id, c.employee_id, period::date, s.currency, period::date + (s.pay_day - 1),
+ CASE n WHEN 0 THEN 'DRAFT' WHEN 1 THEN 'APPROVED' ELSE 'PAID' END,
+ c.base_salary, c.allowance, 4.00, s.overtime_hourly_rate, 4 * s.overtime_hourly_rate,
+ 0, c.deductions, c.base_salary + c.allowance + 4 * s.overtime_hourly_rate,
+ c.base_salary + c.allowance + 4 * s.overtime_hourly_rate - c.deductions,
+ period, CASE WHEN n > 0 THEN period + INTERVAL '24 days' END,
+ CASE WHEN n > 0 THEN '00000000-0000-0000-0000-000000000001'::uuid END,
+ CASE WHEN n = 2 THEN period + (s.pay_day - 1) * INTERVAL '1 day' END,
+ CASE WHEN n = 2 THEN '00000000-0000-0000-0000-000000000001'::uuid END, 0
+FROM employee_compensations c JOIN payroll_settings s ON s.organization_id = c.organization_id
+CROSS JOIN generate_series(0, 2) n
+CROSS JOIN LATERAL (SELECT date_trunc('month', CURRENT_DATE) - n * INTERVAL '1 month' AS period) months
+WHERE c.id = md5('hms-dev-compensation-' || c.employee_id)::uuid
+ON CONFLICT DO NOTHING;

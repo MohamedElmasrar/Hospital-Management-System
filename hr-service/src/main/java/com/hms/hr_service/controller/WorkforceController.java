@@ -156,7 +156,9 @@ public class WorkforceController {
   @PostMapping("/payroll/calculate")
   @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD')")
   public ResponseEntity<WorkforceDTO.PayrollResponse> payroll(
-      @Valid @RequestBody WorkforceDTO.PayrollRequest request) {
+      @Valid @RequestBody WorkforceDTO.PayrollRequest request,
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
+    hrAccessService.requireEmployee(principal, request.employeeId());
     return ResponseEntity.ok(workforceService.payroll(request));
   }
 }

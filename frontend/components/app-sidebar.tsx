@@ -101,6 +101,11 @@ function routesForRole(role: UserRole): Route[] {
     ),
     link('Attendance', 'hr/attendance', <Logs className={iconClassName} />),
     link('Payroll', 'hr/payroll', <WalletCards className={iconClassName} />),
+    link(
+      'Payroll settings',
+      'hr/payroll/settings',
+      <WalletCards className={iconClassName} />
+    ),
   ]
 
   const roleRoutes: Record<UserRole, Route[]> = {
@@ -153,6 +158,15 @@ function routesForRole(role: UserRole): Route[] {
   return [
     link('Dashboard', '', <LayoutDashboard className={iconClassName} />),
     ...roleRoutes[role],
+    ...(role !== 'ADMIN' && role !== 'HR_HEAD'
+      ? [
+          link(
+            'My payroll',
+            'hr/payroll',
+            <WalletCards className={iconClassName} />
+          ),
+        ]
+      : []),
   ]
 }
 
