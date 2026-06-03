@@ -146,3 +146,59 @@ SET employee_id = EXCLUDED.employee_id,
     credential_type = EXCLUDED.credential_type,
     credential_number = EXCLUDED.credential_number,
     expires_on = EXCLUDED.expires_on;
+
+-- Additional development mock data. Existing fixture records are preserved.
+INSERT INTO employee (id, user_id, identifier, given_name, family_name, birth_date,
+ gender, employment_status, date_created, date_modified)
+VALUES
+ ('12000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000007',
+  'DEV-EMP-BILLER', 'Adam', 'Demo', DATE '1991-03-21', 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+ ('12000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000008',
+  'DEV-EMP-DOC2', 'Sara', 'Demo', DATE '1987-05-12', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO employee_assignment (id, employee_id, department_id, job_title, start_date)
+VALUES
+ (md5('hms-dev-biller-assignment')::uuid, '12000000-0000-0000-0000-000000000006',
+  '11000000-0000-0000-0000-000000000002', 'Biller', CURRENT_DATE - 365),
+ (md5('hms-dev-doctor2-assignment')::uuid, '12000000-0000-0000-0000-000000000007',
+  '11000000-0000-0000-0000-000000000001', 'Cardiologist', CURRENT_DATE - 365)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO physician (id, employee_id, license_number)
+VALUES ('16000000-0000-0000-0000-000000000002',
+ '12000000-0000-0000-0000-000000000007', 'DEV-MED-002')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO physician_specialty (id, physician_id, medical_specialty_id, is_primary)
+VALUES (md5('hms-dev-doctor2-specialty')::uuid, '16000000-0000-0000-0000-000000000002',
+ '17000000-0000-0000-0000-000000000001', TRUE)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO employee_shifts (id, employee_id, department_id, shift_date, starts_at, ends_at)
+SELECT md5('hms-dev-shift-' || e.id || '-' || day::date)::uuid,
+ e.id, a.department_id, day::date, TIME '08:00', TIME '16:00'
+FROM employee e
+JOIN employee_assignment a ON a.employee_id = e.id AND a.end_date IS NULL
+CROSS JOIN generate_series(CURRENT_DATE - 7, CURRENT_DATE + 7, INTERVAL '1 day') day
+WHERE e.identifier IN ('EMP-DOC-001', 'EMP-ADM-001', 'EMP-REC-001', 'EMP-HR-001', 'DEV-EMP-BILLER', 'DEV-EMP-DOC2')
+ AND extract(isodow FROM day) <= 5
+ON CONFLICT DO NOTHING;
+
+INSERT INTO attendance_records (id, employee_id, attendance_date, checked_in_at, checked_out_at)
+SELECT md5('hms-dev-attendance-' || employee_id || '-' || shift_date)::uuid,
+ employee_id, shift_date, shift_date + TIME '08:00',
+ CASE WHEN shift_date < CURRENT_DATE THEN shift_date + TIME '16:00' END
+FROM employee_shifts
+WHERE id = md5('hms-dev-shift-' || employee_id || '-' || shift_date)::uuid
+ AND shift_date <= CURRENT_DATE
+ON CONFLICT DO NOTHING;
+
+INSERT INTO leave_requests (id, employee_id, starts_on, ends_on, reason, status, decision_reason)
+SELECT md5('hms-dev-leave-' || e.id || '-' || n)::uuid, e.id,
+ CURRENT_DATE + 7 * n, CURRENT_DATE + 7 * n + 1, 'Development: personal leave',
+ CASE n WHEN 1 THEN 'PENDING' WHEN 2 THEN 'APPROVED' ELSE 'REJECTED' END,
+ CASE n WHEN 2 THEN 'Development: cover arranged' WHEN 3 THEN 'Development: staffing required' END
+FROM employee e CROSS JOIN generate_series(1, 3) n
+WHERE e.identifier IN ('EMP-DOC-001', 'EMP-ADM-001', 'EMP-REC-001')
+ON CONFLICT DO NOTHING;
