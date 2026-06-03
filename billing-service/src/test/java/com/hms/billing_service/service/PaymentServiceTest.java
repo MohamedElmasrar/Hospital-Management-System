@@ -54,7 +54,6 @@ class PaymentServiceTest {
             cashDeskRepository,
             invoiceService,
             paymentMapper,
-            hrGrpcClient,
             analyticsEventPublisher);
   }
 
@@ -67,8 +66,7 @@ class PaymentServiceTest {
     invoice.setId(invoiceId);
     invoice.setStatus(InvoiceStatus.ISSUED);
 
-    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
-    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceService.calculate(invoice))
         .thenReturn(
             new InvoiceService.InvoiceCalculations(
@@ -104,8 +102,7 @@ class PaymentServiceTest {
     desk.setDeskCode("DESK-01");
     desk.setIsActive(true);
 
-    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
-    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceRepository.findOneById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceService.calculate(invoice))
         .thenReturn(
             new InvoiceService.InvoiceCalculations(

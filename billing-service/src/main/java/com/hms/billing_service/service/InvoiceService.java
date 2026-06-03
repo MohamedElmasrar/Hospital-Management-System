@@ -36,16 +36,10 @@ public class InvoiceService {
   private final InvoiceMapper invoiceMapper;
   private final PaymentMapper paymentMapper;
   private final InsuranceMapper insuranceMapper;
-  private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
   private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public InvoiceDetailResponseDTO create(CreateInvoiceRequestDTO request, UUID staffId) {
-    if (staffId != null && !hrGrpcClient.validateEmployee(staffId)) {
-      throw new InvalidOperationException(
-          "Staff member does not exist or is inactive with ID: " + staffId);
-    }
-
     CashDesk cashDesk =
         cashDeskRepository
             .findById(request.cashDeskId())
@@ -106,8 +100,7 @@ public class InvoiceService {
       CreateAutomaticInvoiceRequestDTO request, UUID staffId) {
     List<BillableOrder> orders =
         billableOrderRepository
-            .findByPatientId(
-                request.patientId(), org.springframework.data.domain.Pageable.unpaged())
+            .findByPatientId(request.patientId(), Pageable.unpaged())
             .getContent()
             .stream()
             .filter(order -> !lineItemRepository.existsByBillableOrderId(order.getId()))
@@ -202,6 +195,9 @@ public class InvoiceService {
             .orElseThrow(
                 () -> new InvoiceNotFoundException("Invoice not found with ID: " + invoiceId));
 
+    if (newStatus == InvoiceStatus.PAID && calculate(invoice).balanceDue().signum() > 0) {
+      throw new InvalidOperationException("Record the full payment before marking an invoice paid");
+    }
     if (invoice.getStatus() == InvoiceStatus.VOID && newStatus != InvoiceStatus.VOID) {
       throw new InvalidOperationException("Cannot change status of a voided invoice");
     }

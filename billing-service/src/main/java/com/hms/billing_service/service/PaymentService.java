@@ -36,19 +36,13 @@ public class PaymentService {
   private final CashDeskRepository cashDeskRepository;
   private final InvoiceService invoiceService;
   private final PaymentMapper paymentMapper;
-  private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
   private final AnalyticsEventPublisher analyticsEventPublisher;
 
   @Transactional
   public PaymentResponseDTO processPayment(ProcessPaymentRequestDTO request, UUID cashierId) {
-    if (cashierId != null && !hrGrpcClient.validateEmployee(cashierId)) {
-      throw new InvalidOperationException(
-          "Cashier does not exist or is inactive with ID: " + cashierId);
-    }
-
     Invoice invoice =
         invoiceRepository
-            .findById(request.invoiceId())
+            .findOneById(request.invoiceId())
             .orElseThrow(
                 () ->
                     new InvoiceNotFoundException(

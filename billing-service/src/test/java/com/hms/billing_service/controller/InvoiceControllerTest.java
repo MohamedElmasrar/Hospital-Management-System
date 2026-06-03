@@ -38,7 +38,7 @@ class InvoiceControllerTest {
   @MockitoBean private InvoiceService invoiceService;
 
   @Test
-  void createInvoice_whenEmployee_shouldReturnCreated() throws Exception {
+  void createInvoice_whenBiller_shouldReturnCreated() throws Exception {
     UUID patientId = UUID.randomUUID();
     UUID cashDeskId = UUID.randomUUID();
     UUID orderId = UUID.randomUUID();
@@ -82,7 +82,7 @@ class InvoiceControllerTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE")))
+                        .authorities(new SimpleGrantedAuthority("ROLE_BILLER")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
@@ -141,7 +141,7 @@ class InvoiceControllerTest {
   }
 
   @Test
-  void voidInvoice_whenEmployee_shouldReturnForbidden() throws Exception {
+  void voidInvoice_whenBiller_shouldReturnForbidden() throws Exception {
     UUID invoiceId = UUID.randomUUID();
 
     mockMvc
@@ -150,7 +150,7 @@ class InvoiceControllerTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE"))))
+                        .authorities(new SimpleGrantedAuthority("ROLE_BILLER"))))
         .andExpect(status().isForbidden());
   }
 }

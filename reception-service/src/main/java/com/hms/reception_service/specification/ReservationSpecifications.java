@@ -11,6 +11,16 @@ import org.springframework.data.jpa.domain.Specification;
 public final class ReservationSpecifications {
   private ReservationSpecifications() {}
 
+  public static Specification<Reservation> awaitingConsultationPayment(String query) {
+    return search(query, null)
+        .and(
+            (root, criteria, builder) ->
+                builder.and(
+                    builder.equal(root.get("category").get("code"), "CONSULTATION"),
+                    builder.equal(root.get("status").get("code"), "PENDING_PAYMENT"),
+                    builder.isFalse(root.get("isPaid"))));
+  }
+
   public static Specification<Reservation> search(String query, LocalDate date) {
     List<Specification<Reservation>> filters = new ArrayList<>();
 

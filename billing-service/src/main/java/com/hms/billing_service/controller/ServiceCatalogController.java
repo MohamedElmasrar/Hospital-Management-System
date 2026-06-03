@@ -44,14 +44,14 @@ public class ServiceCatalogController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Get service catalog item by ID with current tariff")
   public ResponseEntity<ServiceCatalogResponseDTO> getService(@PathVariable UUID id) {
     return ResponseEntity.ok(serviceCatalogService.getById(id));
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "List services with optional department filter")
   public ResponseEntity<PageResponse<ServiceCatalogResponseDTO>> listServices(
       @RequestParam(required = false) UUID departmentId,
@@ -72,7 +72,7 @@ public class ServiceCatalogController {
   }
 
   @GetMapping("/{id}/tariffs")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Get tariff version history for a service")
   public ResponseEntity<List<TariffVersionResponseDTO>> getTariffHistory(@PathVariable UUID id) {
     return ResponseEntity.ok(serviceCatalogService.getTariffHistory(id));

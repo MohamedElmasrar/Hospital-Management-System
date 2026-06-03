@@ -37,21 +37,21 @@ public class InsuranceController {
   }
 
   @GetMapping("/providers/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get insurance provider by ID")
   public ResponseEntity<InsuranceProviderResponseDTO> getProvider(@PathVariable UUID id) {
     return ResponseEntity.ok(insuranceService.getProviderById(id));
   }
 
   @GetMapping("/providers")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "List all insurance providers")
   public ResponseEntity<List<InsuranceProviderResponseDTO>> listProviders() {
     return ResponseEntity.ok(insuranceService.getAllProviders());
   }
 
   @PostMapping("/policies")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Register patient insurance policy")
   public ResponseEntity<InsurancePolicyResponseDTO> createPolicy(
       @Valid @RequestBody CreateInsurancePolicyRequestDTO request) {
@@ -59,14 +59,14 @@ public class InsuranceController {
   }
 
   @GetMapping("/policies/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get insurance policy by ID")
   public ResponseEntity<InsurancePolicyResponseDTO> getPolicy(@PathVariable UUID id) {
     return ResponseEntity.ok(insuranceService.getPolicyById(id));
   }
 
   @GetMapping("/policies/patient/{patientId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get insurance policies for a patient")
   public ResponseEntity<List<InsurancePolicyResponseDTO>> getPoliciesByPatient(
       @PathVariable UUID patientId) {
@@ -74,7 +74,7 @@ public class InsuranceController {
   }
 
   @PostMapping("/claims")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Submit insurance claim for an invoice")
   public ResponseEntity<InsuranceClaimResponseDTO> submitClaim(
       @Valid @RequestBody SubmitClaimRequestDTO request) {
@@ -82,7 +82,7 @@ public class InsuranceController {
   }
 
   @PutMapping("/claims/{id}/status")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Update claim status (APPROVED, REJECTED, SETTLED)")
   public ResponseEntity<InsuranceClaimResponseDTO> updateClaimStatus(
       @PathVariable UUID id, @Valid @RequestBody UpdateClaimStatusRequestDTO request) {
@@ -90,14 +90,14 @@ public class InsuranceController {
   }
 
   @GetMapping("/claims/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get insurance claim by ID")
   public ResponseEntity<InsuranceClaimResponseDTO> getClaim(@PathVariable UUID id) {
     return ResponseEntity.ok(insuranceService.getClaimById(id));
   }
 
   @GetMapping("/claims")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "List insurance claims by status")
   public ResponseEntity<PageResponse<InsuranceClaimResponseDTO>> listClaims(
       @RequestParam ClaimStatus status,

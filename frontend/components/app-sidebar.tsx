@@ -64,6 +64,11 @@ function routesForRole(role: UserRole): Route[] {
     ),
   ]
   const billing = [
+    link(
+      'Consultation payments',
+      'billing/consultations',
+      <Receipt className={iconClassName} />
+    ),
     link('Invoices', 'billing/invoices', <Receipt className={iconClassName} />),
     link(
       'Payments',
@@ -123,8 +128,8 @@ function routesForRole(role: UserRole): Route[] {
         <Stethoscope className={iconClassName} />
       ),
     ],
+    BILLER: billing,
     EMPLOYEE: [
-      ...billing,
       link(
         'My Schedule',
         'hr/schedules',

@@ -67,6 +67,7 @@ These rules apply to the entire repository. More specific `AGENTS.md` files may 
 ## Backend API design
 
 - Return DTOs rather than exposing JPA entities.
+- Define API DTOs in the service's `dto` packages, following existing naming conventions. Do not declare DTO classes or records inside controllers.
 - Use MapStruct for entity-to-DTO, DTO-to-entity, and DTO update mappings.
 - Keep MapStruct mapper interfaces in the service's `mapper` package and use `componentModel = "spring"` so they can be injected.
 - Prefer explicit `@Mapping` declarations for renamed, nested, ignored, or computed fields.

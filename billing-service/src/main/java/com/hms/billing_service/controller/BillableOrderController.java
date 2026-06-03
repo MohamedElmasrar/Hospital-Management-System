@@ -28,7 +28,7 @@ public class BillableOrderController {
   private final BillableOrderService billableOrderService;
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Register a billable clinical order")
   public ResponseEntity<BillableOrderResponseDTO> createOrder(
       @Valid @RequestBody CreateBillableOrderRequestDTO request) {
@@ -36,14 +36,14 @@ public class BillableOrderController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Get billable order by ID")
   public ResponseEntity<BillableOrderResponseDTO> getOrder(@PathVariable UUID id) {
     return ResponseEntity.ok(billableOrderService.getById(id));
   }
 
   @GetMapping("/patient/{patientId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Get billable orders for a patient")
   public ResponseEntity<PageResponse<BillableOrderResponseDTO>> getByPatient(
       @PathVariable UUID patientId,
@@ -52,7 +52,7 @@ public class BillableOrderController {
   }
 
   @GetMapping("/practitioner/{practitionerId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER', 'DOCTOR')")
   @Operation(summary = "Get billable orders for a practitioner")
   public ResponseEntity<PageResponse<BillableOrderResponseDTO>> getByPractitioner(
       @PathVariable UUID practitionerId,

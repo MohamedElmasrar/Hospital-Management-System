@@ -30,7 +30,7 @@ public class InvoiceController {
   private final InvoiceService invoiceService;
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Create an invoice")
   public ResponseEntity<InvoiceDetailResponseDTO> createInvoice(
       @Valid @RequestBody CreateInvoiceRequestDTO request,
@@ -41,7 +41,7 @@ public class InvoiceController {
   }
 
   @PostMapping("/automatic")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Create an invoice from all unbilled clinical charges")
   public ResponseEntity<InvoiceDetailResponseDTO> createAutomaticInvoice(
       @Valid @RequestBody CreateAutomaticInvoiceRequestDTO request,
@@ -53,7 +53,7 @@ public class InvoiceController {
   }
 
   @PostMapping("/{id}/line-items")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Add line item to invoice (DRAFT only)")
   public ResponseEntity<InvoiceDetailResponseDTO> addLineItem(
       @PathVariable UUID id, @Valid @RequestBody AddLineItemRequestDTO request) {
@@ -61,7 +61,7 @@ public class InvoiceController {
   }
 
   @DeleteMapping("/{id}/line-items/{lineItemId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Remove line item from invoice (DRAFT only)")
   public ResponseEntity<InvoiceDetailResponseDTO> removeLineItem(
       @PathVariable UUID id, @PathVariable UUID lineItemId) {
@@ -69,7 +69,7 @@ public class InvoiceController {
   }
 
   @PatchMapping("/{id}/status")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Update invoice status")
   public ResponseEntity<InvoiceDetailResponseDTO> updateStatus(
       @PathVariable UUID id, @Valid @RequestBody UpdateInvoiceStatusRequestDTO request) {
@@ -77,14 +77,14 @@ public class InvoiceController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get full invoice details by ID")
   public ResponseEntity<InvoiceDetailResponseDTO> getInvoice(@PathVariable UUID id) {
     return ResponseEntity.ok(invoiceService.getById(id));
   }
 
   @GetMapping(value = "/{id}/receipt", produces = "text/plain")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get a printable invoice receipt")
   public ResponseEntity<String> getReceipt(@PathVariable UUID id) {
     InvoiceDetailResponseDTO invoice = invoiceService.getById(id);
@@ -105,7 +105,7 @@ public class InvoiceController {
   }
 
   @GetMapping("/number/{invoiceNumber}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get full invoice details by invoice number")
   public ResponseEntity<InvoiceDetailResponseDTO> getInvoiceByNumber(
       @PathVariable String invoiceNumber) {
@@ -113,7 +113,7 @@ public class InvoiceController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "List invoices with optional filters")
   public ResponseEntity<PageResponse<InvoiceSummaryResponseDTO>> listInvoices(
       @RequestParam(required = false) UUID patientId,

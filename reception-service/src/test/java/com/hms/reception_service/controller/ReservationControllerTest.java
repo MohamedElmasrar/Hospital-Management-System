@@ -107,7 +107,7 @@ class ReservationControllerTest {
   }
 
   @Test
-  void markAsPaid_whenEmployee_shouldReturnOk() throws Exception {
+  void markAsPaid_whenBiller_shouldReturnOk() throws Exception {
     UUID resId = UUID.randomUUID();
     UUID invoiceId = UUID.randomUUID();
 
@@ -151,7 +151,7 @@ class ReservationControllerTest {
                 .with(
                     jwt()
                         .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                        .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE"))))
+                        .authorities(new SimpleGrantedAuthority("ROLE_BILLER"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isPaid").value(true))
         .andExpect(jsonPath("$.statusCode").value("PAID"));

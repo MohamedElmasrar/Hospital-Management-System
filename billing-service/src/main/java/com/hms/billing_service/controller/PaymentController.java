@@ -29,7 +29,7 @@ public class PaymentController {
   private final PaymentService paymentService;
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Process a payment against an invoice")
   public ResponseEntity<PaymentResponseDTO> processPayment(
       @Valid @RequestBody ProcessPaymentRequestDTO request,
@@ -41,21 +41,21 @@ public class PaymentController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get payment by ID")
   public ResponseEntity<PaymentResponseDTO> getPayment(@PathVariable UUID id) {
     return ResponseEntity.ok(paymentService.getById(id));
   }
 
   @GetMapping("/invoice/{invoiceId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get all payments for an invoice")
   public ResponseEntity<List<PaymentResponseDTO>> getByInvoice(@PathVariable UUID invoiceId) {
     return ResponseEntity.ok(paymentService.getByInvoice(invoiceId));
   }
 
   @GetMapping("/cash-desk/{cashDeskId}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get payments processed at a cash desk")
   public ResponseEntity<PageResponse<PaymentResponseDTO>> getByCashDesk(
       @PathVariable UUID cashDeskId,

@@ -43,21 +43,21 @@ public class CashDeskController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get cash desk by ID")
   public ResponseEntity<CashDeskResponseDTO> getCashDesk(@PathVariable UUID id) {
     return ResponseEntity.ok(cashDeskService.getById(id));
   }
 
   @GetMapping("/code/{deskCode}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "Get cash desk by code")
   public ResponseEntity<CashDeskResponseDTO> getByDeskCode(@PathVariable String deskCode) {
     return ResponseEntity.ok(cashDeskService.getByDeskCode(deskCode));
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   @Operation(summary = "List cash desks with optional department filter")
   public ResponseEntity<PageResponse<CashDeskResponseDTO>> listCashDesks(
       @RequestParam(required = false) UUID departmentId,

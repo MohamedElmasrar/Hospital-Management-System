@@ -2,13 +2,18 @@ package com.hms.billing_service.repository;
 
 import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.model.Invoice;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  Optional<Invoice> findOneById(UUID id);
+
   Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
   boolean existsByInvoiceNumber(String invoiceNumber);

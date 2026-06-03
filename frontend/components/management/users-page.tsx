@@ -36,6 +36,7 @@ const roles = [
   'EMPLOYEE',
   'RECEPTIONIST',
   'HR_HEAD',
+  'BILLER',
 ] as const
 
 export function UsersPageContent() {

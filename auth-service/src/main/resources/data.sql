@@ -6,6 +6,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email);
 DELETE FROM refresh_token WHERE user_id IN (SELECT id FROM users WHERE role = 1);
 DELETE FROM users WHERE role = 1;
 
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role BETWEEN 0 AND 6);
+
 INSERT INTO users (id, email, password_hash, role, active)
 VALUES
   ('00000000-0000-0000-0000-000000000001', 'admin@email.com',
@@ -17,7 +20,9 @@ VALUES
   ('00000000-0000-0000-0000-000000000005', 'receptionist@email.com',
    '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 4, TRUE),
   ('00000000-0000-0000-0000-000000000006', 'hr_head@email.com',
-   '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 5, TRUE)
+   '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 5, TRUE),
+  ('00000000-0000-0000-0000-000000000007', 'biller@email.com',
+   '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 6, TRUE)
 ON CONFLICT (email) DO UPDATE
 SET id = EXCLUDED.id,
     password_hash = EXCLUDED.password_hash,

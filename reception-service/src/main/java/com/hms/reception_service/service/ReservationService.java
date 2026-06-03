@@ -49,6 +49,7 @@ public class ReservationService {
   private final HrGrpcClient hrGrpcClient;
   private final ReservationMapper reservationMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final BillingPaymentVerifier billingPaymentVerifier;
   private final SecureRandom random = new SecureRandom();
 
   @Transactional
@@ -236,6 +237,11 @@ public class ReservationService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Reservation not found: " + reservationId));
 
+    if (!"PENDING_PAYMENT".equals(res.getStatus().getCode())
+        && !"PAID".equals(res.getStatus().getCode())) {
+      throw new InvalidOperationException("Only reservations awaiting payment can be approved");
+    }
+    billingPaymentVerifier.requirePaidInvoice(invoiceId, res.getPatient().getId(), reservationId);
     ReservationStatus paidStatus =
         statusRepository
             .findByCode("PAID")
@@ -320,6 +326,15 @@ public class ReservationService {
     return PageResponse.from(
         reservationRepository
             .findAll(ReservationSpecifications.search(query, date), pageable)
+            .map(reservationMapper::toResponse));
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<ReservationDTO.Response> searchUnpaidConsultations(
+      String query, Pageable pageable) {
+    return PageResponse.from(
+        reservationRepository
+            .findAll(ReservationSpecifications.awaitingConsultationPayment(query), pageable)
             .map(reservationMapper::toResponse));
   }
 

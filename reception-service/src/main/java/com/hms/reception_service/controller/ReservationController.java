@@ -25,8 +25,22 @@ public class ReservationController {
 
   private final ReservationService reservationService;
 
+  @GetMapping("/awaiting-payment")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
+  public PageResponse<ReservationDTO.Response> searchUnpaidConsultations(
+      @RequestParam(required = false) String query,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return reservationService.searchUnpaidConsultations(
+        query,
+        PageRequest.of(
+            page,
+            size,
+            Sort.by("reservationDate").ascending().and(Sort.by("startTime").ascending())));
+  }
+
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'BILLER')")
   public ResponseEntity<PageResponse<ReservationDTO.Response>> searchReservations(
       @RequestParam(required = false) String query,
       @RequestParam(required = false) LocalDate date,
@@ -76,9 +90,9 @@ public class ReservationController {
   }
 
   @PostMapping("/{id}/pay")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BILLER')")
   public ResponseEntity<ReservationDTO.Response> markAsPaid(
-      @PathVariable UUID id, @RequestParam(required = false) UUID invoiceId) {
+      @PathVariable UUID id, @RequestParam UUID invoiceId) {
     return ResponseEntity.ok(reservationService.markAsPaid(id, invoiceId));
   }
 
@@ -90,7 +104,7 @@ public class ReservationController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'BILLER')")
   public ResponseEntity<ReservationDTO.Response> getReservationById(@PathVariable UUID id) {
     return ResponseEntity.ok(reservationService.getReservationById(id));
   }

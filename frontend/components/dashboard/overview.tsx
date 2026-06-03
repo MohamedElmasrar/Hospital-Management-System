@@ -40,6 +40,7 @@ import Link from 'next/link'
 import type { UserRole } from '@/lib/auth'
 import { useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { BillerOverview } from './biller-overview'
 import { CreateAppointmentDialog } from './create-appointment-dialog'
 
 const LIMIT = 100
@@ -368,6 +369,7 @@ function AccountCard() {
 
 const headings: Record<UserRole, string> = {
   ADMIN: 'Hospital overview',
+  BILLER: 'Billing overview',
   RECEPTIONIST: 'Reception overview',
   DOCTOR: 'Clinical overview',
   HR_HEAD: 'Workforce overview',
@@ -395,10 +397,15 @@ const quickLinks: Record<UserRole, { label: string; href: string }[]> = {
     { label: 'Leave requests', href: '/hr/leave' },
     { label: 'Schedules', href: '/hr/schedules' },
   ],
-  EMPLOYEE: [
+  BILLER: [
     { label: 'Create invoice', href: '/billing/invoices' },
     { label: 'Record payment', href: '/billing/payments' },
+    { label: 'Reports', href: '/billing/reports' },
+  ],
+  EMPLOYEE: [
     { label: 'My attendance', href: '/hr/attendance' },
+    { label: 'My schedule', href: '/hr/schedules' },
+    { label: 'Leave requests', href: '/hr/leave' },
   ],
 }
 
@@ -454,6 +461,8 @@ function DashboardContent() {
         <Skeleton className="h-64 w-full" />
       ) : role === 'ADMIN' ? (
         <AdminCharts />
+      ) : role === 'BILLER' ? (
+        <BillerOverview />
       ) : role === 'RECEPTIONIST' ? (
         <ReceptionCharts today={today} />
       ) : role === 'DOCTOR' ? (

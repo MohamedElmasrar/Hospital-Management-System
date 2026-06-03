@@ -59,7 +59,6 @@ class InvoiceServiceTest {
             invoiceMapper,
             paymentMapper,
             insuranceMapper,
-            hrGrpcClient,
             analyticsEventPublisher);
   }
 
@@ -140,7 +139,6 @@ class InvoiceServiceTest {
     order.setId(orderId);
     order.setPatientId(patientB);
 
-    when(hrGrpcClient.validateEmployee(any())).thenReturn(true);
     when(cashDeskRepository.findById(deskId)).thenReturn(Optional.of(desk));
     when(lineItemRepository.existsByBillableOrderId(orderId)).thenReturn(false);
     when(billableOrderRepository.findById(orderId)).thenReturn(Optional.of(order));

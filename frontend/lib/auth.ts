@@ -1,5 +1,5 @@
 export type UserRole =
-  'ADMIN' | 'DOCTOR' | 'EMPLOYEE' | 'RECEPTIONIST' | 'HR_HEAD'
+  'ADMIN' | 'DOCTOR' | 'EMPLOYEE' | 'RECEPTIONIST' | 'HR_HEAD' | 'BILLER'
 
 export type AuthUser = {
   id: string
@@ -64,9 +64,14 @@ export function getAuthUser(): AuthUser | null {
   if (
     !payload?.sub ||
     !payload.role ||
-    !['ADMIN', 'DOCTOR', 'EMPLOYEE', 'RECEPTIONIST', 'HR_HEAD'].includes(
-      payload.role
-    ) ||
+    ![
+      'ADMIN',
+      'DOCTOR',
+      'EMPLOYEE',
+      'RECEPTIONIST',
+      'HR_HEAD',
+      'BILLER',
+    ].includes(payload.role) ||
     (payload.exp && payload.exp * 1000 <= Date.now())
   ) {
     localStorage.removeItem('token')
