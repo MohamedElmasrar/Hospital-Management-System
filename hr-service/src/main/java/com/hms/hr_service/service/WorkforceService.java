@@ -8,6 +8,7 @@ import com.hms.hr_service.exception.*;
 import com.hms.hr_service.mapper.MedicalOrganizationMapper;
 import com.hms.hr_service.mapper.WorkforceMapper;
 import com.hms.hr_service.messaging.AnalyticsEventPublisher;
+import com.hms.hr_service.messaging.NotificationEventPublisher;
 import com.hms.hr_service.model.*;
 import com.hms.hr_service.repository.*;
 import com.hms.hr_service.security.AuthenticatedPrincipal;
@@ -31,6 +32,7 @@ public class WorkforceService {
   private final LeaveRequestRepository leaveRepository;
   private final AttendanceRecordRepository attendanceRepository;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final NotificationEventPublisher notificationEventPublisher;
   private final HrAccessService hrAccessService;
   private final MedicalOrganizationRepository organizationRepository;
   private final MedicalOrganizationMapper organizationMapper;
@@ -148,6 +150,10 @@ public class WorkforceService {
     shift.setEndsAt(request.endsAt());
     EmployeeShift saved = shiftRepository.save(shift);
     analyticsEventPublisher.publish("SHIFT_CREATED", "EMPLOYEE_SHIFT", saved.getId());
+    notificationEventPublisher.publish(
+        employee.getUserId(),
+        "New shift assigned",
+        "A shift has been added to your schedule for " + saved.getShiftDate() + ".");
     return workforceMapper.shift(saved);
   }
 
@@ -177,6 +183,8 @@ public class WorkforceService {
     leave.setStatus("PENDING");
     LeaveRequest saved = leaveRepository.save(leave);
     analyticsEventPublisher.publish("LEAVE_REQUESTED", "LEAVE_REQUEST", saved.getId());
+    notificationEventPublisher.publish(
+        employee.getUserId(), "Leave request submitted", "Your leave request is awaiting review.");
     return workforceMapper.leave(saved);
   }
 
@@ -196,6 +204,10 @@ public class WorkforceService {
     LeaveRequest saved = leaveRepository.save(leave);
     if (changed) {
       analyticsEventPublisher.publish("LEAVE_" + status, "LEAVE_REQUEST", saved.getId());
+      notificationEventPublisher.publish(
+          leave.getEmployee().getUserId(),
+          "Leave decision",
+          "Your leave request has been " + status.toLowerCase(java.util.Locale.ROOT) + ".");
     }
     return workforceMapper.leave(saved);
   }

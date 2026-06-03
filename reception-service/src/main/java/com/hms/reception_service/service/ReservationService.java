@@ -7,6 +7,7 @@ import com.hms.reception_service.exception.ResourceNotFoundException;
 import com.hms.reception_service.grpc.HrGrpcClient;
 import com.hms.reception_service.mapper.ReservationMapper;
 import com.hms.reception_service.messaging.AnalyticsEventPublisher;
+import com.hms.reception_service.messaging.NotificationEventPublisher;
 import com.hms.reception_service.model.DiagnosticModality;
 import com.hms.reception_service.model.DiagnosticPrescription;
 import com.hms.reception_service.model.DiagnosticReservationDetail;
@@ -49,6 +50,7 @@ public class ReservationService {
   private final HrGrpcClient hrGrpcClient;
   private final ReservationMapper reservationMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final NotificationEventPublisher notificationEventPublisher;
   private final BillingPaymentVerifier billingPaymentVerifier;
   private final SecureRandom random = new SecureRandom();
 
@@ -58,7 +60,8 @@ public class ReservationService {
     if (!hrGrpcClient.validateDepartment(req.departmentId())) {
       throw new InvalidOperationException("Department ID not valid in HR: " + req.departmentId());
     }
-    if (!hrGrpcClient.validatePhysician(req.practitionerId())) {
+    var physician = hrGrpcClient.getPhysician(req.practitionerId());
+    if (!physician.getExists()) {
       throw new InvalidOperationException("Physician ID not valid in HR: " + req.practitionerId());
     }
 
@@ -127,6 +130,16 @@ public class ReservationService {
         saved.getId(),
         "department_id",
         req.departmentId().toString());
+    notificationEventPublisher.publish(
+        receptionistId,
+        "Appointment created",
+        "Appointment " + saved.getReservationNumber() + " is awaiting payment.");
+    if (!physician.getUserId().isBlank()) {
+      notificationEventPublisher.publish(
+          UUID.fromString(physician.getUserId()),
+          "New consultation",
+          "A consultation has been added to your schedule for " + saved.getReservationDate() + ".");
+    }
     return reservationMapper.toResponse(saved);
   }
 
@@ -226,6 +239,10 @@ public class ReservationService {
         saved.getId(),
         "department_id",
         req.departmentId().toString());
+    notificationEventPublisher.publish(
+        receptionistId,
+        "Appointment created",
+        "Appointment " + saved.getReservationNumber() + " is awaiting payment.");
     return reservationMapper.toResponse(saved);
   }
 
@@ -255,6 +272,10 @@ public class ReservationService {
     Reservation saved = reservationRepository.save(res);
     if (becamePaid) {
       analyticsEventPublisher.publish("RESERVATION_PAID", "RESERVATION", saved.getId());
+      notificationEventPublisher.publish(
+          saved.getReceptionistStaffId(),
+          "Appointment payment approved",
+          "Appointment " + saved.getReservationNumber() + " is paid and ready for the doctor.");
     }
     return reservationMapper.toResponse(saved);
   }

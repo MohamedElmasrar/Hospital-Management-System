@@ -35,30 +35,6 @@ import { useProfile } from '@/lib/profile'
 import { useQueryClient } from '@tanstack/react-query'
 import { useLogout } from '@/app/api/generated/auth/auth-controller/auth-controller'
 
-const sampleNotifications = [
-  {
-    id: '1',
-    avatar: '/avatars/01.png',
-    fallback: 'OM',
-    text: 'New appointment scheduled.',
-    time: '10m ago',
-  },
-  {
-    id: '2',
-    avatar: '/avatars/02.png',
-    fallback: 'JL',
-    text: 'Patient record updated.',
-    time: '1h ago',
-  },
-  {
-    id: '3',
-    avatar: '/avatars/03.png',
-    fallback: 'HH',
-    text: 'New staff member added.',
-    time: '2h ago',
-  },
-]
-
 export function DashboardNavbar() {
   const pathname = usePathname()
   const router = useRouter()
@@ -114,7 +90,7 @@ export function DashboardNavbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <NotificationsPopover notifications={sampleNotifications} />
+        <NotificationsPopover />
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Open profile menu"

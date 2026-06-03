@@ -109,3 +109,17 @@ spring:
             - Path=/api-docs/analytics/**, /api-docs/analytics
           filters:
             - RewritePath=/api-docs/analytics(?<segment>/?.*), /v3/api-docs${segment}
+
+        - id: notification-service-route
+          uri: http://notification-service:8006
+          predicates:
+            - Path=/api/notifications/**, /api/notifications
+          filters:
+            - JwtValidation
+
+        - id: api-docs-notification-route
+          uri: http://notification-service:8006
+          predicates:
+            - Path=/api-docs/notification/**, /api-docs/notification
+          filters:
+            - RewritePath=/api-docs/notification(?<segment>/?.*), /v3/api-docs${segment}

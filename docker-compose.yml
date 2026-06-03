@@ -17,6 +17,8 @@ services:
         condition: service_started
       analytics-service:
         condition: service_started
+      notification-service:
+        condition: service_started
   auth-service:
     container_name: auth-service
     build: ./auth-service/
@@ -90,6 +92,20 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       analytics-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  notification-service:
+    container_name: notification-service
+    build: ./notification-service/
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      notification-db:
         condition: service_healthy
       kafka:
         condition: service_started
@@ -188,7 +204,23 @@ services:
       timeout: 5s
       retries: 10
 
+  notification-db:
+    image: postgres:17
+    container_name: notification-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: notificationDB
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d notificationDB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
+  notification-db-data:
   auth-db-data:
   hr-db-data:
   billing-db-data:

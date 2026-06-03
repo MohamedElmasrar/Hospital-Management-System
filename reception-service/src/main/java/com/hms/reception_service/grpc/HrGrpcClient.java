@@ -95,14 +95,18 @@ public class HrGrpcClient {
   }
 
   public boolean validatePhysician(UUID physicianId) {
+    return getPhysician(physicianId).getExists();
+  }
+
+  public ValidatePhysicianResponse getPhysician(UUID physicianId) {
     if (physicianId == null) {
-      return false;
+      return ValidatePhysicianResponse.getDefaultInstance();
     }
     try {
       ValidatePhysicianResponse response =
           hrGrpcBlockingStub.validatePhysician(
               ValidatePhysicianRequest.newBuilder().setPhysicianId(physicianId.toString()).build());
-      return response.getExists();
+      return response;
     } catch (StatusRuntimeException e) {
       log.error("Failed to validate physician via gRPC: {}", e.getStatus());
       throw new InvalidOperationException("HR service communication error: " + e.getMessage());

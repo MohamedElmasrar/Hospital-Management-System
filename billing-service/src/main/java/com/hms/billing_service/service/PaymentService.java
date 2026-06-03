@@ -11,6 +11,7 @@ import com.hms.billing_service.exception.InvoiceNotFoundException;
 import com.hms.billing_service.exception.PaymentNotFoundException;
 import com.hms.billing_service.mapper.PaymentMapper;
 import com.hms.billing_service.messaging.AnalyticsEventPublisher;
+import com.hms.billing_service.messaging.NotificationEventPublisher;
 import com.hms.billing_service.model.CashDesk;
 import com.hms.billing_service.model.Invoice;
 import com.hms.billing_service.model.Payment;
@@ -37,6 +38,7 @@ public class PaymentService {
   private final InvoiceService invoiceService;
   private final PaymentMapper paymentMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final NotificationEventPublisher notificationEventPublisher;
 
   @Transactional
   public PaymentResponseDTO processPayment(ProcessPaymentRequestDTO request, UUID cashierId) {
@@ -106,6 +108,10 @@ public class PaymentService {
         "method",
         saved.getMethod().name());
 
+    notificationEventPublisher.publish(
+        cashierId,
+        "Payment recorded",
+        "Payment " + saved.getPaymentReference() + " has been recorded.");
     return paymentMapper.paymentToPaymentResponseDTO(saved);
   }
 
@@ -166,6 +172,10 @@ public class PaymentService {
         "method",
         updated.getMethod().name());
 
+    notificationEventPublisher.publish(
+        payment.getCashierId(),
+        "Payment refunded",
+        "Payment " + payment.getPaymentReference() + " has been refunded.");
     return paymentMapper.paymentToPaymentResponseDTO(updated);
   }
 

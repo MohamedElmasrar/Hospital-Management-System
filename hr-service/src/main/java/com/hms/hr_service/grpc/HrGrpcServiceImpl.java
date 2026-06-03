@@ -227,6 +227,7 @@ public class HrGrpcServiceImpl extends HrGrpcServiceGrpc.HrGrpcServiceImplBase {
               .setExists(true)
               .setFullName(fullName)
               .setLicenseNumber(phys.getLicenseNumber() != null ? phys.getLicenseNumber() : "")
+              .setUserId(emp != null && emp.getUserId() != null ? emp.getUserId().toString() : "")
               .build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();

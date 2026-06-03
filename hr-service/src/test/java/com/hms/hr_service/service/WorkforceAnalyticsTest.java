@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.hms.hr_service.dto.workforce.WorkforceDTO;
 import com.hms.hr_service.mapper.WorkforceMapper;
 import com.hms.hr_service.messaging.AnalyticsEventPublisher;
+import com.hms.hr_service.messaging.NotificationEventPublisher;
 import com.hms.hr_service.model.AttendanceRecord;
 import com.hms.hr_service.model.Employee;
 import com.hms.hr_service.repository.AttendanceRecordRepository;
@@ -35,6 +36,7 @@ class WorkforceAnalyticsTest {
   @Mock private AttendanceRecordRepository attendanceRepository;
   @Mock private AnalyticsEventPublisher analyticsEventPublisher;
   @Mock private WorkforceMapper workforceMapper;
+  @Mock private NotificationEventPublisher notificationEventPublisher;
   @InjectMocks private WorkforceService workforceService;
 
   @Test

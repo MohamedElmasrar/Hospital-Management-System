@@ -13,6 +13,7 @@ import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.mapper.UserMapper;
 import com.hms.auth_service.messaging.AnalyticsEventPublisher;
+import com.hms.auth_service.messaging.NotificationEventPublisher;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import java.util.Optional;
@@ -32,6 +33,7 @@ class UserServiceTest {
   @Mock private UserMapper userMapper;
   @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
+  @Mock private NotificationEventPublisher notificationEventPublisher;
   @InjectMocks private UserService userService;
 
   @Test

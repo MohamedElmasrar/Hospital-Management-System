@@ -6,6 +6,7 @@ import com.hms.auth_service.enums.UserRole;
 import com.hms.auth_service.exception.UserWithTheSameEmailAlreadyExistsException;
 import com.hms.auth_service.mapper.UserMapper;
 import com.hms.auth_service.messaging.AnalyticsEventPublisher;
+import com.hms.auth_service.messaging.NotificationEventPublisher;
 import com.hms.auth_service.model.User;
 import com.hms.auth_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,6 +25,7 @@ public class UserService {
   private final BCryptPasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final NotificationEventPublisher notificationEventPublisher;
 
   public Optional<User> findByEmail(String email) {
     return userRepository.findByEmail(email);
@@ -54,6 +56,8 @@ public class UserService {
     user.setRole(role);
     User saved = userRepository.save(user);
     analyticsEventPublisher.publishUserEvent("USER_ROLE_UPDATED", saved.getId(), saved.getRole());
+    notificationEventPublisher.publish(
+        saved.getId(), "Account role updated", "Your account role is now " + saved.getRole() + ".");
     return saved;
   }
 
@@ -67,6 +71,10 @@ public class UserService {
     User saved = userRepository.save(user);
     analyticsEventPublisher.publishUserEvent(
         active ? "USER_ACTIVATED" : "USER_DEACTIVATED", saved.getId(), saved.getRole());
+    notificationEventPublisher.publish(
+        saved.getId(),
+        "Account status updated",
+        active ? "Your account has been activated." : "Your account has been deactivated.");
     return saved;
   }
 
@@ -81,5 +89,7 @@ public class UserService {
 
     User saved = userRepository.save(userToSave);
     analyticsEventPublisher.publishUserEvent("USER_REGISTERED", saved.getId(), saved.getRole());
+    notificationEventPublisher.publish(
+        saved.getId(), "Welcome", "Your hospital account has been created.");
   }
 }

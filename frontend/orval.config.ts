@@ -81,6 +81,20 @@ export default defineConfig({
     },
   },
 
+  notificationService: {
+    input: 'http://localhost:8000/api-docs/notification',
+    output: {
+      mode: 'tags-split',
+      target: 'app/api/generated/notification',
+      schemas: 'app/api/generated/notification/model',
+      client: 'react-query',
+      baseUrl: '',
+      override: {
+        mutator: { path: './lib/axios-instance.ts', name: 'customInstance' },
+      },
+    },
+  },
+
   analyticsService: {
     input: 'http://localhost:8000/api-docs/analytics',
     output: {
