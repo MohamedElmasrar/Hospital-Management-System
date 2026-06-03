@@ -2,6 +2,8 @@
 
 import { useSearchReservations } from '@/app/api/generated/reception/reservation-controller/reservation-controller'
 import type { ReservationResponse } from '@/app/api/generated/reception/model'
+import { CreateAppointmentDialog } from '@/components/dashboard/create-appointment-dialog'
+import { useRole } from '@/components/hr/shared'
 import { ReceptionListCard } from '@/components/reception/reception-list-card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -27,6 +29,7 @@ function formatTime(value: ReservationResponse['startTime'] | string) {
 }
 
 export function ReceptionAppointmentsTable() {
+  const role = useRole()
   const [searchInput, setSearchInput] = useState('')
   const [query, setQuery] = useState('')
   const [date, setDate] = useState('')
@@ -47,11 +50,16 @@ export function ReceptionAppointmentsTable() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Appointments</h1>
-        <p className="text-sm text-muted-foreground">
-          Find and review patient reservations.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold">Appointments</h1>
+          <p className="text-sm text-muted-foreground">
+            Find and review patient reservations.
+          </p>
+        </div>
+        {(role === 'ADMIN' ||
+          role === 'EMPLOYEE' ||
+          role === 'RECEPTIONIST') && <CreateAppointmentDialog />}
       </div>
       <ReceptionListCard
         title="Appointment directory"

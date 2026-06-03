@@ -34,9 +34,10 @@
     }
   ],
   "settings": {
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.configuration.updateBuildConfiguration": "interactive",
     "java.debug.settings.onBuildFailureProceed": true,
+    "java.autobuild.enabled": false,
     "java.configuration.runtimes": [
       {
         "name": "JavaSE-21",
@@ -46,7 +47,7 @@
     ],
     "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
     "java.jdt.ls.lombokSupport.enabled": true,
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms256m",
+    "java.jdt.ls.vmargs": "-XX:+UseG1GC -XX:+UseStringDeduplication -Xmx3G -Xms512m",
     "java.server.launchMode": "Standard",
     "java.project.importOnFirstTimeStartup": "automatic",
     "java.import.gradle.enabled": true,
@@ -57,9 +58,42 @@
       "**/node_modules/**",
       "**/.metadata/**",
       "**/archetype/**",
-      "frontend/**"
+      "frontend/**",
+      "**/build/**",
+      "**/.gradle/**",
+      "**/.git/**",
+      "**/.sts4-cache/**"
     ],
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true,
+      "**/frontend/node_modules/**": true,
+      "**/frontend/.next/**": true,
+      "**/.gradle/**": true,
+      "**/build/**": true,
+      "**/.sts4-cache/**": true,
+      "**/.metadata/**": true
+    },
+    "files.exclude": {
+      "**/.git": true,
+      "**/.gradle": true,
+      "**/.sts4-cache": true,
+      "**/.factorypath": true,
+      "**/.apt_generated": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/build": true,
+      "**/.gradle": true,
+      "**/frontend/.next": true,
+      "**/.sts4-cache": true
+    },
     "gradle.nestedProjects": true,
+    "gradle.autoDetect": "off",
+    "boot-java.ls.includeClassPathMetadata": true,
+    "boot-java.rewrite.reconcile": false,
+    "boot-java.symbols.include-all-symbols": false,
     "eslint.enable": true,
     "eslint.workingDirectories": [
       { "mode": "auto" },

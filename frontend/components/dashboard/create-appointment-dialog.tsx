@@ -30,8 +30,22 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
+import { CalendarPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useState, type FormEvent } from 'react'
+
+function errorMessage(error: unknown, fallback: string) {
+  if (!axios.isAxiosError(error)) return fallback
+
+  const response = error.response?.data
+  if (!response || typeof response !== 'object') return fallback
+
+  const messages = Object.values(response).filter(
+    (value): value is string => typeof value === 'string'
+  )
+  return messages.join(' ') || fallback
+}
 
 export function CreateAppointmentDialog() {
   const queryClient = useQueryClient()
@@ -116,9 +130,9 @@ export function CreateAppointmentDialog() {
       await queryClient.invalidateQueries({
         queryKey: getSearchPatientsQueryKey(),
       })
-    } catch {
+    } catch (error) {
       setError(
-        'Could not register the patient. Check the details and try again.'
+        errorMessage(error, 'Could not register the patient. Try again.')
       )
     }
   }
@@ -156,16 +170,19 @@ export function CreateAppointmentDialog() {
       await queryClient.invalidateQueries({
         queryKey: getSearchReservationsQueryKey(),
       })
-    } catch {
+    } catch (error) {
       setError(
-        'Could not create the appointment. Check the doctor and time, then try again.'
+        errorMessage(error, 'Could not create the appointment. Try again.')
       )
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button onClick={() => handleOpenChange(true)}>New appointment</Button>
+      <Button onClick={() => handleOpenChange(true)}>
+        <CalendarPlus data-icon="inline-start" />
+        New appointment
+      </Button>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
@@ -211,6 +228,7 @@ export function CreateAppointmentDialog() {
                 Close
               </Button>
               <Button
+                nativeButton={false}
                 render={<Link href="/reception/appointments" />}
                 onClick={() => setOpen(false)}
               >

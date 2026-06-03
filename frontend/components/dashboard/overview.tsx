@@ -38,7 +38,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import type { UserRole } from '@/lib/auth'
-import { useState, type ReactNode } from 'react'
+import { useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { CreateAppointmentDialog } from './create-appointment-dialog'
 
@@ -414,11 +414,11 @@ function QuickActions({ role }: { role: UserRole }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
-        {role === 'RECEPTIONIST' && <CreateAppointmentDialog />}
         {quickLinks[role].map((item) => (
           <Button
             key={item.href}
             variant="outline"
+            nativeButton={false}
             render={<Link href={item.href} />}
           >
             {item.label}
@@ -429,7 +429,7 @@ function QuickActions({ role }: { role: UserRole }) {
   )
 }
 
-export function DashboardOverview() {
+function DashboardContent() {
   const role = useRole()
   const [date] = useState(() => new Date())
   const today = dateText(date)
@@ -437,13 +437,16 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">
-          {role ? headings[role] : 'Dashboard'}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          A quick view of your account and current work.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            {role ? headings[role] : 'Dashboard'}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            A quick view of your account and current work.
+          </p>
+        </div>
+        {role === 'RECEPTIONIST' && <CreateAppointmentDialog />}
       </div>
       <AccountCard />
       {role && <QuickActions role={role} />}
@@ -462,4 +465,28 @@ export function DashboardOverview() {
       )}
     </div>
   )
+}
+
+function subscribeHydration() {
+  return () => {}
+}
+
+function getClientHydrationSnapshot() {
+  return true
+}
+
+function getServerHydrationSnapshot() {
+  return false
+}
+
+export function DashboardOverview() {
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot
+  )
+
+  if (!hydrated) return <Skeleton className="h-80 w-full" />
+
+  return <DashboardContent />
 }
