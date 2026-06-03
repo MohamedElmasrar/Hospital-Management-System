@@ -7,7 +7,9 @@ import { useGetMyProfileSuspense as usePhysicianProfileSuspense } from '@/app/ap
 import { Separator } from '@/components/ui/separator'
 import { employeeProfile, type Profile } from '@/lib/profile'
 import { EmployeeProfileTabs } from './employee-profile-tabs'
+import { ProfileEditDialog } from './profile-edit-dialog'
 import { ProfileHeader } from './profile-header'
+import { useState } from 'react'
 
 export function ProfileContent() {
   const { data: account } = useMeSuspense()
@@ -32,14 +34,22 @@ function PhysicianProfileContent({ account }: { account: UserResponse }) {
 }
 
 function ProfileView({ profile }: { profile: Profile }) {
+  const [editOpen, setEditOpen] = useState(false)
+
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <ProfileHeader profile={profile} />
+      <ProfileHeader profile={profile} onEdit={() => setEditOpen(true)} />
       <Separator />
       <EmployeeProfileTabs
         profile={profile}
         employee={profile.employee!}
         physician={profile.physician}
+      />
+      <ProfileEditDialog
+        key={`${profile.employee?.id}-${editOpen}`}
+        profile={profile}
+        open={editOpen}
+        onOpenChange={setEditOpen}
       />
     </div>
   )

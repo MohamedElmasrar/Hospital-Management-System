@@ -47,7 +47,7 @@ public class EmployeeController {
   }
 
   @GetMapping("/me")
-  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'HR_HEAD')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'HR_HEAD', 'BILLER')")
   @Operation(summary = "Get the authenticated employee profile")
   public ResponseEntity<EmployeeDetailResponseDTO> getMyProfile(
       @Parameter(hidden = true) AuthenticatedPrincipal principal) {
@@ -85,15 +85,14 @@ public class EmployeeController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize(
-      "hasAnyRole('ADMIN', 'HR_HEAD') or (hasRole('EMPLOYEE') and #id.toString() == authentication.name)")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'BILLER')")
   @Operation(summary = "Update employee details")
   public ResponseEntity<EmployeeResponseDTO> updateEmployee(
       @PathVariable UUID id,
       @Valid @RequestBody UpdateEmployeeRequestDTO request,
       @Parameter(hidden = true) AuthenticatedPrincipal principal) {
     hrAccessService.requireEmployee(principal, id);
-    return ResponseEntity.ok(employeeService.update(id, request));
+    return ResponseEntity.ok(employeeService.update(id, request, principal));
   }
 
   @DeleteMapping("/{id}")
@@ -130,21 +129,25 @@ public class EmployeeController {
   }
 
   @PostMapping("/{id}/contact-points")
-  @PreAuthorize(
-      "hasAnyRole('ADMIN', 'HR_HEAD') or (hasRole('EMPLOYEE') and #id.toString() == authentication.name)")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'BILLER')")
   @Operation(summary = "Add contact point for employee")
   public ResponseEntity<ContactPointResponseDTO> addContactPoint(
-      @PathVariable UUID id, @Valid @RequestBody CreateContactPointRequestDTO request) {
+      @PathVariable UUID id,
+      @Valid @RequestBody CreateContactPointRequestDTO request,
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
+    hrAccessService.requireEmployee(principal, id);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(employeeService.addContactPoint(id, request));
   }
 
   @PutMapping("/{id}/address")
-  @PreAuthorize(
-      "hasAnyRole('ADMIN', 'HR_HEAD') or (hasRole('EMPLOYEE') and #id.toString() == authentication.name)")
+  @PreAuthorize("hasAnyRole('ADMIN', 'HR_HEAD', 'EMPLOYEE', 'DOCTOR', 'RECEPTIONIST', 'BILLER')")
   @Operation(summary = "Update or add postal address for employee")
   public ResponseEntity<PostalAddressDTO> updateAddress(
-      @PathVariable UUID id, @Valid @RequestBody PostalAddressDTO request) {
+      @PathVariable UUID id,
+      @Valid @RequestBody PostalAddressDTO request,
+      @Parameter(hidden = true) AuthenticatedPrincipal principal) {
+    hrAccessService.requireEmployee(principal, id);
     return ResponseEntity.ok(employeeService.updateAddress(id, request));
   }
 }

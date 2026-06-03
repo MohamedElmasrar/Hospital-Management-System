@@ -1,5 +1,8 @@
 package com.hms.hr_service.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -77,6 +81,7 @@ class EmployeeControllerTest {
   @Test
   void updateEmployee_whenSelfEmployee_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
         new UpdateEmployeeRequestDTO(
             "John", null, "Doe", null, null, null, EmploymentStatus.Active);
@@ -86,7 +91,7 @@ class EmployeeControllerTest {
             put("/employees/{id}", empId)
                 .with(
                     jwt()
-                        .jwt(jwt -> jwt.subject(empId.toString()))
+                        .jwt(jwt -> jwt.subject(userId.toString()))
                         .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -100,6 +105,9 @@ class EmployeeControllerTest {
     UpdateEmployeeRequestDTO request =
         new UpdateEmployeeRequestDTO(
             "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+    doThrow(new AccessDeniedException("Employee is outside HR scope"))
+        .when(hrAccessService)
+        .requireEmployee(any(), eq(empId));
 
     mockMvc
         .perform(
@@ -114,8 +122,9 @@ class EmployeeControllerTest {
   }
 
   @Test
-  void updateEmployee_whenDoctor_shouldReturnForbidden() throws Exception {
+  void updateEmployee_whenSelfDoctor_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
         new UpdateEmployeeRequestDTO(
             "John", null, "Doe", null, null, null, EmploymentStatus.Active);
@@ -125,16 +134,49 @@ class EmployeeControllerTest {
             put("/employees/{id}", empId)
                 .with(
                     jwt()
-                        .jwt(jwt -> jwt.subject(empId.toString()))
+                        .jwt(jwt -> jwt.subject(userId.toString()))
                         .authorities(new SimpleGrantedAuthority("ROLE_DOCTOR")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void updateEmployee_whenSelfBiller_shouldSucceed() throws Exception {
+    UUID empId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UpdateEmployeeRequestDTO request =
+        new UpdateEmployeeRequestDTO(
+            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+
+    mockMvc
+        .perform(
+            put("/employees/{id}", empId)
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.subject(userId.toString()))
+                        .authorities(new SimpleGrantedAuthority("ROLE_BILLER")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void getMyProfile_whenBiller_shouldBeAuthorized() throws Exception {
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/employees/me")
+                .with(
+                    jwt()
+                        .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
+                        .authorities(new SimpleGrantedAuthority("ROLE_BILLER"))))
+        .andExpect(status().isOk());
   }
 
   @Test
   void addContactPoint_whenSelf_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
     CreateContactPointRequestDTO request =
         new CreateContactPointRequestDTO(ContactType.Mobile, "555-1234", null, true);
 
@@ -143,7 +185,7 @@ class EmployeeControllerTest {
             post("/employees/{id}/contact-points", empId)
                 .with(
                     jwt()
-                        .jwt(jwt -> jwt.subject(empId.toString()))
+                        .jwt(jwt -> jwt.subject(userId.toString()))
                         .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -155,6 +197,9 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     CreateContactPointRequestDTO request =
         new CreateContactPointRequestDTO(ContactType.Mobile, "555-1234", null, true);
+    doThrow(new AccessDeniedException("Employee is outside HR scope"))
+        .when(hrAccessService)
+        .requireEmployee(any(), eq(empId));
 
     mockMvc
         .perform(
@@ -171,6 +216,7 @@ class EmployeeControllerTest {
   @Test
   void updateAddress_whenSelf_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
     PostalAddressDTO request =
         new PostalAddressDTO(null, AddressType.Work, "123 Main St", "City", "State", "12345", "US");
 
@@ -179,7 +225,7 @@ class EmployeeControllerTest {
             put("/employees/{id}/address", empId)
                 .with(
                     jwt()
-                        .jwt(jwt -> jwt.subject(empId.toString()))
+                        .jwt(jwt -> jwt.subject(userId.toString()))
                         .authorities(new SimpleGrantedAuthority("ROLE_EMPLOYEE")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -191,6 +237,9 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     PostalAddressDTO request =
         new PostalAddressDTO(null, AddressType.Work, "123 Main St", "City", "State", "12345", "US");
+    doThrow(new AccessDeniedException("Employee is outside HR scope"))
+        .when(hrAccessService)
+        .requireEmployee(any(), eq(empId));
 
     mockMvc
         .perform(

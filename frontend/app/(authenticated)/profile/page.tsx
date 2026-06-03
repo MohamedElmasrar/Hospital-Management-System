@@ -1,11 +1,5 @@
-import { ProfileContent } from '@/components/profile/profile-content'
-import { ProfileSkeleton } from '@/components/profile/profile-skeleton'
-import { Suspense } from 'react'
+import { ProfileContentClient } from './profile-content-client'
 
 export default function ProfileRoute() {
-  return (
-    <Suspense fallback={<ProfileSkeleton />}>
-      <ProfileContent />
-    </Suspense>
-  )
+  return <ProfileContentClient />
 }

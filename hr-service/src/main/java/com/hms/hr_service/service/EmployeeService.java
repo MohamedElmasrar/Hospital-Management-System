@@ -100,8 +100,28 @@ public class EmployeeService {
 
   @Transactional
   public EmployeeResponseDTO update(UUID id, UpdateEmployeeRequestDTO request) {
+    return update(id, request, null);
+  }
+
+  @Transactional
+  public EmployeeResponseDTO update(
+      UUID id, UpdateEmployeeRequestDTO request, AuthenticatedPrincipal principal) {
     Employee employee = employeeRepository.findById(id).orElseThrow(EmployeeNotFoundException::new);
-    employeeMapper.updateEmployeeFromDTO(request, employee);
+    UpdateEmployeeRequestDTO safeRequest = request;
+    if (principal != null
+        && principal.role() != UserRole.ADMIN
+        && principal.role() != UserRole.HR_HEAD) {
+      safeRequest =
+          new UpdateEmployeeRequestDTO(
+              request.givenName(),
+              request.additionalName(),
+              request.familyName(),
+              request.honorificPrefix(),
+              request.birthDate(),
+              request.gender(),
+              null);
+    }
+    employeeMapper.updateEmployeeFromDTO(safeRequest, employee);
     return employeeMapper.employeeToEmployeeResponseDTO(employeeRepository.save(employee));
   }
 
