@@ -29,34 +29,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import type { UserRole } from '@/lib/auth'
-import { useState, useSyncExternalStore, type ReactNode } from 'react'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { useState, useSyncExternalStore } from 'react'
 import { BillerOverview } from './biller-overview'
+import { ChartCard, ChartGrid, TrendChart, titleCase } from './charts'
+import {
+  PersonalPayrollTrend,
+  EmployeeScheduleTrend,
+  DoctorAvailabilityChart,
+  HrPayrollCharts,
+  BillerCharts,
+  daySeries,
+  appointmentHourSeries,
+} from './work-charts'
 import { CreateAppointmentDialog } from './create-appointment-dialog'
 
 const LIMIT = 100
-const chartConfig = {
-  count: { label: 'Records', color: 'var(--chart-2)' },
-} satisfies ChartConfig
 
 function dateText(date: Date) {
   return date.toLocaleDateString('sv-SE')
-}
-
-function titleCase(value?: string) {
-  return (value || 'Unspecified')
-    .toLowerCase()
-    .replaceAll('_', ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 function attendanceState(record: {
@@ -68,87 +61,7 @@ function attendanceState(record: {
   return 'No check-in'
 }
 
-function ChartCard({
-  title,
-  description,
-  values,
-  isPending,
-  isError,
-  retry,
-}: {
-  title: string
-  description: string
-  values: (string | undefined)[]
-  isPending: boolean
-  isError: boolean
-  retry: () => void
-}) {
-  const counts = values.reduce<Record<string, number>>((result, value) => {
-    const name = titleCase(value)
-    result[name] = (result[name] ?? 0) + 1
-    return result
-  }, {})
-  const data = Object.entries(counts)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isPending ? (
-          <Skeleton className="h-56 w-full" />
-        ) : isError ? (
-          <div className="flex h-56 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
-            <p>Could not load this chart.</p>
-            <Button variant="outline" size="sm" onClick={retry}>
-              Retry
-            </Button>
-          </div>
-        ) : data.length === 0 ? (
-          <p className="flex h-56 items-center justify-center text-sm text-muted-foreground">
-            No records in this period.
-          </p>
-        ) : (
-          <ChartContainer config={chartConfig} className="h-56 w-full">
-            <BarChart
-              accessibilityLayer
-              data={data}
-              layout="vertical"
-              margin={{ left: 4, right: 16 }}
-            >
-              <CartesianGrid horizontal={false} />
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={112}
-                tickLine={false}
-                axisLine={false}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="count" fill="var(--color-count)" radius={4} />
-            </BarChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function ChartGrid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-4 lg:grid-cols-2">{children}</div>
-}
-
-function AdminCharts() {
+function AdminCharts({ today }: { today: string }) {
   const users = useListUsers()
   const audit = useAuditLogs()
   return (
@@ -165,6 +78,28 @@ function AdminCharts() {
         title="Account activity"
         description="Recorded admin actions"
         values={audit.data?.map((entry) => entry.action) ?? []}
+        isPending={audit.isPending}
+        isError={audit.isError}
+        retry={() => void audit.refetch()}
+      />
+      <ChartCard
+        title="Account access"
+        description="Active and inactive application accounts"
+        values={
+          users.data?.map((user) => (user.active ? 'Active' : 'Inactive')) ?? []
+        }
+        isPending={users.isPending}
+        isError={users.isError}
+        retry={() => void users.refetch()}
+      />
+      <TrendChart
+        title="Admin activity over time"
+        description="Recorded actions by date over the last seven days"
+        data={daySeries(
+          today,
+          audit.data?.map((entry) => entry.createdAt?.slice(0, 10)) ?? []
+        )}
+        label="Actions"
         isPending={audit.isPending}
         isError={audit.isError}
         retry={() => void audit.refetch()}
@@ -202,6 +137,31 @@ function ReceptionCharts({ today }: { today: string }) {
         isError={tickets.isError}
         retry={() => void tickets.refetch()}
       />
+      <ChartCard
+        title="Appointment payment status"
+        description="Payment state in today's latest 100 appointments; cancelled visits are separate"
+        values={
+          reservations.data?.content?.map((item) =>
+            item.statusCode === 'CANCELLED' || item.statusCode === 'NO_SHOW'
+              ? item.statusCode
+              : item.isPaid
+                ? 'Paid'
+                : 'Unpaid'
+          ) ?? []
+        }
+        isPending={reservations.isPending}
+        isError={reservations.isError}
+        retry={() => void reservations.refetch()}
+      />
+      <TrendChart
+        title="Appointments by hour"
+        description="Start times in today's latest 100 appointments, excluding cancelled visits and no-shows"
+        data={appointmentHourSeries(reservations.data?.content ?? [])}
+        label="Appointments"
+        isPending={reservations.isPending}
+        isError={reservations.isError}
+        retry={() => void reservations.refetch()}
+      />
     </ChartGrid>
   )
 }
@@ -225,7 +185,7 @@ function AttendanceChart({
   return (
     <ChartCard
       title="Attendance this month"
-      description="Check-in state in the latest 100 records"
+      description="Check-in state across up to 100 records this month"
       values={attendance.data?.content?.map(attendanceState) ?? []}
       isPending={attendance.isPending}
       isError={attendance.isError}
@@ -245,7 +205,7 @@ function LeaveChart({
   return (
     <ChartCard
       title={own ? 'My leave requests' : 'Leave requests'}
-      description="Statuses in the latest 100 requests"
+      description="Statuses across up to 100 requests"
       values={leave.data?.content?.map((item) => item.status) ?? []}
       isPending={leave.isPending}
       isError={leave.isError}
@@ -281,6 +241,14 @@ function DoctorCharts({ today, from }: { today: string; from: string }) {
         }}
       />
       <AttendanceChart from={from} to={today} />
+      <DoctorAvailabilityChart
+        date={today}
+        practitionerId={physician.data?.id}
+        profilePending={physician.isPending}
+        profileError={physician.isError}
+        retryProfile={() => void physician.refetch()}
+      />
+      <PersonalPayrollTrend />
     </ChartGrid>
   )
 }
@@ -320,6 +288,7 @@ function HrCharts({ today, from }: { today: string; from: string }) {
           from={from}
           to={today}
         />
+        <HrPayrollCharts key={organizationId} organizationId={organizationId} />
       </ChartGrid>
     </div>
   )
@@ -330,6 +299,8 @@ function EmployeeCharts({ today, from }: { today: string; from: string }) {
     <ChartGrid>
       <LeaveChart own />
       <AttendanceChart from={from} to={today} />
+      <EmployeeScheduleTrend today={today} />
+      <PersonalPayrollTrend />
     </ChartGrid>
   )
 }
@@ -460,9 +431,14 @@ function DashboardContent() {
       {!role ? (
         <Skeleton className="h-64 w-full" />
       ) : role === 'ADMIN' ? (
-        <AdminCharts />
+        <AdminCharts today={today} />
       ) : role === 'BILLER' ? (
-        <BillerOverview />
+        <>
+          <ChartGrid>
+            <BillerCharts today={today} />
+          </ChartGrid>
+          <BillerOverview />
+        </>
       ) : role === 'RECEPTIONIST' ? (
         <ReceptionCharts today={today} />
       ) : role === 'DOCTOR' ? (

@@ -24,6 +24,15 @@ class ReceptionServiceApplicationTests {
     mockMvc
         .perform(get("/v3/api-docs"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.openapi").exists());
+        .andExpect(jsonPath("$.openapi").exists())
+        .andExpect(
+            jsonPath("$.components.schemas.AvailableSlot.properties.startTime.type")
+                .value("string"))
+        .andExpect(
+            jsonPath("$.components.schemas.AvailableSlot.properties.endTime.format").value("time"))
+        .andExpect(
+            jsonPath("$.components.schemas.Response.properties.startTime.type").value("string"))
+        .andExpect(
+            jsonPath("$.components.schemas.CreateRequest.properties.endTime.type").value("string"));
   }
 }

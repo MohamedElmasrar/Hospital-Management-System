@@ -111,7 +111,6 @@ export function DashboardNavbar() {
               <DropdownMenuItem onClick={() => router.push('/profile')}>
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem onClick={signOut}>Sign out</DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

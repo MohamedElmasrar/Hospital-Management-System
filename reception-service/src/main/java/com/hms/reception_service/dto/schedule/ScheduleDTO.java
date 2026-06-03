@@ -1,5 +1,6 @@
 package com.hms.reception_service.dto.schedule;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -13,8 +14,12 @@ public class ScheduleDTO {
       UUID practitionerId,
       @NotNull(message = "Room ID is required") UUID roomId,
       @NotNull(message = "Day of week is required") DayOfWeek dayOfWeek,
-      @NotNull(message = "Start time is required") LocalTime startTime,
-      @NotNull(message = "End time is required") LocalTime endTime,
+      @NotNull(message = "Start time is required")
+          @Schema(type = "string", format = "time", example = "08:00:00")
+          LocalTime startTime,
+      @NotNull(message = "End time is required")
+          @Schema(type = "string", format = "time", example = "08:30:00")
+          LocalTime endTime,
       Integer slotDurationMinutes,
       Boolean isActive) {}
 
@@ -25,15 +30,15 @@ public class ScheduleDTO {
       UUID roomId,
       String roomName,
       DayOfWeek dayOfWeek,
-      LocalTime startTime,
-      LocalTime endTime,
+      @Schema(type = "string", format = "time", example = "08:00:00") LocalTime startTime,
+      @Schema(type = "string", format = "time", example = "08:30:00") LocalTime endTime,
       Integer slotDurationMinutes,
       Boolean isActive) {}
 
   public record AvailableSlot(
       LocalDate date,
-      LocalTime startTime,
-      LocalTime endTime,
+      @Schema(type = "string", format = "time", example = "08:00:00") LocalTime startTime,
+      @Schema(type = "string", format = "time", example = "08:30:00") LocalTime endTime,
       UUID roomId,
       String roomName,
       UUID practitionerId,

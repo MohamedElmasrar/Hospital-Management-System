@@ -3,7 +3,6 @@
 import { useGetMyProfile } from '@/app/api/generated/hr/physician-controller/physician-controller'
 import type {
   AvailableSlot,
-  LocalTime,
   Response as Schedule,
 } from '@/app/api/generated/reception/model'
 import {
@@ -48,9 +47,8 @@ function today() {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10)
 }
 
-function formatTime(value?: LocalTime) {
-  if (!value) return '—'
-  return `${String(value.hour ?? 0).padStart(2, '0')}:${String(value.minute ?? 0).padStart(2, '0')}`
+function formatTime(value?: string) {
+  return value ? value.slice(0, 5) : '—'
 }
 
 function formatDay(value?: string) {
@@ -139,9 +137,15 @@ function SlotsTable({ slots }: { slots: AvailableSlot[] }) {
       </TableHeader>
       <TableBody>
         {slots.length ? (
-          slots.map((slot, index) => (
+          slots.map((slot) => (
             <TableRow
-              key={`${formatTime(slot.startTime)}-${slot.roomId ?? index}`}
+              key={[
+                slot.date,
+                slot.startTime,
+                slot.endTime,
+                slot.roomId,
+                slot.practitionerId,
+              ].join('|')}
             >
               <TableCell className="font-medium">
                 {formatTime(slot.startTime)}–{formatTime(slot.endTime)}
