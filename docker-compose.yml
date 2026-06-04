@@ -1,6 +1,6 @@
 services:
   api-gateway:
-    container_name: api-gateway
+    container_name: hms-api-gateway
     build: ./api-gateway/
     ports:
       - "8000:8000"
@@ -20,7 +20,7 @@ services:
       notification-service:
         condition: service_started
   auth-service:
-    container_name: auth-service
+    container_name: hms-auth-service
     build: ./auth-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authDB
@@ -33,7 +33,7 @@ services:
       kafka:
         condition: service_started
   hr-service:
-    container_name: hr-service
+    container_name: hms-hr-service
     build: ./hr-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://hr-db:5432/hrDB
@@ -46,7 +46,7 @@ services:
       kafka:
         condition: service_started
   billing-service:
-    container_name: billing-service
+    container_name: hms-billing-service
     build: ./billing-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://billing-db:5432/billingDB
@@ -65,7 +65,7 @@ services:
 
 
   reception-service:
-    container_name: reception-service
+    container_name: hms-reception-service
     build: ./reception-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://reception-db:5432/receptionDB
@@ -83,7 +83,7 @@ services:
         condition: service_started
 
   analytics-service:
-    container_name: analytics-service
+    container_name: hms-analytics-service
     build: ./analytics-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://analytics-db:5432/analyticsDB
@@ -97,7 +97,7 @@ services:
         condition: service_started
 
   notification-service:
-    container_name: notification-service
+    container_name: hms-notification-service
     build: ./notification-service/
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationDB
@@ -131,7 +131,7 @@ services:
 
   auth-db:
     image: postgres:17
-    container_name: auth-db
+    container_name: hms-auth-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -146,7 +146,7 @@ services:
 
   hr-db:
     image: postgres:17
-    container_name: hr-db
+    container_name: hms-hr-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -161,7 +161,7 @@ services:
 
   billing-db:
     image: postgres:17
-    container_name: billing-db
+    container_name: hms-billing-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -176,7 +176,7 @@ services:
 
   reception-db:
     image: postgres:17
-    container_name: reception-db
+    container_name: hms-reception-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -191,7 +191,7 @@ services:
 
   analytics-db:
     image: postgres:17
-    container_name: analytics-db
+    container_name: hms-analytics-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -206,7 +206,7 @@ services:
 
   notification-db:
     image: postgres:17
-    container_name: notification-db
+    container_name: hms-notification-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
