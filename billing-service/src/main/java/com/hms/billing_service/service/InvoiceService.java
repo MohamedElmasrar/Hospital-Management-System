@@ -109,14 +109,21 @@ public class InvoiceService {
       throw new InvalidOperationException("No unbilled charges found for patient");
     }
     CreateInvoiceRequestDTO invoiceRequest =
-        new CreateInvoiceRequestDTO(
-            request.patientId(),
-            request.cashDeskId(),
-            request.dueDate(),
-            orders.stream()
-                .map(
-                    order -> new CreateInvoiceLineItemRequestDTO(order.getId(), 1, BigDecimal.ZERO))
-                .toList());
+        CreateInvoiceRequestDTO.builder()
+            .patientId(request.patientId())
+            .cashDeskId(request.cashDeskId())
+            .dueDate(request.dueDate())
+            .lineItems(
+                orders.stream()
+                    .map(
+                        order ->
+                            CreateInvoiceLineItemRequestDTO.builder()
+                                .billableOrderId(order.getId())
+                                .quantity(1)
+                                .discountRate(BigDecimal.ZERO)
+                                .build())
+                    .toList())
+            .build();
     return create(invoiceRequest, staffId);
   }
 

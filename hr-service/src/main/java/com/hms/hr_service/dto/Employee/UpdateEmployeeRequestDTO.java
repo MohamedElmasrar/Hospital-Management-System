@@ -4,8 +4,10 @@ import com.hms.hr_service.enums.EmploymentStatus;
 import com.hms.hr_service.enums.GenderType;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Date;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
 
+@Builder
 public record UpdateEmployeeRequestDTO(
     @NotBlank @Length(max = 100) String givenName,
     @Length(max = 100) String additionalName,

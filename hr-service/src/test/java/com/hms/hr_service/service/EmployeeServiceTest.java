@@ -75,38 +75,37 @@ class EmployeeServiceTest {
   @Test
   void create_validRequest_createsAndReturnsEmployee() {
     CreateEmployeeRequestDTO request =
-        new CreateEmployeeRequestDTO(
-            "EMP-001",
-            "John",
-            null,
-            "Doe",
-            "Dr.",
-            new Date(),
-            GenderType.Male,
-            EmploymentStatus.Active,
-            "john@example.com",
-            "1234567890",
-            ContactType.Work,
-            "123 Main St",
-            "City",
-            "State",
-            "12345",
-            "US",
-            AddressType.Work);
+        CreateEmployeeRequestDTO.builder()
+            .identifier("EMP-001")
+            .givenName("John")
+            .familyName("Doe")
+            .honorificPrefix("Dr.")
+            .birthDate(new Date())
+            .gender(GenderType.Male)
+            .employmentStatus(EmploymentStatus.Active)
+            .email("john@example.com")
+            .telephone("1234567890")
+            .contactType(ContactType.Work)
+            .streetAddress("123 Main St")
+            .addressLocality("City")
+            .addressRegion("State")
+            .postalCode("12345")
+            .addressCountry("US")
+            .addressType(AddressType.Work)
+            .build();
 
     EmployeeResponseDTO responseDTO =
-        new EmployeeResponseDTO(
-            employeeId,
-            "EMP-001",
-            "John",
-            null,
-            "Doe",
-            "Dr.",
-            null,
-            GenderType.Male,
-            EmploymentStatus.Active,
-            new Date(),
-            new Date());
+        EmployeeResponseDTO.builder()
+            .id(employeeId)
+            .identifier("EMP-001")
+            .givenName("John")
+            .familyName("Doe")
+            .honorificPrefix("Dr.")
+            .gender(GenderType.Male)
+            .employmentStatus(EmploymentStatus.Active)
+            .dateCreated(new Date())
+            .dateModified(new Date())
+            .build();
 
     given(employeeRepository.existsByIdentifier("EMP-001")).willReturn(false);
     given(employeeMapper.createEmployeeRequestDTOToEmployee(request)).willReturn(employee);
@@ -130,24 +129,12 @@ class EmployeeServiceTest {
   @Test
   void create_duplicateIdentifier_throwsResourceAlreadyExistsException() {
     CreateEmployeeRequestDTO request =
-        new CreateEmployeeRequestDTO(
-            "EMP-001",
-            "John",
-            null,
-            "Doe",
-            null,
-            null,
-            null,
-            EmploymentStatus.Active,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null);
+        CreateEmployeeRequestDTO.builder()
+            .identifier("EMP-001")
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     given(employeeRepository.existsByIdentifier("EMP-001")).willReturn(true);
 
@@ -158,21 +145,14 @@ class EmployeeServiceTest {
   @Test
   void getById_existingEmployee_returnsDetail() {
     EmployeeDetailResponseDTO detailDTO =
-        new EmployeeDetailResponseDTO(
-            employeeId,
-            "EMP-001",
-            "John",
-            null,
-            "Doe",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            Collections.emptyList(),
-            null,
-            Collections.emptyList());
+        EmployeeDetailResponseDTO.builder()
+            .id(employeeId)
+            .identifier("EMP-001")
+            .givenName("John")
+            .familyName("Doe")
+            .contactPoints(Collections.emptyList())
+            .assignments(Collections.emptyList())
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(contactPointRepository.findByEmployeeId(employeeId)).willReturn(Collections.emptyList());
@@ -202,21 +182,21 @@ class EmployeeServiceTest {
   @Test
   void update_validRequest_updatesEmployee() {
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "Jane", null, "Smith", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("Jane")
+            .familyName("Smith")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
     EmployeeResponseDTO responseDTO =
-        new EmployeeResponseDTO(
-            employeeId,
-            "EMP-001",
-            "Jane",
-            null,
-            "Smith",
-            null,
-            null,
-            null,
-            EmploymentStatus.Active,
-            new Date(),
-            new Date());
+        EmployeeResponseDTO.builder()
+            .id(employeeId)
+            .identifier("EMP-001")
+            .givenName("Jane")
+            .familyName("Smith")
+            .employmentStatus(EmploymentStatus.Active)
+            .dateCreated(new Date())
+            .dateModified(new Date())
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(employeeRepository.save(employee)).willReturn(employee);
@@ -236,20 +216,24 @@ class EmployeeServiceTest {
     dept.setName("Surgery");
 
     AssignEmployeeRequestDTO request =
-        new AssignEmployeeRequestDTO(deptId, "Surgeon", new Date(), null);
+        AssignEmployeeRequestDTO.builder()
+            .departmentId(deptId)
+            .jobTitle("Surgeon")
+            .startDate(new Date())
+            .build();
     EmployeeAssignment savedAssignment = new EmployeeAssignment();
 
     EmployeeAssignmentResponseDTO responseDTO =
-        new EmployeeAssignmentResponseDTO(
-            UUID.randomUUID(),
-            employeeId,
-            "EMP-001",
-            "John Doe",
-            deptId,
-            "Surgery",
-            "Surgeon",
-            new Date(),
-            null);
+        EmployeeAssignmentResponseDTO.builder()
+            .id(UUID.randomUUID())
+            .employeeId(employeeId)
+            .employeeIdentifier("EMP-001")
+            .employeeName("John Doe")
+            .departmentId(deptId)
+            .departmentName("Surgery")
+            .jobTitle("Surgeon")
+            .startDate(new Date())
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(departmentRepository.findById(deptId)).willReturn(Optional.of(dept));
@@ -269,7 +253,11 @@ class EmployeeServiceTest {
   void assignToDepartment_departmentNotFound_throwsDepartmentNotFoundException() {
     UUID deptId = UUID.randomUUID();
     AssignEmployeeRequestDTO request =
-        new AssignEmployeeRequestDTO(deptId, "Surgeon", new Date(), null);
+        AssignEmployeeRequestDTO.builder()
+            .departmentId(deptId)
+            .jobTitle("Surgeon")
+            .startDate(new Date())
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(departmentRepository.findById(deptId)).willReturn(Optional.empty());
@@ -281,12 +269,21 @@ class EmployeeServiceTest {
   @Test
   void addContactPoint_validRequest_savesContactPoint() {
     CreateContactPointRequestDTO request =
-        new CreateContactPointRequestDTO(ContactType.Mobile, "555-1234", null, true);
+        CreateContactPointRequestDTO.builder()
+            .contactType(ContactType.Mobile)
+            .telephone("555-1234")
+            .isPreferred(true)
+            .build();
 
     ContactPoint contactPointToSave = new ContactPoint();
     ContactPoint savedCp = new ContactPoint();
     ContactPointResponseDTO responseDTO =
-        new ContactPointResponseDTO(UUID.randomUUID(), ContactType.Mobile, "555-1234", null, true);
+        ContactPointResponseDTO.builder()
+            .id(UUID.randomUUID())
+            .contactType(ContactType.Mobile)
+            .telephone("555-1234")
+            .isPreferred(true)
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(contactPointRepository.findByEmployeeId(employeeId)).willReturn(Collections.emptyList());

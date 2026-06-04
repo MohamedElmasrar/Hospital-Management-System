@@ -50,17 +50,13 @@ class PatientAnalyticsTest {
   }
 
   private PatientDTO.CreateRequest request(String nationalId) {
-    return new PatientDTO.CreateRequest(
-        nationalId,
-        "Test",
-        "Patient",
-        LocalDate.of(1990, 1, 1),
-        "OTHER",
-        null,
-        "0000000000",
-        null,
-        null,
-        null,
-        null);
+    return PatientDTO.CreateRequest.builder()
+        .nationalId(nationalId)
+        .firstName("Test")
+        .lastName("Patient")
+        .dateOfBirth(LocalDate.of(1990, 1, 1))
+        .gender("OTHER")
+        .phone("0000000000")
+        .build();
   }
 }

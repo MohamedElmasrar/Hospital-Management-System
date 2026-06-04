@@ -3,6 +3,7 @@ package com.hms.hr_service.messaging;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,19 +73,20 @@ public class AnalyticsEventPublisher {
     try {
       String payload =
           objectMapper.writeValueAsString(
-              new EventMessage(
-                  UUID.randomUUID(),
-                  eventType,
-                  "hr-service",
-                  aggregateType,
-                  aggregateId.toString(),
-                  1,
-                  Instant.now(),
-                  "{}",
-                  eventType,
-                  numericValue,
-                  dimensionKey,
-                  dimensionValue));
+              EventMessage.builder()
+                  .eventId(UUID.randomUUID())
+                  .eventType(eventType)
+                  .sourceService("hr-service")
+                  .aggregateType(aggregateType)
+                  .aggregateId(aggregateId.toString())
+                  .schemaVersion(1)
+                  .occurredAt(Instant.now())
+                  .payload("{}")
+                  .metricName(eventType)
+                  .numericValue(numericValue)
+                  .dimensionKey(dimensionKey)
+                  .dimensionValue(dimensionValue)
+                  .build());
       kafkaTemplate
           .send(topic, aggregateId.toString(), payload)
           .whenComplete(
@@ -99,6 +101,7 @@ public class AnalyticsEventPublisher {
     }
   }
 
+  @Builder
   private record EventMessage(
       UUID eventId,
       String eventType,

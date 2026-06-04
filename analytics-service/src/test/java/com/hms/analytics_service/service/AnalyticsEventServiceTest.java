@@ -28,19 +28,20 @@ class AnalyticsEventServiceTest {
     UUID eventId = UUID.randomUUID();
     Instant occurredAt = Instant.parse("2026-10-30T14:25:00Z");
     AnalyticsEventMessage message =
-        new AnalyticsEventMessage(
-            eventId,
-            "invoice.paid",
-            "billing-service",
-            "invoice",
-            UUID.randomUUID().toString(),
-            1,
-            occurredAt,
-            "{}",
-            "revenue",
-            new BigDecimal("125.50"),
-            "payment_method",
-            "CARD");
+        AnalyticsEventMessage.builder()
+            .eventId(eventId)
+            .eventType("invoice.paid")
+            .sourceService("billing-service")
+            .aggregateType("invoice")
+            .aggregateId(UUID.randomUUID().toString())
+            .schemaVersion(1)
+            .occurredAt(occurredAt)
+            .payload("{}")
+            .metricName("revenue")
+            .numericValue(new BigDecimal("125.50"))
+            .dimensionKey("payment_method")
+            .dimensionValue("CARD")
+            .build();
 
     service.ingest(message);
     service.ingest(message);

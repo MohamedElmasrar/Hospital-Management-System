@@ -83,8 +83,12 @@ class PaymentServiceTest {
                 Collections.emptyList()));
 
     ProcessPaymentRequestDTO request =
-        new ProcessPaymentRequestDTO(
-            invoiceId, cashDeskId, new BigDecimal("60.00"), PaymentMethod.CASH, null);
+        ProcessPaymentRequestDTO.builder()
+            .invoiceId(invoiceId)
+            .cashDeskId(cashDeskId)
+            .amount(new BigDecimal("60.00"))
+            .method(PaymentMethod.CASH)
+            .build();
 
     assertThatThrownBy(() -> paymentService.processPayment(request, UUID.randomUUID()))
         .isInstanceOf(InvalidOperationException.class)

@@ -44,8 +44,11 @@ class EmployeeControllerTest {
   void updateEmployee_whenAdmin_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     mockMvc
         .perform(
@@ -63,8 +66,11 @@ class EmployeeControllerTest {
   void updateEmployee_whenHrHead_shouldSucceed() throws Exception {
     UUID empId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     mockMvc
         .perform(
@@ -83,8 +89,11 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     mockMvc
         .perform(
@@ -103,8 +112,11 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
     doThrow(new AccessDeniedException("Employee is outside HR scope"))
         .when(hrAccessService)
         .requireEmployee(any(), eq(empId));
@@ -126,8 +138,11 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     mockMvc
         .perform(
@@ -146,8 +161,11 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     UpdateEmployeeRequestDTO request =
-        new UpdateEmployeeRequestDTO(
-            "John", null, "Doe", null, null, null, EmploymentStatus.Active);
+        UpdateEmployeeRequestDTO.builder()
+            .givenName("John")
+            .familyName("Doe")
+            .employmentStatus(EmploymentStatus.Active)
+            .build();
 
     mockMvc
         .perform(
@@ -178,7 +196,11 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     CreateContactPointRequestDTO request =
-        new CreateContactPointRequestDTO(ContactType.Mobile, "555-1234", null, true);
+        CreateContactPointRequestDTO.builder()
+            .contactType(ContactType.Mobile)
+            .telephone("555-1234")
+            .isPreferred(true)
+            .build();
 
     mockMvc
         .perform(
@@ -196,7 +218,11 @@ class EmployeeControllerTest {
   void addContactPoint_whenOtherEmployee_shouldReturnForbidden() throws Exception {
     UUID empId = UUID.randomUUID();
     CreateContactPointRequestDTO request =
-        new CreateContactPointRequestDTO(ContactType.Mobile, "555-1234", null, true);
+        CreateContactPointRequestDTO.builder()
+            .contactType(ContactType.Mobile)
+            .telephone("555-1234")
+            .isPreferred(true)
+            .build();
     doThrow(new AccessDeniedException("Employee is outside HR scope"))
         .when(hrAccessService)
         .requireEmployee(any(), eq(empId));
@@ -218,7 +244,14 @@ class EmployeeControllerTest {
     UUID empId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
     PostalAddressDTO request =
-        new PostalAddressDTO(null, AddressType.Work, "123 Main St", "City", "State", "12345", "US");
+        PostalAddressDTO.builder()
+            .addressType(AddressType.Work)
+            .streetAddress("123 Main St")
+            .addressLocality("City")
+            .addressRegion("State")
+            .postalCode("12345")
+            .addressCountry("US")
+            .build();
 
     mockMvc
         .perform(
@@ -236,7 +269,14 @@ class EmployeeControllerTest {
   void updateAddress_whenOtherEmployee_shouldReturnForbidden() throws Exception {
     UUID empId = UUID.randomUUID();
     PostalAddressDTO request =
-        new PostalAddressDTO(null, AddressType.Work, "123 Main St", "City", "State", "12345", "US");
+        PostalAddressDTO.builder()
+            .addressType(AddressType.Work)
+            .streetAddress("123 Main St")
+            .addressLocality("City")
+            .addressRegion("State")
+            .postalCode("12345")
+            .addressCountry("US")
+            .build();
     doThrow(new AccessDeniedException("Employee is outside HR scope"))
         .when(hrAccessService)
         .requireEmployee(any(), eq(empId));

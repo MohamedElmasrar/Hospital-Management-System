@@ -69,16 +69,14 @@ public class ConsultationBillingService {
             ? order.get().getId()
             : orderService
                 .create(
-                    new CreateBillableOrderRequestDTO(
-                        reservationId,
-                        SourceOrderType.APPOINTMENT,
-                        consultation.patientId(),
-                        consultation.practitionerId(),
-                        consultation.departmentId(),
-                        null,
-                        serviceId,
-                        null,
-                        null))
+                    CreateBillableOrderRequestDTO.builder()
+                        .externalOrderId(reservationId)
+                        .orderType(SourceOrderType.APPOINTMENT)
+                        .patientId(consultation.patientId())
+                        .practitionerId(consultation.practitionerId())
+                        .departmentId(consultation.departmentId())
+                        .serviceCatalogId(serviceId)
+                        .build())
                 .id();
     var existing = lineItemRepository.findByBillableOrderId(orderId);
     if (existing.isPresent()) {
@@ -92,11 +90,17 @@ public class ConsultationBillingService {
     }
     var invoice =
         invoiceService.create(
-            new CreateInvoiceRequestDTO(
-                consultation.patientId(),
-                cashDeskId,
-                null,
-                List.of(new CreateInvoiceLineItemRequestDTO(orderId, 1, BigDecimal.ZERO))),
+            CreateInvoiceRequestDTO.builder()
+                .patientId(consultation.patientId())
+                .cashDeskId(cashDeskId)
+                .lineItems(
+                    List.of(
+                        CreateInvoiceLineItemRequestDTO.builder()
+                            .billableOrderId(orderId)
+                            .quantity(1)
+                            .discountRate(BigDecimal.ZERO)
+                            .build()))
+                .build(),
             staffId);
     return invoiceService.updateStatus(invoice.id(), InvoiceStatus.ISSUED);
   }

@@ -49,13 +49,13 @@ class ServiceCatalogServiceTest {
   @Test
   void create_serviceAlreadyExists_throwsException() {
     CreateServiceCatalogRequestDTO request =
-        new CreateServiceCatalogRequestDTO(
-            "CONS-CARD-01",
-            UUID.randomUUID(),
-            "Cardiology Consultation",
-            null,
-            new BigDecimal("100.00"),
-            new BigDecimal("0.0500"));
+        CreateServiceCatalogRequestDTO.builder()
+            .serviceCode("CONS-CARD-01")
+            .departmentId(UUID.randomUUID())
+            .name("Cardiology Consultation")
+            .initialUnitPrice(new BigDecimal("100.00"))
+            .initialTaxRate(new BigDecimal("0.0500"))
+            .build();
 
     when(serviceCatalogRepository.existsByServiceCode("CONS-CARD-01")).thenReturn(true);
 
@@ -69,13 +69,13 @@ class ServiceCatalogServiceTest {
     UUID deptId = UUID.randomUUID();
 
     CreateServiceCatalogRequestDTO request =
-        new CreateServiceCatalogRequestDTO(
-            "CONS-CARD-01",
-            deptId,
-            "Cardiology Consultation",
-            null,
-            new BigDecimal("100.00"),
-            new BigDecimal("0.0500"));
+        CreateServiceCatalogRequestDTO.builder()
+            .serviceCode("CONS-CARD-01")
+            .departmentId(deptId)
+            .name("Cardiology Consultation")
+            .initialUnitPrice(new BigDecimal("100.00"))
+            .initialTaxRate(new BigDecimal("0.0500"))
+            .build();
 
     when(serviceCatalogRepository.existsByServiceCode("CONS-CARD-01")).thenReturn(false);
     when(hrGrpcClient.validateDepartment(deptId)).thenReturn(true);

@@ -71,7 +71,10 @@ class PhysicianServiceTest {
   @Test
   void create_validRequest_createsPhysician() {
     CreatePhysicianRequestDTO request =
-        new CreatePhysicianRequestDTO(employeeId, "LIC-12345", null, null);
+        CreatePhysicianRequestDTO.builder()
+            .employeeId(employeeId)
+            .licenseNumber("LIC-12345")
+            .build();
 
     PhysicianResponseDTO responseDTO =
         new PhysicianResponseDTO(
@@ -101,7 +104,10 @@ class PhysicianServiceTest {
   @Test
   void create_employeeNotFound_throwsEmployeeNotFoundException() {
     CreatePhysicianRequestDTO request =
-        new CreatePhysicianRequestDTO(employeeId, "LIC-12345", null, null);
+        CreatePhysicianRequestDTO.builder()
+            .employeeId(employeeId)
+            .licenseNumber("LIC-12345")
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.empty());
 
@@ -112,7 +118,10 @@ class PhysicianServiceTest {
   @Test
   void create_duplicateEmployee_throwsResourceAlreadyExistsException() {
     CreatePhysicianRequestDTO request =
-        new CreatePhysicianRequestDTO(employeeId, "LIC-12345", null, null);
+        CreatePhysicianRequestDTO.builder()
+            .employeeId(employeeId)
+            .licenseNumber("LIC-12345")
+            .build();
 
     given(employeeRepository.findById(employeeId)).willReturn(Optional.of(employee));
     given(physicianRepository.existsByEmployeeId(employeeId)).willReturn(true);

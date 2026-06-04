@@ -120,19 +120,7 @@ class ReceptionMappersTest {
     assertEquals("Connor", resp.lastName());
 
     PatientDTO.UpdateRequest updateReq =
-        new PatientDTO.UpdateRequest(
-            null,
-            "Sarah Jane",
-            null,
-            null,
-            null,
-            null,
-            "+1112223334",
-            null,
-            null,
-            null,
-            null,
-            null);
+        PatientDTO.UpdateRequest.builder().firstName("Sarah Jane").phone("+1112223334").build();
     patientMapper.updatePatientFromDTO(updateReq, patient);
     assertEquals("Sarah Jane", patient.getFirstName());
     assertEquals("Connor", patient.getLastName()); // unchanged

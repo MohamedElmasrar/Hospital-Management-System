@@ -112,14 +112,14 @@ public class EmployeeService {
         && principal.role() != UserRole.ADMIN
         && principal.role() != UserRole.HR_HEAD) {
       safeRequest =
-          new UpdateEmployeeRequestDTO(
-              request.givenName(),
-              request.additionalName(),
-              request.familyName(),
-              request.honorificPrefix(),
-              request.birthDate(),
-              request.gender(),
-              null);
+          UpdateEmployeeRequestDTO.builder()
+              .givenName(request.givenName())
+              .additionalName(request.additionalName())
+              .familyName(request.familyName())
+              .honorificPrefix(request.honorificPrefix())
+              .birthDate(request.birthDate())
+              .gender(request.gender())
+              .build();
     }
     employeeMapper.updateEmployeeFromDTO(safeRequest, employee);
     return employeeMapper.employeeToEmployeeResponseDTO(employeeRepository.save(employee));

@@ -49,12 +49,12 @@ class WorkforceAnalyticsTest {
     assertThatThrownBy(
             () ->
                 workforceService.createShift(
-                    new WorkforceDTO.ShiftRequest(
-                        employeeId,
-                        null,
-                        LocalDate.of(2026, 10, 30),
-                        LocalTime.of(17, 0),
-                        LocalTime.of(9, 0))))
+                    WorkforceDTO.ShiftRequest.builder()
+                        .employeeId(employeeId)
+                        .shiftDate(LocalDate.of(2026, 10, 30))
+                        .startsAt(LocalTime.of(17, 0))
+                        .endsAt(LocalTime.of(9, 0))
+                        .build()))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

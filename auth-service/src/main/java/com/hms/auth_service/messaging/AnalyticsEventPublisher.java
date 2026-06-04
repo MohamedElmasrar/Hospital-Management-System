@@ -4,6 +4,7 @@ import com.hms.auth_service.enums.UserRole;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,19 +43,19 @@ public class AnalyticsEventPublisher {
     try {
       String payload =
           objectMapper.writeValueAsString(
-              new EventMessage(
-                  UUID.randomUUID(),
-                  eventType,
-                  "auth-service",
-                  "USER",
-                  userId.toString(),
-                  1,
-                  Instant.now(),
-                  "{}",
-                  eventType,
-                  null,
-                  "role",
-                  role.name()));
+              EventMessage.builder()
+                  .eventId(UUID.randomUUID())
+                  .eventType(eventType)
+                  .sourceService("auth-service")
+                  .aggregateType("USER")
+                  .aggregateId(userId.toString())
+                  .schemaVersion(1)
+                  .occurredAt(Instant.now())
+                  .payload("{}")
+                  .metricName(eventType)
+                  .dimensionKey("role")
+                  .dimensionValue(role.name())
+                  .build());
       kafkaTemplate
           .send(topic, userId.toString(), payload)
           .whenComplete(
@@ -69,6 +70,7 @@ public class AnalyticsEventPublisher {
     }
   }
 
+  @Builder
   private record EventMessage(
       UUID eventId,
       String eventType,

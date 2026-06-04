@@ -35,25 +35,24 @@ class QueueControllerTest {
   @Test
   void issueTicket_whenEmployee_shouldReturnCreated() throws Exception {
     UUID resId = UUID.randomUUID();
-    QueueDTO.IssueTicketRequest req = new QueueDTO.IssueTicketRequest(resId, null);
+    QueueDTO.IssueTicketRequest req =
+        QueueDTO.IssueTicketRequest.builder().reservationId(resId).build();
 
     QueueDTO.TicketResponse res =
-        new QueueDTO.TicketResponse(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            resId,
-            "CONS-001",
-            1,
-            UUID.randomUUID(),
-            "Normal",
-            10,
-            "WAITING",
-            new Date(),
-            null,
-            null,
-            null,
-            "John Doe",
-            "Room 101");
+        QueueDTO.TicketResponse.builder()
+            .id(UUID.randomUUID())
+            .queueId(UUID.randomUUID())
+            .reservationId(resId)
+            .ticketCode("CONS-001")
+            .sequenceNumber(1)
+            .priorityId(UUID.randomUUID())
+            .priorityName("Normal")
+            .priorityWeight(10)
+            .status("WAITING")
+            .issuedAt(new Date())
+            .patientName("John Doe")
+            .roomName("Room 101")
+            .build();
 
     when(queueService.issueTicket(any())).thenReturn(res);
 
@@ -76,22 +75,21 @@ class QueueControllerTest {
     UUID queueId = UUID.randomUUID();
 
     QueueDTO.TicketResponse res =
-        new QueueDTO.TicketResponse(
-            UUID.randomUUID(),
-            queueId,
-            UUID.randomUUID(),
-            "CONS-001",
-            1,
-            UUID.randomUUID(),
-            "Normal",
-            10,
-            "CALLED",
-            new Date(),
-            new Date(),
-            null,
-            null,
-            "John Doe",
-            "Room 101");
+        QueueDTO.TicketResponse.builder()
+            .id(UUID.randomUUID())
+            .queueId(queueId)
+            .reservationId(UUID.randomUUID())
+            .ticketCode("CONS-001")
+            .sequenceNumber(1)
+            .priorityId(UUID.randomUUID())
+            .priorityName("Normal")
+            .priorityWeight(10)
+            .status("CALLED")
+            .issuedAt(new Date())
+            .calledAt(new Date())
+            .patientName("John Doe")
+            .roomName("Room 101")
+            .build();
 
     when(queueService.callNextTicket(queueId)).thenReturn(res);
 
@@ -109,25 +107,24 @@ class QueueControllerTest {
   @Test
   void issueTicket_whenReceptionist_shouldReturnCreated() throws Exception {
     UUID resId = UUID.randomUUID();
-    QueueDTO.IssueTicketRequest req = new QueueDTO.IssueTicketRequest(resId, null);
+    QueueDTO.IssueTicketRequest req =
+        QueueDTO.IssueTicketRequest.builder().reservationId(resId).build();
 
     QueueDTO.TicketResponse res =
-        new QueueDTO.TicketResponse(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            resId,
-            "CONS-002",
-            2,
-            UUID.randomUUID(),
-            "Normal",
-            10,
-            "WAITING",
-            new Date(),
-            null,
-            null,
-            null,
-            "Jane Doe",
-            "Room 102");
+        QueueDTO.TicketResponse.builder()
+            .id(UUID.randomUUID())
+            .queueId(UUID.randomUUID())
+            .reservationId(resId)
+            .ticketCode("CONS-002")
+            .sequenceNumber(2)
+            .priorityId(UUID.randomUUID())
+            .priorityName("Normal")
+            .priorityWeight(10)
+            .status("WAITING")
+            .issuedAt(new Date())
+            .patientName("Jane Doe")
+            .roomName("Room 102")
+            .build();
 
     when(queueService.issueTicket(any())).thenReturn(res);
 

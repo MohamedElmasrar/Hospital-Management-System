@@ -7,8 +7,10 @@ import com.hms.hr_service.enums.GenderType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Date;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
 
+@Builder
 public record CreateEmployeeRequestDTO(
     @NotBlank @Length(max = 50) String identifier,
     @NotBlank @Length(max = 100) String givenName,

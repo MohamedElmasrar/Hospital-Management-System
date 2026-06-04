@@ -58,8 +58,12 @@ class MedicalOrganizationServiceTest {
         new CreateMedicalOrganizationRequestDTO(
             "City Hospital", "City Hospital LLC", "CITY-HOSP-01");
     CreateMedicalOrganizationResponseDTO responseDTO =
-        new CreateMedicalOrganizationResponseDTO(
-            orgId.toString(), "City Hospital", "City Hospital LLC", "CITY-HOSP-01", null, null);
+        CreateMedicalOrganizationResponseDTO.builder()
+            .id(orgId.toString())
+            .name("City Hospital")
+            .legalName("City Hospital LLC")
+            .identifier("CITY-HOSP-01")
+            .build();
 
     given(
             medicalOrganizationMapper.createMedicalOrganizationRequestDTOToMedicalOrganization(
@@ -130,8 +134,12 @@ class MedicalOrganizationServiceTest {
   @Test
   void getById_existingOrg_returnsDTO() {
     MedicalOrganizationResponseDTO responseDTO =
-        new MedicalOrganizationResponseDTO(
-            orgId.toString(), "City Hospital", "City Hospital LLC", "CITY-HOSP-01", null, null);
+        MedicalOrganizationResponseDTO.builder()
+            .id(orgId.toString())
+            .name("City Hospital")
+            .legalName("City Hospital LLC")
+            .identifier("CITY-HOSP-01")
+            .build();
 
     given(medicalOrganizationRepository.findById(orgId)).willReturn(Optional.of(organization));
     given(

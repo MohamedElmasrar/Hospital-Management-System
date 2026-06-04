@@ -44,34 +44,39 @@ class InvoiceControllerTest {
     UUID orderId = UUID.randomUUID();
 
     CreateInvoiceRequestDTO request =
-        new CreateInvoiceRequestDTO(
-            patientId,
-            cashDeskId,
-            null,
-            List.of(new CreateInvoiceLineItemRequestDTO(orderId, 1, BigDecimal.ZERO)));
+        CreateInvoiceRequestDTO.builder()
+            .patientId(patientId)
+            .cashDeskId(cashDeskId)
+            .lineItems(
+                List.of(
+                    CreateInvoiceLineItemRequestDTO.builder()
+                        .billableOrderId(orderId)
+                        .quantity(1)
+                        .discountRate(BigDecimal.ZERO)
+                        .build()))
+            .build();
 
     InvoiceDetailResponseDTO responseDTO =
-        new InvoiceDetailResponseDTO(
-            UUID.randomUUID(),
-            "INV-20261015-TEST1",
-            patientId,
-            cashDeskId,
-            "DESK-01",
-            UUID.randomUUID(),
-            InvoiceStatus.DRAFT,
-            new BigDecimal("100.00"),
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
-            new BigDecimal("100.00"),
-            BigDecimal.ZERO,
-            new BigDecimal("100.00"),
-            new Date(),
-            null,
-            Collections.emptyList(),
-            Collections.emptyList(),
-            null,
-            new Date(),
-            new Date());
+        InvoiceDetailResponseDTO.builder()
+            .id(UUID.randomUUID())
+            .invoiceNumber("INV-20261015-TEST1")
+            .patientId(patientId)
+            .cashDeskId(cashDeskId)
+            .cashDeskCode("DESK-01")
+            .issuedByStaffId(UUID.randomUUID())
+            .status(InvoiceStatus.DRAFT)
+            .subtotal(new BigDecimal("100.00"))
+            .totalDiscount(BigDecimal.ZERO)
+            .totalTax(BigDecimal.ZERO)
+            .totalAmount(new BigDecimal("100.00"))
+            .paidAmount(BigDecimal.ZERO)
+            .balanceDue(new BigDecimal("100.00"))
+            .issuedAt(new Date())
+            .lineItems(Collections.emptyList())
+            .payments(Collections.emptyList())
+            .dateCreated(new Date())
+            .dateModified(new Date())
+            .build();
 
     when(invoiceService.create(any(CreateInvoiceRequestDTO.class), any(UUID.class)))
         .thenReturn(responseDTO);
@@ -91,11 +96,17 @@ class InvoiceControllerTest {
   @Test
   void createInvoice_whenUnauthenticated_shouldReturnUnauthorized() throws Exception {
     CreateInvoiceRequestDTO request =
-        new CreateInvoiceRequestDTO(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            List.of(new CreateInvoiceLineItemRequestDTO(UUID.randomUUID(), 1, BigDecimal.ZERO)));
+        CreateInvoiceRequestDTO.builder()
+            .patientId(UUID.randomUUID())
+            .cashDeskId(UUID.randomUUID())
+            .lineItems(
+                List.of(
+                    CreateInvoiceLineItemRequestDTO.builder()
+                        .billableOrderId(UUID.randomUUID())
+                        .quantity(1)
+                        .discountRate(BigDecimal.ZERO)
+                        .build()))
+            .build();
 
     mockMvc
         .perform(
@@ -108,11 +119,17 @@ class InvoiceControllerTest {
   @Test
   void createInvoice_whenDoctor_shouldReturnForbidden() throws Exception {
     CreateInvoiceRequestDTO request =
-        new CreateInvoiceRequestDTO(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            List.of(new CreateInvoiceLineItemRequestDTO(UUID.randomUUID(), 1, BigDecimal.ZERO)));
+        CreateInvoiceRequestDTO.builder()
+            .patientId(UUID.randomUUID())
+            .cashDeskId(UUID.randomUUID())
+            .lineItems(
+                List.of(
+                    CreateInvoiceLineItemRequestDTO.builder()
+                        .billableOrderId(UUID.randomUUID())
+                        .quantity(1)
+                        .discountRate(BigDecimal.ZERO)
+                        .build()))
+            .build();
 
     mockMvc
         .perform(

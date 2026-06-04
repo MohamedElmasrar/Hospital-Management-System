@@ -145,11 +145,17 @@ class InvoiceServiceTest {
     when(billableOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
     CreateInvoiceRequestDTO request =
-        new CreateInvoiceRequestDTO(
-            patientA,
-            deskId,
-            null,
-            List.of(new CreateInvoiceLineItemRequestDTO(orderId, 1, BigDecimal.ZERO)));
+        CreateInvoiceRequestDTO.builder()
+            .patientId(patientA)
+            .cashDeskId(deskId)
+            .lineItems(
+                List.of(
+                    CreateInvoiceLineItemRequestDTO.builder()
+                        .billableOrderId(orderId)
+                        .quantity(1)
+                        .discountRate(BigDecimal.ZERO)
+                        .build()))
+            .build();
 
     assertThatThrownBy(() -> invoiceService.create(request, UUID.randomUUID()))
         .isInstanceOf(InvalidOperationException.class)

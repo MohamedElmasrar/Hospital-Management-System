@@ -4,9 +4,11 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
 public class QueueDTO {
 
+  @Builder
   public record DailyQueueResponse(
       UUID id,
       UUID departmentId,
@@ -17,9 +19,11 @@ public class QueueDTO {
       Integer lastIssuedSequence,
       Boolean isOpen) {}
 
+  @Builder
   public record IssueTicketRequest(
       @NotNull(message = "Reservation ID is required") UUID reservationId, UUID priorityId) {}
 
+  @Builder
   public record TicketResponse(
       UUID id,
       UUID queueId,

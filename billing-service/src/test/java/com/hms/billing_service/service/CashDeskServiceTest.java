@@ -104,7 +104,8 @@ class CashDeskServiceTest {
   @Test
   void update_notFound_throwsException() {
     UUID id = UUID.randomUUID();
-    UpdateCashDeskRequestDTO request = new UpdateCashDeskRequestDTO("DESK-02", null, null, null);
+    UpdateCashDeskRequestDTO request =
+        UpdateCashDeskRequestDTO.builder().deskCode("DESK-02").build();
     when(cashDeskRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> cashDeskService.update(id, request))

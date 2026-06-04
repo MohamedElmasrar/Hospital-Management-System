@@ -48,47 +48,43 @@ class ReservationControllerTest {
     UUID practitionerId = UUID.randomUUID();
 
     ReservationDTO.CreateConsultationRequest req =
-        new ReservationDTO.CreateConsultationRequest(
-            patientId,
-            deptId,
-            practitionerId,
-            null,
-            LocalDate.of(2026, 10, 20),
-            LocalTime.of(9, 0),
-            LocalTime.of(9, 30),
-            "Fever",
-            "Notes");
+        ReservationDTO.CreateConsultationRequest.builder()
+            .patientId(patientId)
+            .departmentId(deptId)
+            .practitionerId(practitionerId)
+            .reservationDate(LocalDate.of(2026, 10, 20))
+            .startTime(LocalTime.of(9, 0))
+            .endTime(LocalTime.of(9, 30))
+            .reasonForVisit("Fever")
+            .notes("Notes")
+            .build();
 
     ReservationDTO.Response res =
-        new ReservationDTO.Response(
-            UUID.randomUUID(),
-            "CONS-20261020-001",
-            patientId,
-            "John Doe",
-            "+212600000000",
-            UUID.randomUUID(),
-            "Consultation",
-            "CONSULTATION",
-            deptId,
-            practitionerId,
-            null,
-            null,
-            null,
-            LocalDate.of(2026, 10, 20),
-            LocalTime.of(9, 0),
-            LocalTime.of(9, 30),
-            UUID.randomUUID(),
-            "PENDING_PAYMENT",
-            "Pending Payment",
-            "#F59E0B",
-            false,
-            null,
-            "Fever",
-            "Notes",
-            UUID.randomUUID(),
-            null,
-            new Date(),
-            new Date());
+        ReservationDTO.Response.builder()
+            .id(UUID.randomUUID())
+            .reservationNumber("CONS-20261020-001")
+            .patientId(patientId)
+            .patientName("John Doe")
+            .patientPhone("+212600000000")
+            .categoryId(UUID.randomUUID())
+            .categoryName("Consultation")
+            .categoryCode("CONSULTATION")
+            .departmentId(deptId)
+            .practitionerId(practitionerId)
+            .reservationDate(LocalDate.of(2026, 10, 20))
+            .startTime(LocalTime.of(9, 0))
+            .endTime(LocalTime.of(9, 30))
+            .statusId(UUID.randomUUID())
+            .statusCode("PENDING_PAYMENT")
+            .statusName("Pending Payment")
+            .badgeColorHex("#F59E0B")
+            .isPaid(false)
+            .reasonForVisit("Fever")
+            .notes("Notes")
+            .receptionistStaffId(UUID.randomUUID())
+            .createdAt(new Date())
+            .updatedAt(new Date())
+            .build();
 
     when(reservationService.createConsultationReservation(any(), any())).thenReturn(res);
 
@@ -112,35 +108,32 @@ class ReservationControllerTest {
     UUID invoiceId = UUID.randomUUID();
 
     ReservationDTO.Response res =
-        new ReservationDTO.Response(
-            resId,
-            "CONS-20261020-001",
-            UUID.randomUUID(),
-            "John Doe",
-            "+212600000000",
-            UUID.randomUUID(),
-            "Consultation",
-            "CONSULTATION",
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            null,
-            null,
-            null,
-            LocalDate.of(2026, 10, 20),
-            LocalTime.of(9, 0),
-            LocalTime.of(9, 30),
-            UUID.randomUUID(),
-            "PAID",
-            "Paid / Ready for Queue",
-            "#3B82F6",
-            true,
-            invoiceId,
-            "Fever",
-            "Notes",
-            UUID.randomUUID(),
-            null,
-            new Date(),
-            new Date());
+        ReservationDTO.Response.builder()
+            .id(resId)
+            .reservationNumber("CONS-20261020-001")
+            .patientId(UUID.randomUUID())
+            .patientName("John Doe")
+            .patientPhone("+212600000000")
+            .categoryId(UUID.randomUUID())
+            .categoryName("Consultation")
+            .categoryCode("CONSULTATION")
+            .departmentId(UUID.randomUUID())
+            .practitionerId(UUID.randomUUID())
+            .reservationDate(LocalDate.of(2026, 10, 20))
+            .startTime(LocalTime.of(9, 0))
+            .endTime(LocalTime.of(9, 30))
+            .statusId(UUID.randomUUID())
+            .statusCode("PAID")
+            .statusName("Paid / Ready for Queue")
+            .badgeColorHex("#3B82F6")
+            .isPaid(true)
+            .billingInvoiceId(invoiceId)
+            .reasonForVisit("Fever")
+            .notes("Notes")
+            .receptionistStaffId(UUID.randomUUID())
+            .createdAt(new Date())
+            .updatedAt(new Date())
+            .build();
 
     when(reservationService.markAsPaid(resId, invoiceId)).thenReturn(res);
 

@@ -3,7 +3,9 @@ package com.hms.notification_service.dto;
 import jakarta.validation.constraints.*;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record NotificationEvent(
     @NotNull UUID eventId,
     @NotNull UUID recipientId,

@@ -3,8 +3,10 @@ package com.hms.hr_service.dto.Department;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
 
+@Builder
 public record CreateDepartmentRequestDTO(
     @NotNull UUID medicalOrganizationId,
     UUID parentDepartmentId,

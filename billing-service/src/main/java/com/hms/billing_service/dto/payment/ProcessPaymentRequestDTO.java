@@ -5,8 +5,10 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
 
+@Builder
 public record ProcessPaymentRequestDTO(
     @NotNull UUID invoiceId,
     @NotNull UUID cashDeskId,

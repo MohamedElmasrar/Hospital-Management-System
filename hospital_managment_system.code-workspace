@@ -29,6 +29,10 @@
       "path": "analytics-service"
     },
     {
+      "name": "Notification Service",
+      "path": "notification-service"
+    },
+    {
       "name": "Frontend",
       "path": "frontend"
     }

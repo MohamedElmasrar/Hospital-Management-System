@@ -58,7 +58,11 @@ class DepartmentServiceTest {
   @Test
   void create_validRequest_createsAndReturnsDepartment() {
     CreateDepartmentRequestDTO request =
-        new CreateDepartmentRequestDTO(orgId, null, "Cardiology", "Cardiology Department");
+        CreateDepartmentRequestDTO.builder()
+            .medicalOrganizationId(orgId)
+            .name("Cardiology")
+            .description("Cardiology Department")
+            .build();
 
     Department department = new Department();
     department.setName("Cardiology");
@@ -68,15 +72,14 @@ class DepartmentServiceTest {
     savedDepartment.setName("Cardiology");
 
     DepartmentResponseDTO responseDTO =
-        new DepartmentResponseDTO(
-            savedDepartment.getId(),
-            orgId,
-            "General Hospital",
-            null,
-            null,
-            "Cardiology",
-            "Cardiology Department",
-            new Date());
+        DepartmentResponseDTO.builder()
+            .id(savedDepartment.getId())
+            .medicalOrganizationId(orgId)
+            .medicalOrganizationName("General Hospital")
+            .name("Cardiology")
+            .description("Cardiology Department")
+            .dateCreated(new Date())
+            .build();
 
     given(medicalOrganizationRepository.findByIdAndAdminId(orgId, adminId))
         .willReturn(Optional.of(organization));
@@ -96,7 +99,10 @@ class DepartmentServiceTest {
   @Test
   void create_orgNotFound_throwsMedicalOrganizationNotFoundException() {
     CreateDepartmentRequestDTO request =
-        new CreateDepartmentRequestDTO(orgId, null, "Cardiology", null);
+        CreateDepartmentRequestDTO.builder()
+            .medicalOrganizationId(orgId)
+            .name("Cardiology")
+            .build();
 
     given(medicalOrganizationRepository.findByIdAndAdminId(orgId, adminId))
         .willReturn(Optional.empty());
@@ -109,7 +115,10 @@ class DepartmentServiceTest {
   void update_validRequest_updatesDepartment() {
     UUID deptId = UUID.randomUUID();
     UpdateDepartmentRequestDTO request =
-        new UpdateDepartmentRequestDTO("New Name", "New Description", null);
+        UpdateDepartmentRequestDTO.builder()
+            .name("New Name")
+            .description("New Description")
+            .build();
 
     Department department = new Department();
     department.setId(deptId);
@@ -117,15 +126,14 @@ class DepartmentServiceTest {
     department.setMedicalOrganization(organization);
 
     DepartmentResponseDTO responseDTO =
-        new DepartmentResponseDTO(
-            deptId,
-            orgId,
-            "General Hospital",
-            null,
-            null,
-            "New Name",
-            "New Description",
-            new Date());
+        DepartmentResponseDTO.builder()
+            .id(deptId)
+            .medicalOrganizationId(orgId)
+            .medicalOrganizationName("General Hospital")
+            .name("New Name")
+            .description("New Description")
+            .dateCreated(new Date())
+            .build();
 
     given(departmentRepository.findById(deptId)).willReturn(Optional.of(department));
     given(departmentRepository.save(department)).willReturn(department);

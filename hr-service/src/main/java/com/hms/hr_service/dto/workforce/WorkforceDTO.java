@@ -20,6 +20,7 @@ public class WorkforceDTO {
       String credentialNumber,
       LocalDate expiresOn) {}
 
+  @Builder
   public record ShiftRequest(
       @NotNull UUID employeeId,
       UUID departmentId,

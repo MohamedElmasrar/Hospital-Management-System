@@ -44,37 +44,35 @@ class PatientControllerTest {
   @Test
   void createPatient_whenEmployee_shouldReturnCreated() throws Exception {
     PatientDTO.CreateRequest req =
-        new PatientDTO.CreateRequest(
-            "CIN12345",
-            "John",
-            "Doe",
-            LocalDate.of(1990, 5, 20),
-            "MALE",
-            "O_POSITIVE",
-            "+212600000000",
-            null,
-            null,
-            "None",
-            "None");
+        PatientDTO.CreateRequest.builder()
+            .nationalId("CIN12345")
+            .firstName("John")
+            .lastName("Doe")
+            .dateOfBirth(LocalDate.of(1990, 5, 20))
+            .gender("MALE")
+            .bloodGroup("O_POSITIVE")
+            .phone("+212600000000")
+            .allergies("None")
+            .chronicConditions("None")
+            .build();
 
     PatientDTO.Response res =
-        new PatientDTO.Response(
-            UUID.randomUUID(),
-            "MRN-20261017-001",
-            "CIN12345",
-            "John",
-            "Doe",
-            LocalDate.of(1990, 5, 20),
-            "MALE",
-            "O_POSITIVE",
-            "+212600000000",
-            null,
-            null,
-            "None",
-            "None",
-            true,
-            new Date(),
-            new Date());
+        PatientDTO.Response.builder()
+            .id(UUID.randomUUID())
+            .mrn("MRN-20261017-001")
+            .nationalId("CIN12345")
+            .firstName("John")
+            .lastName("Doe")
+            .dateOfBirth(LocalDate.of(1990, 5, 20))
+            .gender("MALE")
+            .bloodGroup("O_POSITIVE")
+            .phone("+212600000000")
+            .allergies("None")
+            .chronicConditions("None")
+            .isActive(true)
+            .dateCreated(new Date())
+            .dateModified(new Date())
+            .build();
 
     when(patientService.createPatient(any())).thenReturn(res);
 
@@ -96,23 +94,22 @@ class PatientControllerTest {
   void getPatientById_whenDoctor_shouldReturnPatient() throws Exception {
     UUID id = UUID.randomUUID();
     PatientDTO.Response res =
-        new PatientDTO.Response(
-            id,
-            "MRN-20261017-001",
-            "CIN12345",
-            "John",
-            "Doe",
-            LocalDate.of(1990, 5, 20),
-            "MALE",
-            "O_POSITIVE",
-            "+212600000000",
-            null,
-            null,
-            "None",
-            "None",
-            true,
-            new Date(),
-            new Date());
+        PatientDTO.Response.builder()
+            .id(id)
+            .mrn("MRN-20261017-001")
+            .nationalId("CIN12345")
+            .firstName("John")
+            .lastName("Doe")
+            .dateOfBirth(LocalDate.of(1990, 5, 20))
+            .gender("MALE")
+            .bloodGroup("O_POSITIVE")
+            .phone("+212600000000")
+            .allergies("None")
+            .chronicConditions("None")
+            .isActive(true)
+            .dateCreated(new Date())
+            .dateModified(new Date())
+            .build();
 
     when(patientService.getPatientById(id)).thenReturn(res);
 

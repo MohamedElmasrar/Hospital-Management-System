@@ -1,7 +1,9 @@
 package com.hms.hr_service.dto.MedicalOrganization;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
+@Builder
 public record MedicalOrganizationResponseDTO(
     @NotNull String id,
     @NotNull String name,
