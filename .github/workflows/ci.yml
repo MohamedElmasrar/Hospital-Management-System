@@ -14,19 +14,14 @@ jobs:
     name: Detect changed components
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.filter.outputs.auth }}
-      billing: ${{ steps.filter.outputs.billing }}
-      hr: ${{ steps.filter.outputs.hr }}
-      reception: ${{ steps.filter.outputs.reception }}
-      analytics: ${{ steps.filter.outputs.analytics }}
-      notification: ${{ steps.filter.outputs.notification }}
-      gateway: ${{ steps.filter.outputs.gateway }}
+      java: ${{ steps.matrix.outputs.java }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          base: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch || github.ref_name }}
           filters: |
             auth:
               - 'auth-service/**'
@@ -52,30 +47,44 @@ jobs:
             frontend:
               - 'frontend/**'
               - '.github/workflows/ci.yml'
+      - name: Build changed Java service matrix
+        id: matrix
+        env:
+          AUTH: ${{ steps.filter.outputs.auth }}
+          BILLING: ${{ steps.filter.outputs.billing }}
+          HR: ${{ steps.filter.outputs.hr }}
+          RECEPTION: ${{ steps.filter.outputs.reception }}
+          ANALYTICS: ${{ steps.filter.outputs.analytics }}
+          NOTIFICATION: ${{ steps.filter.outputs.notification }}
+          GATEWAY: ${{ steps.filter.outputs.gateway }}
+        run: |
+          echo "java=$(jq -nc \
+            --arg auth "$AUTH" \
+            --arg billing "$BILLING" \
+            --arg hr "$HR" \
+            --arg reception "$RECEPTION" \
+            --arg analytics "$ANALYTICS" \
+            --arg notification "$NOTIFICATION" \
+            --arg gateway "$GATEWAY" \
+            '[
+              {service: "auth-service", changed: $auth},
+              {service: "billing-service", changed: $billing},
+              {service: "hr-service", changed: $hr},
+              {service: "reception-service", changed: $reception},
+              {service: "analytics-service", changed: $analytics},
+              {service: "notification-service", changed: $notification},
+              {service: "api-gateway", changed: $gateway}
+            ] | map(select(.changed == "true")) | map({service}) | {include: .}' \
+            )" >> "$GITHUB_OUTPUT"
 
   java:
     name: Java - ${{ matrix.service }}
     needs: changes
-    if: |
-      (matrix.service == 'auth-service' && needs.changes.outputs.auth == 'true') ||
-      (matrix.service == 'billing-service' && needs.changes.outputs.billing == 'true') ||
-      (matrix.service == 'hr-service' && needs.changes.outputs.hr == 'true') ||
-      (matrix.service == 'reception-service' && needs.changes.outputs.reception == 'true') ||
-      (matrix.service == 'analytics-service' && needs.changes.outputs.analytics == 'true') ||
-      (matrix.service == 'notification-service' && needs.changes.outputs.notification == 'true') ||
-      (matrix.service == 'api-gateway' && needs.changes.outputs.gateway == 'true')
+    if: needs.changes.outputs.java != '{"include":[]}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        service:
-          - auth-service
-          - billing-service
-          - hr-service
-          - reception-service
-          - analytics-service
-          - notification-service
-          - api-gateway
+      matrix: ${{ fromJSON(needs.changes.outputs.java) }}
     defaults:
       run:
         working-directory: ${{ matrix.service }}
