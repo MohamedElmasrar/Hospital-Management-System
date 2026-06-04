@@ -22,6 +22,16 @@ public interface ServiceCatalogMapper {
   ServiceCatalogResponseDTO serviceCatalogToServiceCatalogResponseDTO(
       ServiceCatalog catalog, TariffVersionResponseDTO currentTariff);
 
+  @Mapping(source = "catalog.id", target = "id")
+  @Mapping(source = "catalog.name", target = "name")
+  @Mapping(source = "catalog.departmentId", target = "departmentId")
+  @Mapping(source = "departmentName", target = "departmentName")
+  @Mapping(source = "catalog.dateCreated", target = "dateCreated")
+  @Mapping(source = "catalog.dateModified", target = "dateModified")
+  @Mapping(source = "currentTariff", target = "currentTariff")
+  ServiceCatalogResponseDTO serviceCatalogToServiceCatalogResponseDTO(
+      ServiceCatalog catalog, TariffVersionResponseDTO currentTariff, String departmentName);
+
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "name", source = "dto.name")
   @Mapping(target = "serviceCode", source = "dto.serviceCode")

@@ -4,6 +4,7 @@ import com.hms.hr_service.dto.Department.CreateDepartmentRequestDTO;
 import com.hms.hr_service.dto.Department.DepartmentResponseDTO;
 import com.hms.hr_service.dto.Department.UpdateDepartmentRequestDTO;
 import com.hms.hr_service.dto.PageResponse;
+import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.security.AuthenticatedPrincipal;
 import com.hms.hr_service.security.HrAccessService;
 import com.hms.hr_service.service.DepartmentService;
@@ -56,7 +57,7 @@ public class DepartmentController {
   @Operation(summary = "Get department by ID")
   public ResponseEntity<DepartmentResponseDTO> getDepartment(
       @PathVariable UUID id, @Parameter(hidden = true) AuthenticatedPrincipal principal) {
-    if (principal.role() == com.hms.hr_service.enums.UserRole.HR_HEAD)
+    if (principal.role() == UserRole.HR_HEAD)
       hrAccessService.requireOrganization(
           principal, departmentService.getById(id).medicalOrganizationId());
     return ResponseEntity.ok(departmentService.getById(id));
@@ -69,7 +70,7 @@ public class DepartmentController {
       @RequestParam UUID organizationId,
       @Parameter(hidden = true) AuthenticatedPrincipal principal,
       @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
-    if (principal.role() == com.hms.hr_service.enums.UserRole.HR_HEAD)
+    if (principal.role() == UserRole.HR_HEAD)
       hrAccessService.requireOrganization(principal, organizationId);
     return ResponseEntity.ok(departmentService.getByOrganization(organizationId, pageable));
   }

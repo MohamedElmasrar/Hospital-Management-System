@@ -7,7 +7,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record InvoiceDetailResponseDTO(
     UUID id,
     String invoiceNumber,

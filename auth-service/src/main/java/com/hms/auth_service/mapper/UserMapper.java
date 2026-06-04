@@ -1,5 +1,6 @@
 package com.hms.auth_service.mapper;
 
+import com.hms.auth_service.dto.admin.UserResponse;
 import com.hms.auth_service.dto.register.RegisterRequestDTO;
 import com.hms.auth_service.model.User;
 import org.mapstruct.Mapper;
@@ -15,4 +16,6 @@ public interface UserMapper {
   @Mapping(target = "email", source = "request.email")
   @Mapping(target = "passwordHash", source = "passwordHash")
   User toUser(RegisterRequestDTO request, String passwordHash);
+
+  UserResponse toResponse(User user);
 }

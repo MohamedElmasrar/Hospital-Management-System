@@ -7,11 +7,14 @@ import static org.mockito.Mockito.*;
 import com.hms.billing_service.dto.invoice.CreateInvoiceLineItemRequestDTO;
 import com.hms.billing_service.dto.invoice.CreateInvoiceRequestDTO;
 import com.hms.billing_service.enums.InvoiceStatus;
+import com.hms.billing_service.enums.PaymentStatus;
 import com.hms.billing_service.enums.SourceOrderType;
 import com.hms.billing_service.exception.InvalidOperationException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.InsuranceMapper;
 import com.hms.billing_service.mapper.InvoiceMapper;
 import com.hms.billing_service.mapper.PaymentMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.*;
 import com.hms.billing_service.repository.*;
 import java.math.BigDecimal;
@@ -35,8 +38,8 @@ class InvoiceServiceTest {
   @Mock private BillableOrderRepository billableOrderRepository;
   @Mock private PaymentRepository paymentRepository;
   @Mock private InsuranceClaimRepository insuranceClaimRepository;
-  @Mock private com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
-  @Mock private com.hms.billing_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private HrGrpcClient hrGrpcClient;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   private InvoiceMapper invoiceMapper;
   private PaymentMapper paymentMapper;
@@ -90,8 +93,7 @@ class InvoiceServiceTest {
             "0.1000")); // 10% discount = 100.00 discount -> 900 taxable -> 90 tax -> 990 total
     invoice.addLineItem(item);
 
-    when(paymentRepository.findByInvoiceIdAndStatus(
-            invoice.getId(), com.hms.billing_service.enums.PaymentStatus.COMPLETED))
+    when(paymentRepository.findByInvoiceIdAndStatus(invoice.getId(), PaymentStatus.COMPLETED))
         .thenReturn(Collections.emptyList());
     when(insuranceClaimRepository.findByInvoiceId(invoice.getId())).thenReturn(Optional.empty());
 
@@ -115,8 +117,7 @@ class InvoiceServiceTest {
     payment.setAmount(new BigDecimal("50.00"));
 
     when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
-    when(paymentRepository.findByInvoiceIdAndStatus(
-            invoiceId, com.hms.billing_service.enums.PaymentStatus.COMPLETED))
+    when(paymentRepository.findByInvoiceIdAndStatus(invoiceId, PaymentStatus.COMPLETED))
         .thenReturn(List.of(payment));
 
     assertThatThrownBy(() -> invoiceService.voidInvoice(invoiceId))

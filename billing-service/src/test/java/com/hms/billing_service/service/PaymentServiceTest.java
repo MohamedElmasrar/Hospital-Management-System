@@ -13,6 +13,7 @@ import com.hms.billing_service.enums.PaymentStatus;
 import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.PaymentMapper;
+import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.messaging.NotificationEventPublisher;
 import com.hms.billing_service.model.CashDesk;
 import com.hms.billing_service.model.Invoice;
@@ -40,7 +41,7 @@ class PaymentServiceTest {
   @Mock private CashDeskRepository cashDeskRepository;
   @Mock private InvoiceService invoiceService;
   @Mock private HrGrpcClient hrGrpcClient;
-  @Mock private com.hms.billing_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @Mock private NotificationEventPublisher notificationEventPublisher;
   private PaymentMapper paymentMapper;

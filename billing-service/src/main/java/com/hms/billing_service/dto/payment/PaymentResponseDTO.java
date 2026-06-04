@@ -5,7 +5,9 @@ import com.hms.billing_service.enums.PaymentStatus;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record PaymentResponseDTO(
     UUID id,
     UUID invoiceId,

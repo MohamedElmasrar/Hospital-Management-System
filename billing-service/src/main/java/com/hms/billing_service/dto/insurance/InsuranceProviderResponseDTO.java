@@ -2,7 +2,9 @@ package com.hms.billing_service.dto.insurance;
 
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record InsuranceProviderResponseDTO(
     UUID id,
     String name,

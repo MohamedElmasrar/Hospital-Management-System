@@ -9,6 +9,8 @@ import com.hms.hr_service.dto.Employee.EmployeeDetailResponseDTO;
 import com.hms.hr_service.dto.Employee.EmployeeResponseDTO;
 import com.hms.hr_service.dto.Employee.PostalAddressDTO;
 import com.hms.hr_service.dto.Employee.UpdateEmployeeRequestDTO;
+import com.hms.hr_service.enums.AddressType;
+import com.hms.hr_service.enums.ContactType;
 import com.hms.hr_service.model.ContactPoint;
 import com.hms.hr_service.model.Department;
 import com.hms.hr_service.model.Employee;
@@ -22,7 +24,9 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(
+    componentModel = MappingConstants.ComponentModel.SPRING,
+    imports = {AddressType.class, ContactType.class})
 public interface EmployeeMapper {
 
   EmployeeResponseDTO employeeToEmployeeResponseDTO(Employee employee);
@@ -74,8 +78,7 @@ public interface EmployeeMapper {
   @Mapping(target = "employee", source = "employee")
   @Mapping(
       target = "contactType",
-      expression =
-          "java(dto.contactType() != null ? dto.contactType() : com.hms.hr_service.enums.ContactType.Work)")
+      expression = "java(dto.contactType() != null ? dto.contactType() : ContactType.Work)")
   @Mapping(target = "email", source = "dto.email")
   @Mapping(target = "telephone", source = "dto.telephone")
   @Mapping(target = "preferred", constant = "true")
@@ -86,8 +89,7 @@ public interface EmployeeMapper {
   @Mapping(target = "employee", source = "employee")
   @Mapping(
       target = "addressType",
-      expression =
-          "java(dto.addressType() != null ? dto.addressType() : com.hms.hr_service.enums.AddressType.Work)")
+      expression = "java(dto.addressType() != null ? dto.addressType() : AddressType.Work)")
   @Mapping(target = "streetAddress", source = "dto.streetAddress")
   @Mapping(target = "addressLocality", source = "dto.addressLocality")
   @Mapping(target = "addressRegion", source = "dto.addressRegion")

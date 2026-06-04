@@ -7,6 +7,7 @@ import com.hms.billing_service.exception.BillableOrderNotFoundException;
 import com.hms.billing_service.exception.InvalidOperationException;
 import com.hms.billing_service.exception.ResourceAlreadyExistsException;
 import com.hms.billing_service.exception.TariffVersionNotFoundException;
+import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.BillableOrderMapper;
 import com.hms.billing_service.messaging.AnalyticsEventPublisher;
 import com.hms.billing_service.model.BillableOrder;
@@ -29,7 +30,7 @@ public class BillableOrderService {
   private final ServiceTariffVersionRepository tariffVersionRepository;
   private final BillableOrderMapper billableOrderMapper;
   private final AnalyticsEventPublisher analyticsEventPublisher;
-  private final com.hms.billing_service.grpc.HrGrpcClient hrGrpcClient;
+  private final HrGrpcClient hrGrpcClient;
 
   @Transactional
   public BillableOrderResponseDTO create(CreateBillableOrderRequestDTO request) {

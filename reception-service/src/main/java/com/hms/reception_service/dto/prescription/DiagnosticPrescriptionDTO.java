@@ -4,9 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
 public class DiagnosticPrescriptionDTO {
 
+  @Builder
   public record CreateRequest(
       @NotNull(message = "Patient ID is required") UUID patientId,
       UUID originatingReservationId,
@@ -15,6 +17,7 @@ public class DiagnosticPrescriptionDTO {
       Boolean contrastRequired,
       String clinicalNotes) {}
 
+  @Builder
   public record Response(
       UUID id,
       String prescriptionCode,

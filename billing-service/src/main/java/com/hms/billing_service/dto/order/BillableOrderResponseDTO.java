@@ -4,7 +4,9 @@ import com.hms.billing_service.dto.catalog.TariffVersionResponseDTO;
 import com.hms.billing_service.enums.SourceOrderType;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record BillableOrderResponseDTO(
     UUID id,
     UUID externalOrderId,

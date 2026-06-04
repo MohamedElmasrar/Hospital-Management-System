@@ -6,9 +6,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
 public class ReservationDTO {
 
+  @Builder
   public record CreateConsultationRequest(
       @NotNull(message = "Patient ID is required") UUID patientId,
       @NotNull(message = "Department ID is required") UUID departmentId,
@@ -24,6 +26,7 @@ public class ReservationDTO {
       String reasonForVisit,
       String notes) {}
 
+  @Builder
   public record CreateDiagnosticRequest(
       @NotNull(message = "Patient ID is required") UUID patientId,
       @NotNull(message = "Department ID is required") UUID departmentId,
@@ -44,9 +47,11 @@ public class ReservationDTO {
       String reasonForVisit,
       String notes) {}
 
+  @Builder
   public record UpdateStatusRequest(
       @NotNull(message = "Status ID is required") UUID statusId, String notes) {}
 
+  @Builder
   public record DiagnosticDetailResponse(
       UUID modalityId,
       String modalityName,
@@ -57,6 +62,7 @@ public class ReservationDTO {
       Boolean safetyChecklistCompleted) {}
 
   @Schema(name = "ReservationResponse")
+  @Builder
   public record Response(
       UUID id,
       String reservationNumber,

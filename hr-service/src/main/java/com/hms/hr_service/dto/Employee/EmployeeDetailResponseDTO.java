@@ -5,7 +5,9 @@ import com.hms.hr_service.enums.GenderType;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record EmployeeDetailResponseDTO(
     UUID id,
     String identifier,

@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
 public class PatientDTO {
 
   @Schema(name = "PatientCreateRequest")
+  @Builder
   public record CreateRequest(
       String nationalId,
       @NotBlank(message = "First name is required") String firstName,
@@ -23,6 +25,7 @@ public class PatientDTO {
       String allergies,
       String chronicConditions) {}
 
+  @Builder
   public record UpdateRequest(
       String nationalId,
       String firstName,
@@ -38,6 +41,7 @@ public class PatientDTO {
       Boolean isActive) {}
 
   @Schema(name = "PatientResponse")
+  @Builder
   public record Response(
       UUID id,
       String mrn,

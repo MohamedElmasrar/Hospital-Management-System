@@ -36,4 +36,10 @@ public interface WorkforceMapper {
       expression =
           "java(attendance.getEmployee().getGivenName() + \" \" + attendance.getEmployee().getFamilyName())")
   WorkforceDTO.AttendanceResponse attendance(AttendanceRecord attendance);
+
+  @Mapping(
+      target = "netSalary",
+      expression =
+          "java(request.baseSalary().add(request.overtime()).subtract(request.deductions()))")
+  WorkforceDTO.PayrollResponse payroll(WorkforceDTO.PayrollRequest request);
 }

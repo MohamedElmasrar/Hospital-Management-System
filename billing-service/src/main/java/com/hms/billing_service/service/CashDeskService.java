@@ -11,6 +11,7 @@ import com.hms.billing_service.grpc.HrGrpcClient;
 import com.hms.billing_service.mapper.CashDeskMapper;
 import com.hms.billing_service.model.CashDesk;
 import com.hms.billing_service.repository.CashDeskRepository;
+import com.hms.grpc.hr.DepartmentResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -117,20 +118,11 @@ public class CashDeskService {
   }
 
   private CashDeskResponseDTO toResponseDTO(CashDesk cashDesk) {
-    CashDeskResponseDTO dto = cashDeskMapper.cashDeskToCashDeskResponseDTO(cashDesk);
     String deptName =
         hrGrpcClient
             .getDepartment(cashDesk.getDepartmentId())
-            .map(com.hms.grpc.hr.DepartmentResponse::getName)
+            .map(DepartmentResponse::getName)
             .orElse(null);
-    return new CashDeskResponseDTO(
-        dto.id(),
-        dto.deskCode(),
-        dto.departmentId(),
-        deptName,
-        cashDesk.getSection(),
-        dto.isActive(),
-        dto.dateCreated(),
-        dto.dateModified());
+    return cashDeskMapper.cashDeskToCashDeskResponseDTO(cashDesk, deptName);
   }
 }

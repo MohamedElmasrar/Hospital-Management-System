@@ -4,6 +4,7 @@ import com.hms.billing_service.dto.report.RevenueReportResponseDTO;
 import com.hms.billing_service.dto.report.UnpaidInvoiceResponseDTO;
 import com.hms.billing_service.enums.InvoiceStatus;
 import com.hms.billing_service.enums.PaymentStatus;
+import com.hms.billing_service.mapper.BillingReportMapper;
 import com.hms.billing_service.model.Invoice;
 import com.hms.billing_service.repository.InvoiceRepository;
 import com.hms.billing_service.repository.PaymentRepository;
@@ -23,6 +24,7 @@ public class BillingReportService {
   private final InvoiceRepository invoiceRepository;
   private final PaymentRepository paymentRepository;
   private final InvoiceService invoiceService;
+  private final BillingReportMapper billingReportMapper;
 
   @Transactional(readOnly = true)
   public List<UnpaidInvoiceResponseDTO> unpaidInvoices() {
@@ -61,13 +63,7 @@ public class BillingReportService {
 
   private UnpaidInvoiceResponseDTO toUnpaid(Invoice invoice) {
     var calculation = invoiceService.calculate(invoice);
-    return new UnpaidInvoiceResponseDTO(
-        invoice.getId(),
-        invoice.getInvoiceNumber(),
-        invoice.getPatientId(),
-        calculation.totalAmount(),
-        calculation.paidAmount(),
-        calculation.balanceDue(),
-        invoice.getDueDate());
+    return billingReportMapper.toUnpaidInvoiceResponseDTO(
+        invoice, calculation.totalAmount(), calculation.paidAmount(), calculation.balanceDue());
   }
 }

@@ -3,7 +3,9 @@ package com.hms.billing_service.dto.cashdesk;
 import com.hms.billing_service.enums.BillingSectionType;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record CashDeskResponseDTO(
     UUID id,
     String deskCode,

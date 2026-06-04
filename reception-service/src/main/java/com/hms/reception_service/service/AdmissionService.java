@@ -6,6 +6,7 @@ import com.hms.reception_service.dto.admission.EmergencyAdmissionDTO;
 import com.hms.reception_service.exception.InvalidOperationException;
 import com.hms.reception_service.exception.ResourceAlreadyExistsException;
 import com.hms.reception_service.exception.ResourceNotFoundException;
+import com.hms.reception_service.mapper.AdmissionMapper;
 import com.hms.reception_service.messaging.AnalyticsEventPublisher;
 import com.hms.reception_service.model.Admission;
 import com.hms.reception_service.model.Bed;
@@ -28,18 +29,21 @@ public class AdmissionService {
   private final EmergencyAdmissionRepository emergencyAdmissionRepository;
   private final PatientRepository patientRepository;
   private final AnalyticsEventPublisher analyticsEventPublisher;
+  private final AdmissionMapper admissionMapper;
 
   @Transactional
   public AdmissionDTO.Response createBed(AdmissionDTO.CreateBedRequest request) {
     Bed bed = new Bed();
     bed.setBedCode(request.bedCode());
     bed.setWard(request.ward());
-    return toBedResponse(bedRepository.save(bed));
+    return admissionMapper.toBedResponse(bedRepository.save(bed));
   }
 
   @Transactional(readOnly = true)
   public List<AdmissionDTO.Response> availableBeds() {
-    return bedRepository.findByOccupiedFalse().stream().map(this::toBedResponse).toList();
+    return bedRepository.findByOccupiedFalse().stream()
+        .map(admissionMapper::toBedResponse)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -48,7 +52,7 @@ public class AdmissionService {
     return PageResponse.from(
         admissionRepository
             .findAll(AdmissionSpecifications.search(query, activeOnly), pageable)
-            .map(this::toResponse));
+            .map(admissionMapper::toResponse));
   }
 
   @Transactional
@@ -75,7 +79,7 @@ public class AdmissionService {
     bedRepository.save(bed);
     Admission saved = admissionRepository.save(admission);
     analyticsEventPublisher.publish("PATIENT_ADMITTED", "ADMISSION", saved.getId());
-    return toResponse(saved);
+    return admissionMapper.toResponse(saved);
   }
 
   @Transactional
@@ -94,7 +98,7 @@ public class AdmissionService {
     bedRepository.save(bed);
     Admission saved = admissionRepository.save(admission);
     analyticsEventPublisher.publish("PATIENT_DISCHARGED", "ADMISSION", saved.getId());
-    return toResponse(saved);
+    return admissionMapper.toResponse(saved);
   }
 
   @Transactional
@@ -112,45 +116,6 @@ public class AdmissionService {
     EmergencyAdmission saved = emergencyAdmissionRepository.save(admission);
     analyticsEventPublisher.publish(
         "EMERGENCY_ADMISSION_CREATED", "EMERGENCY_ADMISSION", saved.getId());
-    return toEmergencyResponse(saved);
-  }
-
-  private AdmissionDTO.Response toResponse(Admission admission) {
-    return new AdmissionDTO.Response(
-        admission.getId(),
-        admission.getPatient().getId(),
-        admission.getPatient().getFirstName() + " " + admission.getPatient().getLastName(),
-        admission.getPatient().getPhone(),
-        admission.getBed().getId(),
-        admission.getBed().getBedCode(),
-        admission.getBed().getWard(),
-        admission.getReason(),
-        admission.getAdmittedAt(),
-        admission.getDischargedAt());
-  }
-
-  private AdmissionDTO.Response toBedResponse(Bed bed) {
-    return new AdmissionDTO.Response(
-        null,
-        bed.getPatientId(),
-        null,
-        null,
-        bed.getId(),
-        bed.getBedCode(),
-        bed.getWard(),
-        null,
-        null,
-        null);
-  }
-
-  private EmergencyAdmissionDTO.Response toEmergencyResponse(EmergencyAdmission admission) {
-    return new EmergencyAdmissionDTO.Response(
-        admission.getId(),
-        admission.getPatient() == null ? null : admission.getPatient().getId(),
-        admission.getDisplayName(),
-        admission.getPhone(),
-        admission.getChiefComplaint(),
-        admission.getCreatedAt(),
-        admission.getClosedAt());
+    return admissionMapper.toEmergencyResponse(saved);
   }
 }

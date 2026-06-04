@@ -6,9 +6,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
+import lombok.Builder;
 
 public class ScheduleDTO {
 
+  @Builder
   public record CreateRequest(
       @NotNull(message = "Department ID is required") UUID departmentId,
       UUID practitionerId,
@@ -23,6 +25,7 @@ public class ScheduleDTO {
       Integer slotDurationMinutes,
       Boolean isActive) {}
 
+  @Builder
   public record Response(
       UUID id,
       UUID departmentId,
@@ -35,6 +38,7 @@ public class ScheduleDTO {
       Integer slotDurationMinutes,
       Boolean isActive) {}
 
+  @Builder
   public record AvailableSlot(
       LocalDate date,
       @Schema(type = "string", format = "time", example = "08:00:00") LocalTime startTime,

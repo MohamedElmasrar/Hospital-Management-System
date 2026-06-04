@@ -4,7 +4,9 @@ import com.hms.billing_service.enums.ClaimStatus;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record InsuranceClaimResponseDTO(
     UUID id,
     UUID invoiceId,

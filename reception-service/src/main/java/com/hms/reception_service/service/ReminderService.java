@@ -2,6 +2,7 @@ package com.hms.reception_service.service;
 
 import com.hms.reception_service.dto.reminder.ReminderDTO;
 import com.hms.reception_service.exception.ResourceNotFoundException;
+import com.hms.reception_service.mapper.ReminderMapper;
 import com.hms.reception_service.model.AppointmentReminder;
 import com.hms.reception_service.repository.AppointmentReminderRepository;
 import com.hms.reception_service.repository.ReservationRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReminderService {
   private final AppointmentReminderRepository reminderRepository;
   private final ReservationRepository reservationRepository;
+  private final ReminderMapper reminderMapper;
 
   @Transactional
   public ReminderDTO.Response create(ReminderDTO.CreateRequest request) {
@@ -28,13 +30,13 @@ public class ReminderService {
     reminder.setChannel(request.channel().toUpperCase());
     reminder.setRecipient(request.recipient());
     reminder.setScheduledFor(request.scheduledFor());
-    return toResponse(reminderRepository.save(reminder));
+    return reminderMapper.toResponse(reminderRepository.save(reminder));
   }
 
   @Transactional(readOnly = true)
   public List<ReminderDTO.Response> findByReservation(UUID reservationId) {
     return reminderRepository.findByReservationId(reservationId).stream()
-        .map(this::toResponse)
+        .map(reminderMapper::toResponse)
         .toList();
   }
 
@@ -45,16 +47,6 @@ public class ReminderService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
     reminder.setSentAt(LocalDateTime.now());
-    return toResponse(reminderRepository.save(reminder));
-  }
-
-  private ReminderDTO.Response toResponse(AppointmentReminder reminder) {
-    return new ReminderDTO.Response(
-        reminder.getId(),
-        reminder.getReservation().getId(),
-        reminder.getChannel(),
-        reminder.getRecipient(),
-        reminder.getScheduledFor(),
-        reminder.getSentAt());
+    return reminderMapper.toResponse(reminderRepository.save(reminder));
   }
 }

@@ -32,16 +32,12 @@ public class UserService {
   }
 
   public List<UserResponse> findAll() {
-    return userRepository.findAll().stream()
-        .map(
-            user ->
-                new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.isActive()))
-        .toList();
+    return userRepository.findAll().stream().map(user -> userMapper.toResponse(user)).toList();
   }
 
   public UserResponse findById(UUID id) {
     User user = userRepository.findById(id).orElseThrow();
-    return new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.isActive());
+    return userMapper.toResponse(user);
   }
 
   @Transactional

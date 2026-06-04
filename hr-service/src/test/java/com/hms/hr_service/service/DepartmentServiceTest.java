@@ -12,6 +12,7 @@ import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.exception.DepartmentNotFoundException;
 import com.hms.hr_service.exception.MedicalOrganizationNotFoundException;
 import com.hms.hr_service.mapper.DepartmentMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.Department;
 import com.hms.hr_service.model.MedicalOrganization;
 import com.hms.hr_service.repository.DepartmentRepository;
@@ -33,7 +34,7 @@ class DepartmentServiceTest {
   @Mock private DepartmentRepository departmentRepository;
   @Mock private MedicalOrganizationRepository medicalOrganizationRepository;
   @Mock private DepartmentMapper departmentMapper;
-  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private DepartmentService departmentService;
 

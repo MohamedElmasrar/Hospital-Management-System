@@ -23,6 +23,7 @@ import com.hms.hr_service.exception.DepartmentNotFoundException;
 import com.hms.hr_service.exception.EmployeeNotFoundException;
 import com.hms.hr_service.exception.ResourceAlreadyExistsException;
 import com.hms.hr_service.mapper.EmployeeMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.ContactPoint;
 import com.hms.hr_service.model.Department;
 import com.hms.hr_service.model.Employee;
@@ -53,7 +54,7 @@ class EmployeeServiceTest {
   @Mock private EmployeeAssignmentRepository employeeAssignmentRepository;
   @Mock private DepartmentRepository departmentRepository;
   @Mock private EmployeeMapper employeeMapper;
-  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private EmployeeService employeeService;
 

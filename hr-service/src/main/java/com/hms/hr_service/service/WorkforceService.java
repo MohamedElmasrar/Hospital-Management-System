@@ -237,13 +237,7 @@ public class WorkforceService {
 
   public WorkforceDTO.PayrollResponse payroll(WorkforceDTO.PayrollRequest request) {
     employee(request.employeeId());
-    return new WorkforceDTO.PayrollResponse(
-        request.employeeId(),
-        request.month(),
-        request.baseSalary(),
-        request.overtime(),
-        request.deductions(),
-        request.baseSalary().add(request.overtime()).subtract(request.deductions()));
+    return workforceMapper.payroll(request);
   }
 
   private Employee employee(UUID id) {

@@ -1,6 +1,7 @@
 package com.hms.auth_service.service;
 
 import com.hms.auth_service.dto.admin.AuditLogResponse;
+import com.hms.auth_service.mapper.AuditLogMapper;
 import com.hms.auth_service.model.AuditLog;
 import com.hms.auth_service.repository.AuditLogRepository;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuditLogService {
   private final AuditLogRepository auditLogRepository;
+  private final AuditLogMapper auditLogMapper;
 
   public void record(UUID actorUserId, String action, UUID targetUserId) {
     AuditLog log = new AuditLog();
@@ -23,14 +25,7 @@ public class AuditLogService {
 
   public List<AuditLogResponse> findAll() {
     return auditLogRepository.findAllByOrderByCreatedAtDesc().stream()
-        .map(
-            log ->
-                new AuditLogResponse(
-                    log.getId(),
-                    log.getActorUserId(),
-                    log.getAction(),
-                    log.getTargetUserId(),
-                    log.getCreatedAt()))
+        .map(auditLogMapper::toResponse)
         .toList();
   }
 }

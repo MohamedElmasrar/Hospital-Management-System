@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
+import lombok.Builder;
 
 public class WorkforceDTO {
   public record CredentialRequest(
@@ -75,6 +76,7 @@ public class WorkforceDTO {
       @NotNull @DecimalMin("0.00") BigDecimal overtime,
       @NotNull @DecimalMin("0.00") BigDecimal deductions) {}
 
+  @Builder
   public record PayrollResponse(
       UUID employeeId,
       YearMonth month,

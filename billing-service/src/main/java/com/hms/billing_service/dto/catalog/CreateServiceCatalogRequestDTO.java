@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
+import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
 
+@Builder
 public record CreateServiceCatalogRequestDTO(
     @NotBlank @Length(max = 50) String serviceCode,
     @NotNull UUID departmentId,

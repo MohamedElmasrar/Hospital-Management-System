@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
+import lombok.Builder;
 
 public final class PayrollDTO {
   private PayrollDTO() {}
@@ -36,6 +37,7 @@ public final class PayrollDTO {
           BigDecimal overtimeHours,
       @NotNull @DecimalMin("0") @Digits(integer = 9, fraction = 2) BigDecimal extraDeductions) {}
 
+  @Builder
   public record RecordResponse(
       UUID id,
       UUID organizationId,

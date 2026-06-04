@@ -15,6 +15,7 @@ import com.hms.hr_service.exception.PhysicianNotFoundException;
 import com.hms.hr_service.exception.ResourceAlreadyExistsException;
 import com.hms.hr_service.mapper.MedicalSpecialtyMapper;
 import com.hms.hr_service.mapper.PhysicianMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.Employee;
 import com.hms.hr_service.model.MedicalSpecialty;
 import com.hms.hr_service.model.Physician;
@@ -41,7 +42,7 @@ class PhysicianServiceTest {
   @Mock private PhysicianSpecialtyRepository physicianSpecialtyRepository;
   @Mock private PhysicianMapper physicianMapper;
   @Mock private MedicalSpecialtyMapper medicalSpecialtyMapper;
-  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private PhysicianService physicianService;
 

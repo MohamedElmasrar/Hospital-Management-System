@@ -12,6 +12,7 @@ import com.hms.hr_service.dto.MedicalOrganization.UpdateMedicalOrganizationReque
 import com.hms.hr_service.enums.UserRole;
 import com.hms.hr_service.exception.MedicalOrganizationNotFoundException;
 import com.hms.hr_service.mapper.MedicalOrganizationMapper;
+import com.hms.hr_service.messaging.AnalyticsEventPublisher;
 import com.hms.hr_service.model.MedicalOrganization;
 import com.hms.hr_service.repository.MedicalOrganizationRepository;
 import com.hms.hr_service.security.AuthenticatedPrincipal;
@@ -29,7 +30,7 @@ class MedicalOrganizationServiceTest {
 
   @Mock private MedicalOrganizationRepository medicalOrganizationRepository;
   @Mock private MedicalOrganizationMapper medicalOrganizationMapper;
-  @Mock private com.hms.hr_service.messaging.AnalyticsEventPublisher analyticsEventPublisher;
+  @Mock private AnalyticsEventPublisher analyticsEventPublisher;
 
   @InjectMocks private MedicalOrganizationService medicalOrganizationService;
 

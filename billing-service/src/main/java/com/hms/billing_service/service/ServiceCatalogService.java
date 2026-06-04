@@ -15,6 +15,7 @@ import com.hms.billing_service.model.ServiceCatalog;
 import com.hms.billing_service.model.ServiceTariffVersion;
 import com.hms.billing_service.repository.ServiceCatalogRepository;
 import com.hms.billing_service.repository.ServiceTariffVersionRepository;
+import com.hms.grpc.hr.DepartmentResponse;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -194,23 +195,12 @@ public class ServiceCatalogService {
 
   private ServiceCatalogResponseDTO toResponseDTO(
       ServiceCatalog catalog, TariffVersionResponseDTO currentTariff) {
-    ServiceCatalogResponseDTO dto =
-        serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(catalog, currentTariff);
     String deptName =
         hrGrpcClient
             .getDepartment(catalog.getDepartmentId())
-            .map(com.hms.grpc.hr.DepartmentResponse::getName)
+            .map(DepartmentResponse::getName)
             .orElse(null);
-    return new ServiceCatalogResponseDTO(
-        dto.id(),
-        dto.serviceCode(),
-        dto.departmentId(),
-        deptName,
-        dto.name(),
-        dto.externalServiceId(),
-        dto.isActive(),
-        dto.currentTariff(),
-        dto.dateCreated(),
-        dto.dateModified());
+    return serviceCatalogMapper.serviceCatalogToServiceCatalogResponseDTO(
+        catalog, currentTariff, deptName);
   }
 }

@@ -5,7 +5,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record CreateBillableOrderRequestDTO(
     @NotNull UUID externalOrderId,
     @NotNull SourceOrderType orderType,

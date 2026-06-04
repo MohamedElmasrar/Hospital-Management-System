@@ -13,6 +13,9 @@ public interface CashDeskMapper {
   @Mapping(target = "departmentName", ignore = true)
   CashDeskResponseDTO cashDeskToCashDeskResponseDTO(CashDesk cashDesk);
 
+  @Mapping(source = "departmentName", target = "departmentName")
+  CashDeskResponseDTO cashDeskToCashDeskResponseDTO(CashDesk cashDesk, String departmentName);
+
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "isActive", constant = "true")
   @Mapping(target = "dateCreated", ignore = true)
