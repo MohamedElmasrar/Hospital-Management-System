@@ -116,26 +116,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - name: Start backend services for API generation
-        run: docker compose up -d --build
-        working-directory: .
-      - name: Wait for API gateway
-        run: |
-          for attempt in {1..60}; do
-            if curl --fail --silent http://localhost:8000/api-docs/auth >/dev/null; then
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "API gateway did not become ready in time" >&2
-          docker compose logs
-          exit 1
-        working-directory: .
       - run: npm run api:generate
-      - if: always()
-        name: Stop backend services
-        run: docker compose down
-        working-directory: .
       - run: npm run format:check
       - run: npm run lint
       - run: npx tsc --noEmit

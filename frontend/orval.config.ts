@@ -2,7 +2,7 @@ import { defineConfig } from 'orval'
 
 export default defineConfig({
   authService: {
-    input: 'http://localhost:8000/api-docs/auth',
+    input: 'openapi/auth.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/auth',
@@ -22,7 +22,7 @@ export default defineConfig({
   },
 
   hrService: {
-    input: 'http://localhost:8000/api-docs/hr',
+    input: 'openapi/hr.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/hr',
@@ -42,7 +42,7 @@ export default defineConfig({
   },
 
   billingService: {
-    input: 'http://localhost:8000/api-docs/billing',
+    input: 'openapi/billing.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/billing',
@@ -62,7 +62,7 @@ export default defineConfig({
   },
 
   receptionService: {
-    input: 'http://localhost:8000/api-docs/reception',
+    input: 'openapi/reception.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/reception',
@@ -82,7 +82,7 @@ export default defineConfig({
   },
 
   notificationService: {
-    input: 'http://localhost:8000/api-docs/notification',
+    input: 'openapi/notification.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/notification',
@@ -96,7 +96,7 @@ export default defineConfig({
   },
 
   analyticsService: {
-    input: 'http://localhost:8000/api-docs/analytics',
+    input: 'openapi/analytics.json',
     output: {
       mode: 'tags-split',
       target: 'app/api/generated/analytics',

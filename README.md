@@ -113,7 +113,7 @@ From the repository root, build and start the backend infrastructure and
 services:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 The API Gateway is available at:
@@ -144,6 +144,7 @@ Start the backend with Docker Compose first, then open a second terminal:
 ```bash
 cd frontend
 npm install
+npm api:generate
 npm run dev
 ```
 
@@ -171,6 +172,18 @@ cd frontend
 npm run format:check
 npm run lint
 npx tsc --noEmit
+```
+
+OpenAPI specifications used by Orval are stored in `frontend/openapi`. When
+backend API contracts change, start the local backend stack and refresh the
+snapshots before committing them:
+
+```bash
+docker compose up -d
+cd frontend
+npm run api:fetch
+npm run api:generate
+docker compose down
 ```
 
 GitHub Actions uses path-based change detection so only the services affected
